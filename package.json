@@ -1,0 +1,14 @@
+{
+    "name": "ascend-game",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "bot",
+        "web"
+    ],
+    "scripts": {
+        "dev:bot": "npm run dev --workspace=bot",
+        "dev:web": "npm run dev --workspace=web",
+        "build": "npm run build --workspaces"
+    }
+}

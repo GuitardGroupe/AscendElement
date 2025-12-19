@@ -1,0 +1,103 @@
+Jeu mobile action / rpg 
+
+Style : fantastique, cyberppunk, crypto, avec un style animé semi réaliste
+Theme : énergie, éléments du tableau périodique des éléments
+
+Plateforme : app télégram lancée via un bot launcher
+
+Stack : TS, Tailwind, react, next,framer-motion, etc. (tu es libre de me faire des suggestions) github, Déployé sur Railway
+
+Methode de travail et outils : IDE Antigravity, github, déployé sur Railway
+
+Direction artistique : le jeu ne proposera pas de vue de jeu, de sprites ou d'autres éléments graphiques de style moteur de jeu. Tout repose sur les menus et interfaces soignés, des animations dynamiques, des effets visuels et audio ultra satisfaisants. Effets de glow, de pulsation, d'impact, de shaders etc...
+
+Description du jeu : 
+Le joueur possède un cristal d'élément qu'il peut activer en chargeant un élément à l'intérieur.
+Les éléments sont les personnages du jeu : chaque élément du tableau périodique est un personnage avec ses statistiques et son set de compétences.
+Une fois un personnage chargé dans le cristal, c'est définitif, seule la mort du personnage peut désactiver le cristal.
+Une fois un personnage chargé et actif, le joueur peut passer à l'action : 
+- entrainement : il affronte un mannequin d'entrainement. Aucun gain, aucun risque
+- aventure :  se présente sous la forme d'une route avec des interractions (un peu comme arbre, où le joueur choisit des directions). Les interractions sont des combats, des boutiques, des coffres, des enigmes, des téléporteurs et des auberges. Sa création est procédurale mais stable sur le serveur. Une fois une route créée par un joueur, elle existe pour les autres joueurs. La difficulté est croissante. Peut être joué en solo ou en duo avec un ami.
+- duel : le joueur peut affronter un autre joueur, aucun gain, aucun risque
+
+Les combats se font sur une interface fixe (un peu comme les premiers pokemon) avec une UI dynamique
+Si le joueur gagne, il reçoit de l'experience, de l'or, et peut looter du butin.
+L'expérience permet au personnage de monter de niveau (de 1 à 20) ce qui augmente ses statistiques. Quand il est niveau max il ne gagne plus d'expérience, elle est convertie en or.
+Si le joueur meurt, c'est une vrai mort définitive, le personnage et ses items disparaissent. Le cristal se desactive.
+A la mort, le joueur reçoit des points "éclats de cristal" (quantité en fonction du niveau du eprsonnage, de ses équipements, de l'or).
+Ces points permettent au cristal de monter de niveau (I à V). Les niveaux de cristal donnent des statistiques bonus aux personnages et débloquent certains personnages.
+Les personnages peuvent équiper des items : tenue, arme, infuseur, accessoire, agentIA qui augementent les statistiques et peuvent rajouter des effets.
+Les personnages ont un inventaire limité. Tous les items équipés ou dans l'inventaire sont détruits à la mort.
+
+Le joueur a un coffre de banque dans lequel il peut déposer quelques items.
+Le coffre n'est pas détruit à la mort du eprsonnage ce qui permet d'avoir acces à des items lors de la création d'un nouveau personnage.
+
+Les combats sont influencés par les statistiques, les items et les niveaux mais aussi et surtout par la dynamique de combat en temps réel, un système de cooldowns, de contres et d'interruptions
+
+LES MENUS : 
+- ECRAN DE CHARGEMENT : écran affiché au démarrage, on pré-charge tous les assets 
+- ECRAN DE LOBBY : affichage du cristal, de son niveau du personnage actif et de son niveau. Options : ACTION (duel/aventure/training), COFFRE DE BANQUE, PERSONNAGES, ACTIVATION
+- ECRAN D'ACTIVATION :  permet de choisir un personnage dans la liste. Il affiche une carte de personnage et dessous le tableau des elements
+- COFFRE DE BANQUE :  affiche à la fois l'inventaire et le coffre pour faire du switch entre els deux
+- ECRAN DE PERSONNAGES : consultation des personnages existants et des compétences (possibilité de choisir des skins dérivés. PAr exemple pour Hydrogene : Deutherum ou Tritium). Ce menu ressemble beaucoup au menu d'activation.
+- ECRAN D'AVENTURE : affichage de la route et des evenements (un peu comme dans slay te spire)
+- ECRAN D'EQUIPEMENT : affiche le stuff du personnage et son inventaire pour équiper ou déséquiper en drag and drop
+- ECRAN DE COMBAT : joueur VS opponent, timer de combat (1min30), barres de vies, barres d'énerie, buffs et debuffs, compétences, barres de lancement de skills, bouton de fuite (fuir le combat)
+- ECRAN SOCIAL : ajouter / supprimer / Défier un ami / voir ses amis connectés
+- ECRAN BOUTIQUE : achat / vente d'items vers l'inventaire personnage
+- ECRAN DE FIND E COMBAT GAIN: affichage du vainqueur et des gains. On voit la barre d'expérience du personnage se remplir
+- Ecran DE FIN DE COMBAT MORT : pierre tombale avec le nom du perso, on voit la barre d'exp du cristal se charger.
+- ECRAN DE LOOT : visionnage du butin, un peu comme dans wow, on clique dessus pour récupérer dans l'inventaire.
+
+Sets de compétences : (unique avec des images pour chaque personnage)
+-Attaque légère 
+-Attaque lourde 
+-Technique de controle 
+-Compétence ultime
+
+les compétences peuvent avoir : 
+- des effets (armure, buff ou debuff de stat, dot, hot)
+- des degats
+- des cooldowns (de 0,5s à plusieurs secondes)
+- des temps de lancements (de 0 pour les instant à plusieurs secondes)
+- des interruptions (peut couper )
+- des contres
+- des buffs
+- des debuffs
+
+Items activables : 
+-Infuseur (soin ou boost personnel) usage unique dans un combat
+- armes (dégats) usage unique dans un combat
+
+Items passifs : 
+-tenue
+-accessoires
+-Processeur
+- Familier
+
+Statistiques :
+-hp: points de vie max
+-energy: points d'énergie max
+-rgeen hp: coef de regen par seconde (0 pour la plupart des personnages)
+-regen energie: coef de regen par seconde
+-Attaque: nombre de points de dégats infligés à chaque attaque
+-chance de critique:% de chances de faire un coup critique à chaque attaque
+-hate: coefficient de rapidité qui vient multiplier les temps de recharge et de lancement
+-defense: coefficient de défense qui détermine le % de dégats réduits
+
+Système de critiques :
+- les critiques infligent X2 dégats et lancent une série de combo.
+- la série de combos lance un filtre sombre sur l'écran et fait apparaitre des boutons de 
+compétence à des endroits aléatoires de l'écran (un par un) sur lequel le joueur a 0,5s pour 
+cliquer. S'il y arrive ça relance une attaque simple, la série peut atteindre 3 maximum avant 
+de s'arreter. Il ne peut pas y avoir de critique pendant une serie.
+
+
+Le rendu final doit donner un gameplay dynamique, violent, et utra satisfaisant, basé sur la reactivité du joueur 
+On doit pouvoir brain un ennmi avec des fake cast pour donner du sel à la partie PVP oou pour bousiller les IA 
+
+
+Pour la premiere version du jeu on se concentre sur le mode offline local.
+On integre pas encore la route, seulement le mode de combat entrainement mais on y rajoute le sgains d'experience et de loot
+
+
