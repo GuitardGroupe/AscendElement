@@ -52,6 +52,10 @@ export default function LobbyScreen() {
                             animate={{
                                 scale: isCrystalActive ? 1 : 0,
                             }}
+                            style={{
+                                willChange: "transform, opacity", // Indique au navigateur quoi optimiser
+                                transform: "translateZ(0)"
+                            }}
                             transition={{ duration: 0.5 }}
                         />
 
