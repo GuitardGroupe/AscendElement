@@ -1,46 +1,42 @@
-# Déployer Ascend sur Railway
+# Guide de Déploiement : Ascend
 
-Ce projet est un monorepo contenant deux applications distinctes :
-1.  `bot` : Le bot Telegram (Node.js/TypeScript).
-2.  `web` : L'application web (Next.js).
+Ce guide explique comment déployer le projet Ascend (Bot + Web) sur Railway.
+Le projet est un Monorepo, nous allons donc créer **deux services distincts** sur Railway, un pour chaque dossier.
 
-Pour déployer correctement sur Railway, vous devez créer **deux services distincts** à partir du même dépôt GitHub.
+## 1. Prépartion
 
-## Prérequis
+Assurez-vous que vos dernières modifications (incluant les fichiers `railway.json` dans `bot/` et `web/`) sont bien **pushées sur GitHub**.
 
-1.  Avoir un compte sur [Railway](https://railway.app/).
-2.  Avoir connecté votre compte GitHub à Railway.
+## 2. Déployer le Bot (Service 1)
 
-## Étape 1 : Déployer le Bot
+1.  Sur Railway, faites **New Project** > **Deploy from GitHub repo**.
+2.  Choisissez le repo `AscendElement`.
+3.  Une fois le service créé, allez dans **Settings**.
+4.  Scrollez jusqu'à la section **Service**.
+5.  Changez **Root Directory** pour : `/bot`.
+6.  Allez dans l'onglet **Variables** et ajoutez :
+    *   `BOT_TOKEN`: Votre token Telegram.
+    *   `WEB_APP_URL`: Laissez vide pour l'instant ou mettez `https://google.com` (on le changera après).
+7.  Railway va redéployer. Grâce au fichier `bot/railway.json`, il saura exactement quoi faire.
 
-1.  Sur votre Dashboard Railway, cliquez sur **New Project** > **Deploy from GitHub repo**.
-2.  Sélectionnez le repo `AscendElement`.
-3.  Une fois le service ajouté, cliquez dessus pour aller dans **Settings**.
-4.  Dans la section **Service** > **Root Directory**, entrez : `/bot`.
-5.  Dans la section **Variables**, ajoutez :
-    *   `BOT_TOKEN`: Votre token de bot Telegram (obtenu via @BotFather).
-    *   `WEB_APP_URL`: L'URL de votre application web (que nous allons obtenir à l'étape suivante, vous pourrez revenir la mettre à jour).
-    *   `NODE_ENV`: `production`
-6.  Railway devrait détecter automatiquement le fichier `package.json` dans le dossier `/bot` et lancer la commande de build (`tsc`) et de start (`node dist/index.js`).
+## 3. Déployer le Web (Service 2)
 
-## Étape 2 : Déployer l'App Web
+1.  Dans le même projet, cliquez sur le bouton **+ New** > **GitHub Repo**.
+2.  Choisissez encore le repo `AscendElement`.
+3.  Allez dans les **Settings** de ce nouveau service.
+4.  Changez **Root Directory** pour : `/web`.
+5.  Railway va redéployer le site.
+6.  Allez dans l'onglet **Settings** > **Networking** et cliquez sur **Generate Domain** (ou Custom Domain).
+    *   Notez cette URL (ex: `ascend-web.up.railway.app`).
 
-1.  Dans le même projet Railway, cliquez sur **+ New** > **GitHub Repo**.
-2.  Sélectionnez à nouveau le même repo `AscendElement`.
-3.  Cliquez sur ce nouveau service pour aller dans **Settings**.
-4.  Dans la section **Service** > **Root Directory**, entrez : `/web`.
-5.  Railway devrait détecter automatiquement qu'il s'agit d'une application Next.js et configurer le build.
-6.  Une fois déployé, allez dans l'onglet **Settings** > **Networking** et générez un domaine (ex: `ascend-web.up.railway.app`).
+## 4. Connecter les deux
 
-## Étape 3 : Finalisation
+1.  Copiez l'URL générée pour le site Web (avec `https://`).
+2.  Retournez sur le service **Bot**.
+3.  Dans **Variables**, mettez à jour `WEB_APP_URL` avec l'adresse du site.
+4.  Redémarrez le Bot (bouton **Redeploy** ou via le menu commande).
 
-1.  Copiez l'URL de votre App Web générée à l'étape 2.
-2.  Retournez dans le service **Bot** > **Variables**.
-3.  Mettez à jour `WEB_APP_URL` avec cette URL.
-4.  Redémarrez le service Bot si nécessaire.
+## Dépannage
 
-## Commandes Utiles
-
-Pour tester localement :
-- `npm run dev:bot` : Lance le bot en dev.
-- `npm run dev:web` : Lance le site en dev.
+- Si vous voyez une erreur `npm error No workspaces found`, c'est que le **Root Directory** n'est pas correctement défini sur `/bot` ou `/web`.
+- Les fichiers `railway.json` présents dans chaque dossier forcent les commandes `npm install`, `npm run build` et `npm start` à s'exécuter localement dans ces dossiers, ignorant le setup monorepo racine pour simplifier le déploiement.
