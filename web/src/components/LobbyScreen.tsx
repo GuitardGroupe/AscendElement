@@ -50,13 +50,9 @@ export default function LobbyScreen() {
                         <motion.div
                             className="absolute inset-0 rounded-full bg-cyan-500/30 blur-[60px]"
                             animate={{
-                                scale: isCrystalActive ? [1, 0.8, 1, 0.7, 1] : [0.5, 0.4, 0.5, 0.35, 0.5],
+                                scale: isCrystalActive ? 1 : 0,
                             }}
-                            transition={{
-                                duration: 5,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
+                            transition={{ duration: 0.5 }}
                         />
 
                         {/* Crystal Images */}
