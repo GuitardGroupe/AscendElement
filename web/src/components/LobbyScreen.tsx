@@ -5,8 +5,12 @@ import { CHARACTERS } from '@/lib/game-data';
 import { Sword, Map, Users, Archive, Hexagon } from 'lucide-react';
 import { useState } from 'react';
 
+const CONST_CRYSTAL_ACTIVE = "/images/crystal-active.png";
+const CONST_CRYSTAL_INACTIVE = "/images/crystal-inactive.png";
+
 export default function LobbyScreen() {
     const [activeCharacter] = useState(CHARACTERS[0]); // Default to Hydrogen for now
+    const [isCrystalActive, setIsCrystalActive] = useState(false);
 
     const menuItems = [
         { id: 'adventure', label: 'AVENTURE', icon: Map, color: 'text-green-400' },
@@ -20,7 +24,7 @@ export default function LobbyScreen() {
             {/* Header / Crystal Status */}
             <header className="flex justify-between items-center mb-8 p-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-900 flex items-center justify-center border border-white/20">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-600 to-blue-900 flex items-center justify-center border border-white/20">
                         <Hexagon size={24} className="text-white" />
                     </div>
                     <div>
@@ -34,33 +38,60 @@ export default function LobbyScreen() {
                 </div>
             </header>
 
-            {/* Main Character Display */}
+            {/* Main Crystal Display */}
             <main className="flex-1 flex flex-col items-center justify-center relative my-4">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative z-10 text-center"
+                <div
+                    className="relative z-10 text-center flex flex-col items-center justify-center cursor-pointer"
+                    onClick={() => setIsCrystalActive(!isCrystalActive)}
                 >
-                    {/* Character Card */}
-                    <div className="w-64 h-96 bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-2xl p-6 flex flex-col items-center relative overflow-hidden group">
-                        <div className={`absolute inset-0 bg-gradient-to-br ${activeCharacter.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
+                    {/* Crystal Image Container */}
+                    <div className="relative w-80 h-80 flex items-center justify-center">
+                        {/* Glow Effect (Active Only) */}
+                        <motion.div
+                            className="absolute inset-0 rounded-full bg-cyan-500/30 blur-[60px]"
+                            animate={{
+                                scale: isCrystalActive ? [1, 0.8, 1, 0.7, 1] : [0.5, 0.4, 0.5, 0.35, 0.5],
+                            }}
+                            transition={{
+                                duration: 5,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        />
 
-                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-800 to-black border-4 border-gray-800 flex items-center justify-center mb-6 shadow-xl shadow-cyan-500/20">
-                            <span className="text-4xl font-bold">{activeCharacter.symbol}</span>
-                        </div>
+                        {/* Crystal Images */}
+                        <motion.img
+                            src={CONST_CRYSTAL_ACTIVE}
+                            alt="Active Crystal"
+                            className="absolute w-full h-full object-contain drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]"
+                            initial={false}
+                            animate={{
+                                opacity: isCrystalActive ? 1 : 0,
+                            }}
+                            transition={{ duration: 0.5 }}
+                        />
 
-                        <h1 className="text-2xl font-bold mb-1">{activeCharacter.name}</h1>
-                        <p className="text-xs text-cyan-400 tracking-widest mb-4">LVL 01 • RAW MATTER</p>
-
-                        <p className="text-xs text-gray-400 text-center leading-relaxed">
-                            {activeCharacter.description}
-                        </p>
-
-                        <button className="mt-auto w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs uppercase tracking-widest transition-colors">
-                            Manage
-                        </button>
+                        <motion.img
+                            src={CONST_CRYSTAL_INACTIVE}
+                            alt="Inactive Crystal"
+                            className="absolute w-full h-full object-contain opacity-80"
+                            initial={false}
+                            animate={{
+                                opacity: isCrystalActive ? 0 : 1,
+                            }}
+                            transition={{ duration: 0.5 }}
+                        />
                     </div>
-                </motion.div>
+
+                    <div className="mt-4 space-y-2">
+                        <h1 className="text-3xl font-bold bg-linear-to-r from-gray-100 to-gray-400 bg-clip-text text-transparent">
+                            {isCrystalActive ? activeCharacter.name : "CRYSTAL DORMANT"}
+                        </h1>
+                        <p className="text-xs text-cyan-400 tracking-[0.2em] font-mono">
+                            {isCrystalActive ? `SYSTEM: ${activeCharacter.symbol}-CORE` : "WAITING FOR INPUT..."}
+                        </p>
+                    </div>
+                </div>
             </main>
 
             {/* Action Menu */}

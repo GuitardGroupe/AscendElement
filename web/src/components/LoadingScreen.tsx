@@ -39,14 +39,14 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 transition={{ duration: 0.5 }}
                 className="mb-8"
             >
-                <h1 className="text-4xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+                <h1 className="text-4xl font-bold tracking-widest text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-purple-600">
                     ASCEND
                 </h1>
             </motion.div>
 
             <div className="w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
                 <motion.div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-purple-500"
+                    className="h-full bg-linear-to-r from-cyan-500 to-purple-500"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ ease: 'linear' }}
