@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { CHARACTERS } from '@/lib/game-data';
 import { Sword, Map, Users, Archive, Hexagon } from 'lucide-react';
 import { useState } from 'react';
+import useUISound from '@/hooks/useUISounds';
+
 
 const CONST_CRYSTAL_ACTIVE = "/images/crystal-active.png";
 const CONST_CRYSTAL_INACTIVE = "/images/crystal-inactive.png";
@@ -11,6 +13,7 @@ const CONST_CRYSTAL_INACTIVE = "/images/crystal-inactive.png";
 export default function LobbyScreen() {
     const [activeCharacter] = useState(CHARACTERS[0]); // Default to Hydrogen for now
     const [isCrystalActive, setIsCrystalActive] = useState(false);
+    const playClick = useUISound();
 
     const menuItems = [
         { id: 'adventure', label: 'AVENTURE', icon: Map, color: 'text-green-400' },
@@ -18,6 +21,11 @@ export default function LobbyScreen() {
         { id: 'social', label: 'SOCIAL', icon: Users, color: 'text-blue-400' },
         { id: 'inventory', label: 'INVENTAIRE', icon: Archive, color: 'text-yellow-400' },
     ];
+
+    const handleCrystalClick = () => {
+        playClick();
+        setIsCrystalActive(!isCrystalActive)
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-neutral-950 text-white p-4 font-sans">
@@ -42,7 +50,7 @@ export default function LobbyScreen() {
             <main className="flex-1 flex flex-col items-center justify-center relative my-4">
                 <div
                     className="relative z-10 text-center flex flex-col items-center justify-center cursor-pointer"
-                    onClick={() => setIsCrystalActive(!isCrystalActive)}
+                    onClick={handleCrystalClick}
                 >
                     {/* Crystal Image Container */}
                     <div className="relative w-80 h-80 flex items-center justify-center">
@@ -53,7 +61,7 @@ export default function LobbyScreen() {
                                 scale: isCrystalActive ? 1 : 0,
                             }}
                             style={{
-                                willChange: "transform, opacity", // Indique au navigateur quoi optimiser
+                                willChange: "transform, opacity",
                                 transform: "translateZ(0)"
                             }}
                             transition={{ duration: 0.5 }}
