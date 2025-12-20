@@ -27,20 +27,26 @@ export function usePreloader(assets: { images: string[], sounds: string[] }) {
 
     useEffect(() => {
         const loadImage = (src: string) => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const img = new Image();
                 img.src = src;
-                img.onload = resolve;
-                img.onerror = reject;
+                img.onload = () => resolve({ src, success: true });
+                img.onerror = () => {
+                    console.warn(`Failed to load image: ${src}`);
+                    resolve({ src, success: false });
+                };
             });
         };
 
         const loadSound = (src: string) => {
-            return new Promise<void>((resolve) => {
-                const sound = new Howl({
+            return new Promise((resolve) => {
+                new Howl({
                     src: [src],
-                    onload: () => resolve(),
-                    onloaderror: () => resolve(), // On continue même si un son échoue
+                    onload: () => resolve({ src, success: true }),
+                    onloaderror: (id, err) => {
+                        console.warn(`Failed to load sound: ${src}`, err);
+                        resolve({ src, success: false });
+                    },
                 });
             });
         };
@@ -54,11 +60,14 @@ export function usePreloader(assets: { images: string[], sounds: string[] }) {
         allPromises.forEach(p => {
             p.then(() => {
                 loadedCount++;
-                setProgress(Math.round((loadedCount / allPromises.length) * 100));
+                const newProgress = Math.round((loadedCount / allPromises.length) * 100);
+                setProgress(newProgress);
             });
         });
 
-        Promise.all(allPromises).then(() => setIsReady(true));
+        Promise.all(allPromises).then(() => {
+            setIsReady(true);
+        });
     }, [assets]);
 
     return { isReady, progress };
