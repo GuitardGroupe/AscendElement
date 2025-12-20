@@ -9,7 +9,7 @@ import { AnimatePresence } from 'framer-motion';
 type GameState = 'loading' | 'lobby' | 'characters';
 
 export default function Home() {
-  const [gameState, setGameState] = useState<GameState>('lobby');
+  const [gameState, setGameState] = useState<GameState>('loading');
 
   const handleGameState = (screen: string) => {
     console.log("SWITCHING SCREEN : " + screen)

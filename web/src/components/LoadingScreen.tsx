@@ -12,7 +12,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
     useEffect(() => {
         // Simulate loading for 3 seconds
-        const duration = 3000;
+        const duration = 1500;
         const interval = 30;
         const steps = duration / interval;
         const increment = 100 / steps;

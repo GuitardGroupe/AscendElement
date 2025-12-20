@@ -7,6 +7,9 @@ import { characters } from '@/lib/data';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { AnimatePresence, motion } from "framer-motion";
 import CharacterCard from "@/components/CharacterCard";
+import { useSoundStore } from '@/store/useSoundStore';
+
+const CONST_FRAME_IMG = "/images/webp/CardFrame.webp";
 
 interface CharactersScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -14,7 +17,7 @@ interface CharactersScreenProps {
 export default function CharactersScreen({ onSwitchScreen }: CharactersScreenProps) {
     const playAcceptation = useUISound("/sounds/acceptation02.mp3", 0.6);
     const playClick = useUISound("/sounds/uiClick03.mp3", 0.6);
-
+    const { playSound } = useSoundStore();
     const { setSelectedCharacter } = useSelectedCharacter();
     const [selected, setSelected] = useState(0);
     const character = characters[selected];
@@ -25,13 +28,13 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
     };
 
     const handleActivate = () => {
-        playAcceptation();
+
+        playSound("/sounds/acceptation02.mp3", 0.6);
         setSelectedCharacter(character);
+        onSwitchScreen("lobby");
     };
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
-            <h1 className="text-2xl font-bold tracking-wide mb-0">Personnages</h1>
-
             <div className="relative w-[420px] h-[570px]">
                 <AnimatePresence mode="wait" initial={false}>
                     <motion.div
@@ -41,12 +44,19 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                         exit={{ x: -300, opacity: 0 }}
                         transition={{ duration: 0.2, ease: "easeInOut" }}
                         className="absolute inset-0"
+                        style={{
+                            willChange: "transform, opacity",
+                            WebkitBackfaceVisibility: "hidden",
+                            backfaceVisibility: "hidden", // Astuce pour forcer le lissage
+                            transform: "translateZ(0)" // Le "Hack" ultime pour forcer le GPU
+                        }} // Hint
+
                     >
                         <CharacterCard
                             name={character.name}
                             symbol={character.symbol}
                             img={character.img}
-                            frame="/images/frame6.png"
+                            frame={CONST_FRAME_IMG}
                             width={420}
                             height={570}
                             imageMargin={70} // 🔹 marge interne → réduit la taille du perso
