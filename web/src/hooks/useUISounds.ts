@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { Howl } from "howler";
 
 export default function useUISound(
-    path = "/sounds/uiClick01.mp3",
+    path = "/sounds/ui/click.mp3",
     volume = 0.7
 ) {
     const soundRef = useRef<Howl | null>(null);

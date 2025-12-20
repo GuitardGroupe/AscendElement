@@ -1,21 +1,28 @@
+const V = "v1";
+
+export const CONST_ASSETS = {
+    IMAGES: {
+        CARD_FRAME: `/${V}/images/webp/cardframe.webp`,
+        BACKGROUND: `/${V}/images/webp/background.webp`,
+        CRYSTAL_ACTIVE: `/${V}/images/webp/crystal-active.webp`,
+        CRYSTAL_INACTIVE: `/${V}/images/webp/crystal-inactive.webp`,
+        CHAR_AS: `/${V}/images/webp/as.webp`,
+        CHAR_BR: `/${V}/images/webp/br.webp`,
+        CHAR_GA: `/${V}/images/webp/ga.webp`,
+        CHAR_KR: `/${V}/images/webp/kr.webp`,
+        CHAR_LI: `/${V}/images/webp/li.webp`,
+        CHAR_ZN: `/${V}/images/webp/zn.webp`,
+    },
+    SOUNDS: {
+        CLICK: `/${V}/sounds/ui/click.mp3`,
+        ACCEPTATION: `/${V}/sounds/ui/acceptation.mp3`,
+        SWITCH: `/${V}/sounds/ui/switch.mp3`,
+    }
+};
+
 export const ASSETS_TO_LOAD = {
-    images: [
-        '/images/webp/CardFrame.webp?v=1',
-        '/images/webp/Background.webp?v=1',
-        '/images/webp/Crystal-active.webp?v=1',
-        '/images/webp/Crystal-inactive.webp?v=1',
-        '/images/webp/As.webp?v=1',
-        '/images/webp/Br.webp?v=1',
-        '/images/webp/Ga.webp?v=1',
-        '/images/webp/Kr.webp?v=1',
-        '/images/webp/Li.webp?v=1',
-        '/images/webp/Zn.webp?v=1',
-    ],
-    sounds: [
-        '/sounds/UI/Click.mp3?v=1',
-        '/sounds/UI/Acceptation.mp3?v=1',
-        '/sounds/UI/Switch.mp3?v=1',
-    ]
+    images: Object.values(CONST_ASSETS.IMAGES),
+    sounds: Object.values(CONST_ASSETS.SOUNDS)
 };
 
 import { useState, useEffect } from 'react';

@@ -4,13 +4,14 @@
 import { useState } from 'react';
 import { characters } from '@/lib/data';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
+import { useSoundStore } from "@/store/useSoundStore";
 import { AnimatePresence, motion } from "framer-motion";
 import CharacterCard from "@/components/CharacterCard";
-import { useSoundStore } from '@/store/useSoundStore';
+import { CONST_ASSETS } from '@/lib/preloader';
 
-const CONST_IMG_FRAME = "/images/webp/CardFrame.webp";
-const CONST_SOUND_SWITCH = "/sounds/UI/Switch.mp3";
-const CONST_SOUND_ACCEPTATION = "/sounds/UI/Acceptation.mp3";
+const CONST_IMG_FRAME = CONST_ASSETS.IMAGES.CARD_FRAME;
+const CONST_SOUND_SWITCH = CONST_ASSETS.SOUNDS.SWITCH;
+const CONST_SOUND_ACCEPTATION = CONST_ASSETS.SOUNDS.ACCEPTATION;
 
 interface CharactersScreenProps {
     onSwitchScreen: (screen: string) => void;

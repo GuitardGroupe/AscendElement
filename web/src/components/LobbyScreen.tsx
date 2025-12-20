@@ -6,10 +6,12 @@ import Image from 'next/image';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 
-const CONST_CRYSTAL_ACTIVE = "/images/webp/Crystal-active.webp";
-const CONST_CRYSTAL_INACTIVE = "/images/webp/Crystal-inactive.webp";
-const CONST_BG_LOBBY = "/images/webp/Background.webp";
-const CONST_SOUND_CLICK = "/sounds/UI/Click.mp3";
+import { CONST_ASSETS } from '@/lib/preloader';
+
+const CONST_CRYSTAL_ACTIVE = CONST_ASSETS.IMAGES.CRYSTAL_ACTIVE;
+const CONST_CRYSTAL_INACTIVE = CONST_ASSETS.IMAGES.CRYSTAL_INACTIVE;
+const CONST_BG_LOBBY = CONST_ASSETS.IMAGES.BACKGROUND;
+const CONST_SOUND_CLICK = CONST_ASSETS.SOUNDS.CLICK;
 
 interface LobbyScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -66,7 +68,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
             </header>
 
             {/* Main Crystal Display */}
-            <main className="relative z-10 flex-1 flex flex-col items-center justify-center relative my-4">
+            <main className="relative z-10 flex-1 flex flex-col items-center justify-center my-4">
                 <div
                     className="relative z-10 text-center flex flex-col items-center justify-center cursor-pointer"
                     onClick={handleCrystalClick}

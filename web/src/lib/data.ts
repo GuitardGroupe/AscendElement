@@ -1,4 +1,5 @@
-import { Crystal, Currency, Character, Item } from "./types";
+import { Crystal, Currency } from "./types";
+import { CONST_ASSETS } from "./preloader";
 
 export const mockCrystal: Crystal = {
     level: 1,
@@ -18,28 +19,13 @@ export const mockWallet: Currency = {
     bnb: 0,
 };
 
-const mkItem = (
-    id: string,
-    slot: Item["slot"],
-    name: string,
-    rarity: Item["rarity"],
-    img: string
-): Item => ({
-    id,
-    slot,
-    name,
-    rarity,
-    score: Math.floor(Math.random() * 100) + 50,
-    img,
-});
-
 export const characters = [
     {
         id: 0,
         symbol: "As",
         name: "Arsenic",
-        img: "/images/webp/As.webp",
-        img_h: "/images/webp/As.webp",
+        img: CONST_ASSETS.IMAGES.CHAR_AS,
+        img_h: CONST_ASSETS.IMAGES.CHAR_AS,
         color: "#00ffff",
         stat_hp: 100, // nombre d epoints de vie max
         stat_energy: 100, // nombre de points d'énergie max
@@ -54,8 +40,8 @@ export const characters = [
         id: 1,
         symbol: "Br",
         name: "Brome",
-        img: "/images/webp/Br.webp",
-        img_h: "/images/webp/Br.webp",
+        img: CONST_ASSETS.IMAGES.CHAR_BR,
+        img_h: CONST_ASSETS.IMAGES.CHAR_BR,
         color: "#ff9eff",
         stat_hp: 100, // nombre d epoints de vie max
         stat_energy: 100, // nombre de points d'énergie max
@@ -70,8 +56,8 @@ export const characters = [
         id: 2,
         symbol: "Ga",
         name: "Gallium",
-        img: "/images/webp/Ga.webp",
-        img_h: "/images/webp/Ga.webp",
+        img: CONST_ASSETS.IMAGES.CHAR_GA,
+        img_h: CONST_ASSETS.IMAGES.CHAR_GA,
         color: "#F54927",
         stat_hp: 100, // nombre d epoints de vie max
         stat_energy: 100, // nombre de points d'énergie max
@@ -86,8 +72,8 @@ export const characters = [
         id: 3,
         symbol: "Kr",
         name: "Krypton",
-        img: "/images/webp/Kr.webp",
-        img_h: "/images/webp/Kr.webp",
+        img: CONST_ASSETS.IMAGES.CHAR_KR,
+        img_h: CONST_ASSETS.IMAGES.CHAR_KR,
         color: "#F54927",
         stat_hp: 100, // nombre d epoints de vie max
         stat_energy: 100, // nombre de points d'énergie max
@@ -102,8 +88,8 @@ export const characters = [
         id: 4,
         symbol: "Li",
         name: "Lithium",
-        img: "/images/webp/Li.webp",
-        img_h: "/images/webp/Li.webp",
+        img: CONST_ASSETS.IMAGES.CHAR_LI,
+        img_h: CONST_ASSETS.IMAGES.CHAR_LI,
         color: "#F54927",
         stat_hp: 100, // nombre d epoints de vie max
         stat_energy: 100, // nombre de points d'énergie max
@@ -118,8 +104,8 @@ export const characters = [
         id: 5,
         symbol: "Zn",
         name: "Zinc",
-        img: "/images/webp/Zn.webp",
-        img_h: "/images/webp/Zn.webp",
+        img: CONST_ASSETS.IMAGES.CHAR_ZN,
+        img_h: CONST_ASSETS.IMAGES.CHAR_ZN,
         color: "#F54927",
         stat_hp: 100, // nombre d epoints de vie max
         stat_energy: 100, // nombre de points d'énergie max
