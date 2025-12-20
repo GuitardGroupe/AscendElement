@@ -1,22 +1,29 @@
 import { useRef, useEffect } from "react";
+import { Howl } from "howler";
 
 export default function useUISound(
     path = "/sounds/uiClick01.mp3",
     volume = 0.7
 ) {
-    const soundRef = useRef<HTMLAudioElement | null>(null);
+    const soundRef = useRef<Howl | null>(null);
 
     useEffect(() => {
-        const audio = new Audio(path);
-        audio.volume = volume;
-        soundRef.current = audio;
+        soundRef.current = new Howl({
+            src: [path],
+            volume: volume,
+            html5: true, // Forces HTML5 Audio, good for large files/mobile compatibility sometimes, but for UI sfx keep false usually. Let's try false (default) for low latency.
+        });
+
+        return () => {
+            soundRef.current?.unload();
+        };
     }, [path, volume]);
 
     const play = () => {
         if (!soundRef.current) return;
-        soundRef.current.currentTime = 0;
-        soundRef.current.playbackRate = 0.95 + Math.random() * 0.1;
-        soundRef.current.play().catch(() => { });
+        // Randomize pitch slightly for variation
+        soundRef.current.rate(0.95 + Math.random() * 0.1);
+        soundRef.current.play();
     };
 
     return play;

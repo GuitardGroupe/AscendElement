@@ -54,41 +54,44 @@ export default function LobbyScreen() {
                 >
                     {/* Crystal Image Container */}
                     <div className="relative w-80 h-80 flex items-center justify-center">
-                        {/* Glow Effect (Active Only) */}
+                        {/* Glow Effect (Active Only) - Optimized */}
                         <motion.div
-                            className="absolute inset-0 rounded-full bg-cyan-500/30 blur-[60px]"
+                            className="absolute inset-0 rounded-full bg-cyan-500/20 blur-[20px]" // Reduced blur radius and opacity
                             animate={{
-                                scale: isCrystalActive ? 1 : 0,
+                                opacity: isCrystalActive ? 1 : 0, // Animate opacity instead of scale for better perf
                             }}
                             style={{
-                                willChange: "transform, opacity",
-                                transform: "translateZ(0)"
+                                willChange: "opacity", // Hint to browser
+                                transform: "translateZ(0)" // Force hardware acceleration
                             }}
-                            transition={{ duration: 0.5 }}
+                            transition={{ duration: 0.3 }}
                         />
 
-                        {/* Crystal Images */}
-                        <motion.img
-                            src={CONST_CRYSTAL_ACTIVE}
-                            alt="Active Crystal"
-                            className="absolute w-full h-full object-contain drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]"
-                            initial={false}
-                            animate={{
-                                opacity: isCrystalActive ? 1 : 0,
-                            }}
-                            transition={{ duration: 0.5 }}
-                        />
+                        {/* Crystal Images - Optimized */}
+                        {/* We use simple conditional rendering or opacity for cheaper switching */}
+                        <div className="relative w-full h-full">
+                            <motion.img
+                                src={CONST_CRYSTAL_ACTIVE}
+                                alt="Active Crystal"
+                                className="absolute inset-0 w-full h-full object-contain"
+                                animate={{
+                                    opacity: isCrystalActive ? 1 : 0,
+                                }}
+                                style={{ willChange: "opacity" }} // Hint
+                                transition={{ duration: 0.3 }}
+                            />
 
-                        <motion.img
-                            src={CONST_CRYSTAL_INACTIVE}
-                            alt="Inactive Crystal"
-                            className="absolute w-full h-full object-contain opacity-80"
-                            initial={false}
-                            animate={{
-                                opacity: isCrystalActive ? 0 : 1,
-                            }}
-                            transition={{ duration: 0.5 }}
-                        />
+                            <motion.img
+                                src={CONST_CRYSTAL_INACTIVE}
+                                alt="Inactive Crystal"
+                                className="absolute inset-0 w-full h-full object-contain opacity-80"
+                                animate={{
+                                    opacity: isCrystalActive ? 0 : 1,
+                                }}
+                                style={{ willChange: "opacity" }} // Hint
+                                transition={{ duration: 0.3 }}
+                            />
+                        </div>
                     </div>
 
                     <div className="mt-4 space-y-2">
