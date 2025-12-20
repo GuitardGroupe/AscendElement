@@ -140,6 +140,12 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                     </motion.button>
                 ))}
             </nav>
+
+            {/* IMAGE WARMUP (PRE-DECODING NEXT SCREEN) */}
+            <div className="absolute opacity-0 pointer-events-none -z-50 overflow-hidden w-0 h-0">
+                <Image src={CONST_ASSETS.IMAGES.CARD_FRAME} alt="" width={1} height={1} priority />
+                <Image src={CONST_ASSETS.IMAGES.CHAR_AS} alt="" width={1} height={1} priority />
+            </div>
         </div>
     );
 }
