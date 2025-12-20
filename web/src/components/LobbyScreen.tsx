@@ -43,7 +43,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                     src={CONST_BG_LOBBY}
                     alt="Lobby Background"
                     fill
-                    className="object-contain"
+                    className="object-cover"
                     priority
                 />
                 {/* DARK OVERLAY */}
