@@ -33,16 +33,22 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="mb-8"
+
+            <div
+                className="mb-10
+             text-center font-semibold tracking-wide text-white
+             text-3xl drop-shadow-[0_0_6px_rgba(120,180,255,0.9)]"
+                style={{
+                    zIndex: 25,
+                    textShadow: `
+      0 0 10px rgba(120,180,255,0.8),
+      0 0 20px rgba(150,100,255,0.5),
+      0 0 30px rgba(90,180,255,0.3)
+    `,
+                }}
             >
-                <h1 className="text-4xl font-bold tracking-widest text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-purple-600">
-                    ASCEND
-                </h1>
-            </motion.div>
+                {"Ascend Element"}
+            </div>
 
             <div className="w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
                 <motion.div
@@ -53,7 +59,14 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 />
             </div>
 
-            <p className="mt-4 text-sm text-gray-500 font-mono">
+            <p className="mt-4 text-sm text-gray-500 " style={{
+                zIndex: 25,
+                textShadow: `
+      0 0 10px rgba(120,180,255,0.8),
+      0 0 20px rgba(150,100,255,0.5),
+      0 0 30px rgba(90,180,255,0.3)
+    `,
+            }}>
                 INITIALIZING SYSTEMS... {Math.round(progress)}%
             </p>
         </div>

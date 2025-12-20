@@ -6,11 +6,11 @@ import { useEffect, useRef } from "react";
 interface CharacterCardProps {
     name: string;
     symbol: string;
-    img: string; // image perso
-    frame: string; // cadre PNG (centre transparent)
+    img: string;
+    frame: string;
     width?: number;
     height?: number;
-    imageMargin?: number; // réduit l'image dans le cadre
+    imageMargin?: number;
     onSelect?: () => void;
 }
 
@@ -24,36 +24,13 @@ export default function CharacterCard({
     imageMargin = 20,
     onSelect,
 }: CharacterCardProps) {
-    const clipRef = useRef<HTMLDivElement>(null);
-    const orbitRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const el = clipRef.current;
-        const orbit = orbitRef.current;
-        if (!el || !orbit) return;
-
-        const computeRadius = () => {
-            // Taille du conteneur qui CLIPPE (zone image+glows sous le cadre)
-            const rect = el.getBoundingClientRect();
-            // Rayon = moitié du plus petit côté, moins un offset pour coller au bord et éviter le cadre
-            const halfMin = Math.min(rect.width, rect.height) / 2;
-            const edgeOffset = 12; // ajuste si tu veux coller plus/moins au bord
-            const r = Math.max(0, halfMin - edgeOffset);
-            orbit.style.setProperty("--orbit-radius", `${r}px`);
-        };
-
-        computeRadius();
-        const ro = new ResizeObserver(computeRadius);
-        ro.observe(el);
-        return () => ro.disconnect();
-    }, []);
 
     return (
         <div
             className="relative flex flex-col items-center justify-center"
             style={{ width, height }}
         >
-            {/* Conteneur qui CLIPPE l'intérieur du cadre */}
             <div
                 className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-xl"
                 style={{
@@ -63,7 +40,6 @@ export default function CharacterCard({
                     right: imageMargin,
                 }}
             >
-                {/* IMAGE */}
                 <Image
                     src={img}
                     alt={name}
@@ -71,15 +47,8 @@ export default function CharacterCard({
                     priority
                     className="relative z-10 object-contain select-none pointer-events-none"
                 />
-
-                {/* GLOW interne vacillant */}
-                <div className="element-innerglow" />
-
-                {/* Halo orbital vivant */}
-                <div className="element-orbit" />
             </div>
 
-            {/* CADRE PNG */}
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{ zIndex: 20 }}
@@ -92,7 +61,6 @@ export default function CharacterCard({
                 />
             </div>
 
-            {/*TITRE */}
             <div
                 className="absolute bottom-14.5 left-1/2 -translate-x-1/2 
              text-center font-semibold tracking-wide text-white
@@ -109,7 +77,6 @@ export default function CharacterCard({
                 {symbol}
             </div>
 
-            {/* Bouton */}
             {onSelect && (
                 <button
                     onClick={onSelect}

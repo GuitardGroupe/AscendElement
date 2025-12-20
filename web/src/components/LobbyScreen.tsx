@@ -4,19 +4,22 @@ import { motion } from 'framer-motion';
 import { CHARACTERS } from '@/lib/game-data';
 import { Sword, Map, Users, Archive, Hexagon } from 'lucide-react';
 import { useState } from 'react';
-import useUISound from '@/hooks/useUISounds';
+import Image from 'next/image';
+import { useSoundStore } from '@/store/useSoundStore';
+import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 
-const CONST_CRYSTAL_ACTIVE = "/images/crystal-active.png";
-const CONST_CRYSTAL_INACTIVE = "/images/crystal-inactive.png";
+const CONST_CRYSTAL_ACTIVE = "/images/webp/crystal-active.webp";
+const CONST_CRYSTAL_INACTIVE = "/images/webp/crystal-inactive.webp";
+const CONST_BG_LOBBY = "/images/webp/Background.webp";
+const CONST_SOUND_CLICK = "/sounds/UI/Click.mp3";
 
 interface LobbyScreenProps {
     onSwitchScreen: (screen: string) => void;
 }
 
 export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
-    const [activeCharacter] = useState(CHARACTERS[0]); // Default to Hydrogen for now
-    const [isCrystalActive, setIsCrystalActive] = useState(false);
-    const playClick = useUISound();
+    const { playSound } = useSoundStore();
+    const { selectedCharacter, clearSelectedCharacter } = useSelectedCharacter();
 
     const menuItems = [
         { id: 'adventure', label: 'AVENTURE', icon: Map, color: 'text-green-400' },
@@ -25,16 +28,30 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
         { id: 'inventory', label: 'INVENTAIRE', icon: Archive, color: 'text-yellow-400' },
     ];
 
+    const isCrystalActive = !!selectedCharacter;
+
     const handleCrystalClick = () => {
-        //playClick();
+        playSound(CONST_SOUND_CLICK, 0.6);
         onSwitchScreen('characters');
-        //setIsCrystalActive(!isCrystalActive)
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-neutral-950 text-white p-4 font-sans">
+        <div className="flex flex-col min-h-screen bg-neutral-950 text-white p-4 font-sans relative overflow-hidden">
+            {/* BACKGROUND LAYER */}
+            <div className="absolute inset-0 z-0 flex items-center justify-center">
+                <Image
+                    src={CONST_BG_LOBBY}
+                    alt="Lobby Background"
+                    fill
+                    className="object-contain"
+                    priority
+                />
+                {/* DARK OVERLAY */}
+                <div className="absolute inset-0 bg-black/80 z-0" />
+            </div>
+
             {/* Header / Crystal Status */}
-            <header className="flex justify-between items-center mb-8 p-4 border-b border-white/10">
+            <header className="relative z-10 flex justify-between items-center mb-8 p-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-600 to-blue-900 flex items-center justify-center border border-white/20">
                         <Hexagon size={24} className="text-white" />
@@ -51,7 +68,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
             </header>
 
             {/* Main Crystal Display */}
-            <main className="flex-1 flex flex-col items-center justify-center relative my-4">
+            <main className="relative z-10 flex-1 flex flex-col items-center justify-center relative my-4">
                 <div
                     className="relative z-10 text-center flex flex-col items-center justify-center cursor-pointer"
                     onClick={handleCrystalClick}
@@ -72,7 +89,6 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         />
 
                         {/* Crystal Images - Optimized */}
-                        {/* We use simple conditional rendering or opacity for cheaper switching */}
                         <div className="relative w-full h-full">
                             <motion.img
                                 src={CONST_CRYSTAL_ACTIVE}
@@ -100,17 +116,17 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                     <div className="mt-4 space-y-2">
                         <h1 className="text-3xl font-bold bg-linear-to-r from-gray-100 to-gray-400 bg-clip-text text-transparent">
-                            {isCrystalActive ? activeCharacter.name : "CRYSTAL DORMANT"}
+                            {isCrystalActive ? selectedCharacter.name : "CRYSTAL DORMANT"}
                         </h1>
                         <p className="text-xs text-cyan-400 tracking-[0.2em] font-mono">
-                            {isCrystalActive ? `SYSTEM: ${activeCharacter.symbol}-CORE` : "WAITING FOR INPUT..."}
+                            {isCrystalActive ? `SYSTEM: ${selectedCharacter.symbol}-CORE` : "WAITING FOR INPUT..."}
                         </p>
                     </div>
                 </div>
             </main>
 
             {/* Action Menu */}
-            <nav className="grid grid-cols-2 gap-3 mt-auto">
+            <nav className="relative z-10 grid grid-cols-2 gap-3 mt-auto">
                 {menuItems.map((item, index) => (
                     <motion.button
                         key={item.id}
