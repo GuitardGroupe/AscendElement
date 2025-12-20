@@ -1,15 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CHARACTERS } from '@/lib/game-data';
 import { Sword, Map, Users, Archive, Hexagon } from 'lucide-react';
-import { useState } from 'react';
 import Image from 'next/image';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 
-const CONST_CRYSTAL_ACTIVE = "/images/webp/crystal-active.webp";
-const CONST_CRYSTAL_INACTIVE = "/images/webp/crystal-inactive.webp";
+const CONST_CRYSTAL_ACTIVE = "/images/webp/Crystal-active.webp";
+const CONST_CRYSTAL_INACTIVE = "/images/webp/Crystal-inactive.webp";
 const CONST_BG_LOBBY = "/images/webp/Background.webp";
 const CONST_SOUND_CLICK = "/sounds/UI/Click.mp3";
 

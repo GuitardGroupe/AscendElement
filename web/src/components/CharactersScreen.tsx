@@ -9,8 +9,8 @@ import CharacterCard from "@/components/CharacterCard";
 import { useSoundStore } from '@/store/useSoundStore';
 
 const CONST_IMG_FRAME = "/images/webp/CardFrame.webp";
-const CONST_SOUND_SWITCH = "/sounds/uiClick03.mp3";
-const CONST_SOUND_ACCEPTATION = "/sounds/acceptation02.mp3";
+const CONST_SOUND_SWITCH = "/sounds/UI/Switch.mp3";
+const CONST_SOUND_ACCEPTATION = "/sounds/UI/Acceptation.mp3";
 
 interface CharactersScreenProps {
     onSwitchScreen: (screen: string) => void;

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
 
 interface CharacterCardProps {
     name: string;

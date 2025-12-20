@@ -2,14 +2,17 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { usePreloader } from '@/lib/preloader';
+import { ASSETS_TO_LOAD } from '@/lib/preloader';
 
 interface LoadingScreenProps {
     onComplete: () => void;
 }
 
 export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
-    const [progress, setProgress] = useState(0);
+    const { isReady, progress } = usePreloader(ASSETS_TO_LOAD);
 
+    /*
     useEffect(() => {
         // Simulate loading for 3 seconds
         const duration = 1500;
@@ -29,7 +32,13 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
         }, interval);
 
         return () => clearInterval(timer);
-    }, [onComplete]);
+    }, [onComplete]);*/
+
+    useEffect(() => {
+        if (isReady) {
+            setTimeout(() => onComplete(), 500)
+        }
+    }, [isReady, onComplete]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
