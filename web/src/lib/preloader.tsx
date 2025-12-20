@@ -1,20 +1,20 @@
 export const ASSETS_TO_LOAD = {
     images: [
-        '/images/webp/CardFrame.webp',
-        '/images/webp/Background.webp',
-        '/images/webp/Crystal-active.webp',
-        '/images/webp/Crystal-inactive.webp',
-        '/images/webp/As.webp',
-        '/images/webp/Br.webp',
-        '/images/webp/Ga.webp',
-        '/images/webp/Kr.webp',
-        '/images/webp/Li.webp',
-        '/images/webp/Zn.webp',
+        '/images/webp/CardFrame.webp?v=1',
+        '/images/webp/Background.webp?v=1',
+        '/images/webp/Crystal-active.webp?v=1',
+        '/images/webp/Crystal-inactive.webp?v=1',
+        '/images/webp/As.webp?v=1',
+        '/images/webp/Br.webp?v=1',
+        '/images/webp/Ga.webp?v=1',
+        '/images/webp/Kr.webp?v=1',
+        '/images/webp/Li.webp?v=1',
+        '/images/webp/Zn.webp?v=1',
     ],
     sounds: [
-        '/sounds/UI/Click.mp3',
-        '/sounds/UI/Acceptation.mp3',
-        '/sounds/UI/Switch.mp3',
+        '/sounds/UI/Click.mp3?v=1',
+        '/sounds/UI/Acceptation.mp3?v=1',
+        '/sounds/UI/Switch.mp3?v=1',
     ]
 };
 
