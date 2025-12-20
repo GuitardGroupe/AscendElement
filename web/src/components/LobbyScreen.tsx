@@ -6,11 +6,14 @@ import { Sword, Map, Users, Archive, Hexagon } from 'lucide-react';
 import { useState } from 'react';
 import useUISound from '@/hooks/useUISounds';
 
-
 const CONST_CRYSTAL_ACTIVE = "/images/crystal-active.png";
 const CONST_CRYSTAL_INACTIVE = "/images/crystal-inactive.png";
 
-export default function LobbyScreen() {
+interface LobbyScreenProps {
+    onSwitchScreen: (screen: string) => void;
+}
+
+export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     const [activeCharacter] = useState(CHARACTERS[0]); // Default to Hydrogen for now
     const [isCrystalActive, setIsCrystalActive] = useState(false);
     const playClick = useUISound();
@@ -23,8 +26,9 @@ export default function LobbyScreen() {
     ];
 
     const handleCrystalClick = () => {
-        playClick();
-        setIsCrystalActive(!isCrystalActive)
+        //playClick();
+        onSwitchScreen('characters');
+        //setIsCrystalActive(!isCrystalActive)
     };
 
     return (
