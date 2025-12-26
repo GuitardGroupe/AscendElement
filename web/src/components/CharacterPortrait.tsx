@@ -27,7 +27,7 @@ export default function CharacterPortrait({
             style={{ width: C_WIDTH, height: C_HEIGHT }}
         >
             < div
-                className=" absolute inset-x-2 inset-y-2"
+                className=" absolute inset-x-2 inset-y-2 overflow-hidden"
             >
                 {
                     isActive ? (
@@ -35,7 +35,7 @@ export default function CharacterPortrait({
                             src={img}
                             alt={img}
                             fill
-                            className="object-cover object-[100%_0%]"
+                            className="object-cover object-[100%_0%] scale-200 origin-top"
                         />
                     ) : (
                         <div className=" absolute inset-0 bg-black/80 flex items-center justify-center" >
