@@ -35,6 +35,7 @@ export default function CharacterPortrait({
                             src={img}
                             alt={img}
                             fill
+                            priority
                             className="object-cover object-[100%_0%] scale-200 origin-top"
                         />
                     ) : (
@@ -66,6 +67,7 @@ export default function CharacterPortrait({
                     src={CONST_PORTRAIT_FRAME}
                     alt="Cadre du slot"
                     fill
+                    priority
                     className="object-contain"
                 />
             </div >

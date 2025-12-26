@@ -56,6 +56,7 @@ export default function CharacterCard({
                     src={frame}
                     alt="Cadre décoratif"
                     fill
+                    priority
                     className="object-contain"
                 />
             </div>
