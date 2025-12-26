@@ -5,6 +5,7 @@ import { Sword, Map, Users, Archive, Hexagon } from 'lucide-react';
 import Image from 'next/image';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
+import CharacterPortrait from './CharacterPortrait';
 
 import { CONST_ASSETS } from '@/lib/preloader';
 
@@ -12,6 +13,8 @@ const CONST_CRYSTAL_ACTIVE = CONST_ASSETS.IMAGES.CRYSTAL_ACTIVE;
 const CONST_CRYSTAL_INACTIVE = CONST_ASSETS.IMAGES.CRYSTAL_INACTIVE;
 const CONST_BG_LOBBY = CONST_ASSETS.IMAGES.BACKGROUND;
 const CONST_SOUND_CLICK = CONST_ASSETS.SOUNDS.CLICK;
+const CONST_SOUND_DESACTIVATION = CONST_ASSETS.SOUNDS.DESACTIVATION;
+
 
 interface LobbyScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -22,10 +25,10 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     const { selectedCharacter, clearSelectedCharacter } = useSelectedCharacter();
 
     const menuItems = [
-        { id: 'adventure', label: 'AVENTURE', icon: Map, color: 'text-green-400' },
-        { id: 'arena', label: 'ARENE', icon: Sword, color: 'text-red-400' },
-        { id: 'social', label: 'SOCIAL', icon: Users, color: 'text-blue-400' },
-        { id: 'inventory', label: 'INVENTAIRE', icon: Archive, color: 'text-yellow-400' },
+        { id: 'adventure', label: 'AVENTURE', icon: Map, color: 'text-green-400', onClick: () => handleActionClick() },
+        { id: 'arena', label: 'Tuer le personnage', icon: Sword, color: 'text-red-400', onClick: () => handleActionClick() },
+        { id: 'social', label: 'SOCIAL', icon: Users, color: 'text-blue-400', onClick: () => handleActionClick() },
+        { id: 'inventory', label: 'INVENTAIRE', icon: Archive, color: 'text-yellow-400', onClick: () => handleActionClick() },
     ];
 
     const isCrystalActive = !!selectedCharacter;
@@ -35,20 +38,15 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
         onSwitchScreen('characters');
     };
 
+    const handleActionClick = () => {
+        clearSelectedCharacter();
+        playSound(CONST_SOUND_DESACTIVATION, 0.6);
+    }
+
     return (
         <div className="flex flex-col min-h-screen bg-neutral-950 text-white p-4 font-sans relative overflow-hidden">
-            {/* BACKGROUND LAYER */}
-            <div className="absolute inset-0 z-0 flex items-center justify-center">
-                <Image
-                    src={CONST_BG_LOBBY}
-                    alt="Lobby Background"
-                    fill
-                    className="object-cover"
-                    priority
-                />
-                {/* DARK OVERLAY */}
-                <div className="absolute inset-0 bg-black/80 z-0" />
-            </div>
+
+
 
             {/* Header / Crystal Status */}
             <header className="relative z-10 flex justify-between items-center mb-8 p-4 border-b border-white/10">
@@ -70,11 +68,10 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
             {/* Main Crystal Display */}
             <main className="relative z-10 flex-1 flex flex-col items-center justify-center my-4">
                 <div
-                    className="relative z-10 text-center flex flex-col items-center justify-center cursor-pointer"
-                    onClick={handleCrystalClick}
+                    className="relative z-10 text-center flex flex-col items-center justify-center"
                 >
                     {/* Crystal Image Container */}
-                    <div className="relative w-80 h-80 flex items-center justify-center">
+                    <div className="relative w-100 h-100 flex items-center justify-center">
                         {/* Glow Effect (Active Only) - Optimized */}
                         <motion.div
                             className="absolute inset-0 rounded-full bg-cyan-500/20 blur-[20px]" // Reduced blur radius and opacity
@@ -112,15 +109,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 transition={{ duration: 0.3 }}
                             />
                         </div>
-                    </div>
+                        <div className="absolute mt-[-112px]">
+                            <CharacterPortrait
+                                img={selectedCharacter?.img ?? ""}
+                                isActive={isCrystalActive}
+                                handleClick={handleCrystalClick}
+                            />
+                        </div>
 
-                    <div className="mt-4 space-y-2">
-                        <h1 className="text-3xl font-bold bg-linear-to-r from-gray-100 to-gray-400 bg-clip-text text-transparent">
-                            {isCrystalActive ? selectedCharacter.name : "CRYSTAL DORMANT"}
-                        </h1>
-                        <p className="text-xs text-cyan-400 tracking-[0.2em] font-mono">
-                            {isCrystalActive ? `SYSTEM: ${selectedCharacter.symbol}-CORE` : "WAITING FOR INPUT..."}
-                        </p>
                     </div>
                 </div>
             </main>
@@ -133,6 +129,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.1 }}
+                        onClick={item.onClick}
                         className="flex items-center gap-3 p-4 bg-gray-900/40 border border-white/5 rounded-xl hover:bg-gray-800/60 active:scale-95 transition-all text-left"
                     >
                         <item.icon className={`${item.color}`} size={20} />
@@ -149,3 +146,20 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
         </div>
     );
 }
+
+
+
+/*
+
+            <div className="absolute inset-0 z-0 flex items-center justify-center">
+                <Image
+                    src={CONST_BG_LOBBY}
+                    alt="Lobby Background"
+                    fill
+                    className="object-cover"
+                    priority
+                />
+                <div className="absolute inset-0 bg-black/80 z-0" />
+            </div>
+
+*/

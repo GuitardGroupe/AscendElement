@@ -3,6 +3,8 @@ const V = "v1";
 export const CONST_ASSETS = {
     IMAGES: {
         CARD_FRAME: `/${V}/images/webp/cardframe.webp`,
+        PORTRAIT_FRAME: `/${V}/images/webp/portrait-frame.png`,
+        CHARACTER_FRAME: `/${V}/images/webp/character-frame.webp`,
         BACKGROUND: `/${V}/images/webp/background.webp`,
         CRYSTAL_ACTIVE: `/${V}/images/webp/crystal-active.webp`,
         CRYSTAL_INACTIVE: `/${V}/images/webp/crystal-inactive.webp`,
@@ -17,6 +19,7 @@ export const CONST_ASSETS = {
         CLICK: `/${V}/sounds/ui/click.mp3`,
         ACCEPTATION: `/${V}/sounds/ui/acceptation.mp3`,
         SWITCH: `/${V}/sounds/ui/switch.mp3`,
+        DESACTIVATION: `/${V}/sounds/ui/desactivation.mp3`,
     }
 };
 
