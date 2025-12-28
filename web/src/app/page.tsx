@@ -1,5 +1,6 @@
 'use client';
 
+import WebApp from '@twa-dev/sdk';
 import { useState, useEffect } from 'react';
 import LoadingScreen from '@/components/LoadingScreen';
 import LobbyScreen from '@/components/LobbyScreen';
@@ -10,13 +11,16 @@ import { AnimatePresence } from 'framer-motion';
 type GameState = 'loading' | 'lobby' | 'characters' | 'fight';
 
 function useIsMobile() {
+
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
   return isMobile;
 }
 
@@ -62,6 +66,16 @@ export default function Home() {
       )}
     </AnimatePresence>
   );
+
+  useEffect(() => {
+    WebApp.ready(); // Informe Telegram que l'app est chargée
+    WebApp.expand(); // Passe en plein écran
+
+    WebApp.setHeaderColor('#1a1a1a');
+
+    WebApp.BackButton.hide();
+
+  }, []);
 
   return (
     <main className="w-full min-h-screen bg-black overflow-hidden flex items-center justify-center">
