@@ -7,6 +7,7 @@ export const CONST_ASSETS = {
         CHARACTER_FRAME: `/${V}/images/webp/character-frame.webp`,
         BACKGROUND: `/${V}/images/webp/background.webp`,
         CRYSTAL_ACTIVE: `/${V}/images/webp/crystal-active.webp`,
+        CRYSTAL_ACTIVE_ALPHA: `/${V}/images/webp/crystal-active-alpha.webp`,
         CRYSTAL_INACTIVE: `/${V}/images/webp/crystal-inactive.webp`,
         CHAR_AS: `/${V}/images/webp/as.webp`,
         CHAR_BR: `/${V}/images/webp/br.webp`,
@@ -14,12 +15,24 @@ export const CONST_ASSETS = {
         CHAR_KR: `/${V}/images/webp/kr.webp`,
         CHAR_LI: `/${V}/images/webp/li.webp`,
         CHAR_ZN: `/${V}/images/webp/zn.webp`,
+        SKILL_1: `/${V}/images/webp/skill01.webp`,
+        SKILL_2: `/${V}/images/webp/skill02.webp`,
+        SKILL_3: `/${V}/images/webp/skill03.webp`,
+        SKILL_4: `/${V}/images/webp/skill04.webp`,
+        SKILL_INFUSOR: `/${V}/images/webp/infusor.webp`,
+        SKILL_WEAPON: `/${V}/images/webp/weapon.webp`,
+        FIGHT_CRYSTAL_DAMAGED: `/${V}/images/webp/fightcrystaldamaged.webp`,
+        FIGHT_CRYSTAL_INTACT: `/${V}/images/webp/fightcrystalintact.webp`,
     },
     SOUNDS: {
         CLICK: `/${V}/sounds/ui/click.mp3`,
         ACCEPTATION: `/${V}/sounds/ui/acceptation.mp3`,
         SWITCH: `/${V}/sounds/ui/switch.mp3`,
         DESACTIVATION: `/${V}/sounds/ui/desactivation.mp3`,
+        SPELL_CAST: `/${V}/sounds/ui/spellcast.mp3`,
+        SPELL_IMPACT: `/${V}/sounds/ui/spellimpact.mp3`,
+        SWORD_CAST: `/${V}/sounds/ui/swordcast.mp3`,
+        SWORD_IMPACT: `/${V}/sounds/ui/swordimpact.mp3`,
     }
 };
 

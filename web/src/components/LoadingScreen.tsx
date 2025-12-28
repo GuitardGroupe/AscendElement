@@ -12,31 +12,9 @@ interface LoadingScreenProps {
 export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
     const { isReady, progress } = usePreloader(ASSETS_TO_LOAD);
 
-    /*
-    useEffect(() => {
-        // Simulate loading for 3 seconds
-        const duration = 1500;
-        const interval = 30;
-        const steps = duration / interval;
-        const increment = 100 / steps;
-
-        const timer = setInterval(() => {
-            setProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(timer);
-                    setTimeout(onComplete, 500); // Small delay before switching
-                    return 100;
-                }
-                return prev + increment;
-            });
-        }, interval);
-
-        return () => clearInterval(timer);
-    }, [onComplete]);*/
-
     useEffect(() => {
         if (isReady) {
-            setTimeout(() => onComplete(), 500)
+            setTimeout(() => onComplete(), 1000)
         }
     }, [isReady, onComplete]);
 

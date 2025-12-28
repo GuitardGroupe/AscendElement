@@ -1,6 +1,5 @@
 'use client';
 
-//import { CHARACTERS } from '@/lib/game-data';
 import { useState } from 'react';
 import { characters } from '@/lib/data';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
