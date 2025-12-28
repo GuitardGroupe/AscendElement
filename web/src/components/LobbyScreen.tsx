@@ -44,7 +44,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     }
 
     return (
-        <div className="flex flex-col min-h-full bg-neutral-950 text-white p-4 font-sans relative overflow-hidden">
+        <div className="flex flex-col h-dvh bg-neutral-950 text-white p-4 font-sans relative overflow-hidden">
             {/* Header / Crystal Status */}
             <header className="absolute top-6 left-4 right-4 z-20 flex justify-between items-center mb-2 p-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
