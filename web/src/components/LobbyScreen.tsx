@@ -10,7 +10,7 @@ import ElementCrystal from './ElementCrystal';
 import { CONST_ASSETS } from '@/lib/preloader';
 
 const CONST_SOUND_CLICK = CONST_ASSETS.SOUNDS.CLICK;
-const CONST_SOUND_DESACTIVATION = CONST_ASSETS.SOUNDS.DESACTIVATION;
+const CONST_SOUND_DESACTIVATION = CONST_ASSETS.SOUNDS.ACCEPTATION;
 
 
 interface LobbyScreenProps {
@@ -46,7 +46,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     return (
         <div className="flex flex-col h-dvh bg-neutral-950 text-white p-4 font-sans relative overflow-hidden">
             {/* Header / Crystal Status */}
-            <header className="absolute top-6 left-4 right-4 z-20 flex justify-between items-center mb-2 p-4 border-b border-white/10">
+            <header className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center mb-2 p-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-600 to-blue-900 flex items-center justify-center border border-white/20">
                         <Hexagon size={24} className="text-white" />

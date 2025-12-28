@@ -15,7 +15,6 @@ import SkillGrid from "@/components/SkillGrid";
 import { Skill, skillSets, ElementKey } from "@/lib/skills";
 
 import { CONST_ASSETS } from '@/lib/preloader';
-const CONST_SOUND_ACCEPTATION = CONST_ASSETS.SOUNDS.ACCEPTATION;
 const CONST_TITLE = "BATTLE";
 const CONST_OPPONENT_NAME = "Arsenic";
 const CONST_OPPONENT_MAX_ENERGY = 100;
@@ -75,7 +74,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     const handleGameOver = () => {
         console.log("HANDLE GAME OVER")
-        playSound(CONST_ASSETS.SOUNDS.DESACTIVATION, 0.6);
+        playSound(CONST_ASSETS.SOUNDS.ACCEPTATION, 0.6);
         onSwitchScreen("lobby");
     };
 
