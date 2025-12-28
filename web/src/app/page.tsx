@@ -71,6 +71,7 @@ export default function Home() {
       const WebApp = (await import("@twa-dev/sdk")).default;
       WebApp.ready();
       WebApp.expand();
+      WebApp.enableClosingConfirmation();
       console.log("Telegram WebApp Ready");
     };
 
