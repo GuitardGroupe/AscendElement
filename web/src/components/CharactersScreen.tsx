@@ -17,9 +17,10 @@ interface CharactersScreenProps {
 }
 export default function CharactersScreen({ onSwitchScreen }: CharactersScreenProps) {
     const { playSound } = useSoundStore();
-    const { setSelectedCharacter } = useSelectedCharacter();
+    const { selectedCharacter, setSelectedCharacter } = useSelectedCharacter();
 
-    const [selected, setSelected] = useState(0);
+    const initialIndex = selectedCharacter ? characters.findIndex(c => c.id === selectedCharacter.id) : 0;
+    const [selected, setSelected] = useState(initialIndex !== -1 ? initialIndex : 0);
     const character = characters[selected];
 
     const handleSelect = (index: number) => {

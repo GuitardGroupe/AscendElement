@@ -302,7 +302,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="relative w-full h-screen flex items-center justify-center">
             {/* BACKGROUND */}
             <div className="absolute inset-0 flex flex-col">
                 {/* OPPONENT BACKGROUND */}
