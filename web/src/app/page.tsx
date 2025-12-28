@@ -1,6 +1,5 @@
 'use client';
 
-import WebApp from '@twa-dev/sdk';
 import { useState, useEffect } from 'react';
 import LoadingScreen from '@/components/LoadingScreen';
 import LobbyScreen from '@/components/LobbyScreen';
@@ -68,12 +67,16 @@ export default function Home() {
   );
 
   useEffect(() => {
-    WebApp.ready(); // Informe Telegram que l'app est chargée
-    WebApp.expand(); // Passe en plein écran
+    const initTelegram = async () => {
+      const WebApp = (await import("@twa-dev/sdk")).default;
+      WebApp.ready();
+      WebApp.expand();
+      console.log("Telegram WebApp Ready");
+    };
 
-    WebApp.setHeaderColor('#1a1a1a');
-
-    WebApp.BackButton.hide();
+    if (typeof window !== "undefined") {
+      initTelegram();
+    }
 
   }, []);
 
