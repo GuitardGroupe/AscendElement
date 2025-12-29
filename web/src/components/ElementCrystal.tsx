@@ -7,8 +7,8 @@ import { CONST_ASSETS } from '@/lib/preloader';
 const CONST_CRYSTAL_ACTIVE = CONST_ASSETS.IMAGES.CRYSTAL_ACTIVE_ALPHA;
 const CONST_CRYSTAL_INACTIVE = CONST_ASSETS.IMAGES.CRYSTAL_INACTIVE;
 
-const C_WIDTH = 500;
-const C_HEIGHT = 500;
+const C_WIDTH = 400;
+const C_HEIGHT = 400;
 
 interface ElementCrystalProps {
     img: string;
@@ -29,7 +29,7 @@ export default function ElementCrystal({
             style={{ width: C_WIDTH, height: C_HEIGHT }}
         >
             <div className="relative w-full h-full">
-                <div className=" absolute inset-0 flex items-center mt-[-140px] justify-center">
+                <div className=" absolute inset-0 flex items-center mt-[-120px] justify-center">
                     {
                         isActive ? (
                             <div className="relative w-30 h-30 overflow-hidden" >
@@ -38,7 +38,7 @@ export default function ElementCrystal({
                                     alt={img}
                                     fill
                                     priority
-                                    className="object-cover object-[100%_0%] scale-200 origin-top"
+                                    className="mt-5 object-cover object-[100%_0%] scale-150 origin-top"
                                 />
 
                             </div>

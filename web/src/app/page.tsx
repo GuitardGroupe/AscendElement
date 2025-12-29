@@ -86,8 +86,10 @@ export default function Home() {
       {isMobile ? (
         content
       ) : (
-        <div className="relative w-[390px] h-[768px] rounded-[28px] overflow-hidden border border-gray-700 shadow-[0_0_40px_rgba(0,0,0,0.8)] flex items-center justify-center">
-          {content}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-[390px] h-[768px] rounded-[28px] overflow-hidden border border-gray-700 shadow-[0_0_40px_rgba(0,0,0,0.8)] ">
+            {content}
+          </div>
         </div>
       )}
     </main>
