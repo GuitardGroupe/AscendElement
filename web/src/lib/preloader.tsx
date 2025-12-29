@@ -3,7 +3,6 @@ const V = "v1";
 export const CONST_ASSETS = {
     IMAGES: {
         CARD_FRAME: `/${V}/images/webp/cardframe.webp`,
-        PORTRAIT_FRAME: `/${V}/images/webp/portrait-frame.png`,
         CHARACTER_FRAME: `/${V}/images/webp/character-frame.webp`,
         BACKGROUND: `/${V}/images/webp/background.webp`,
         CRYSTAL_ACTIVE: `/${V}/images/webp/crystal-active.webp`,

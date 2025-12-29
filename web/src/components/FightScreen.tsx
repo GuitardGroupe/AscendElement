@@ -301,7 +301,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
 
     return (
-        <div className="relative w-full h-screen flex items-center justify-center">
+        <div className="relative w-full h-full flex items-center justify-center">
             {/* BACKGROUND */}
             <div className="absolute inset-0 flex flex-col">
                 {/* OPPONENT BACKGROUND */}
@@ -314,58 +314,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         blur={0}
                     />
                     <DarkOverlay />
-                </div>
-                {/* PLAYER BACKGROUND */}
-                <div className="relative flex-1">
-                    <BattleZoneBackground
-                        src={playerBackground}
-                        scale={1.5}
-                        origin="origin-top-right"
-                        objectPosition="object-[0%_0%]"
-                        blur={0}
-                    />
-                    <DarkOverlay />
-                </div>
-                {/* CRISTAL AREA */}
-
-                <div className="absolute flex top-0 bottom-0 left-0 right-0 items-center justify-center ">
-                    <div className="relative flex items-center justify-center gap-2 pointer-events-none">
-                        <CombatCrystal
-                            hp={playerHealth}
-                            maxHp={100}
-                            damageEvents={playerDamageEvents}
-                            onDamageDone={(id) => handleDamageDone("player", id)}
-                            lastHitTimestamp={playerHitTime}
-                            color={playerColor}
-                        />
-
-                        <motion.button
-                            onClick={() => endCombat("Temps stoppé")}
-                            className="w-16 h-16 rounded-full border-4 border-cyan-400 flex items-center justify-center text-xl font-bold shadow-[0_0_14px_rgba(0,255,255,0.6)] bg-black/40"
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            {timer}
-                        </motion.button>
-
-                        <CombatCrystal
-                            hp={opponentHealth}
-                            maxHp={100}
-                            damageEvents={opponentDamageEvents}
-                            onDamageDone={(id) => handleDamageDone("opponent", id)}
-                            lastHitTimestamp={opponentHitTime}
-                            color={opponentColor}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* CONTENT */}
-            <div className="absolute inset-0 flex flex-col px-5 py-5 pointer-events-none">
-                <Title label={CONST_TITLE} />
-                {/* UI AREAS */}
-                <div className="flex flex-col flex-1">
                     {/* OPPONENT AREA */}
-                    <div className="flex-1 flex flex-col justify-end pb-15 gap-2">
+                    <div className="absolute inset-0 flex-1 flex flex-col justify-end pb-15 pl-5 pr-5 gap-2">
                         {/* OPPONENT ENERGY */}
                         <div className="flex justify-end">
                             <div className="flex justify-start w-[40%]">
@@ -399,9 +349,19 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             </div>
                         </div>
                     </div>
-
+                </div>
+                {/* PLAYER BACKGROUND */}
+                <div className="relative flex-1">
+                    <BattleZoneBackground
+                        src={playerBackground}
+                        scale={1.5}
+                        origin="origin-top-right"
+                        objectPosition="object-[0%_0%]"
+                        blur={0}
+                    />
+                    <DarkOverlay />
                     {/* PLAYER AREA */}
-                    <div className="flex-1 flex flex-col justify-start pt-15 gap-2">
+                    <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-15 pl-5 pr-5 gap-2">
                         {/* PLAYER CASTBAR */}
                         <div className="flex items-center justify-center">
                             <div className="w-[30%] ">
@@ -434,30 +394,67 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                 max={selectedCharacter?.stat_energy ?? 50}
                             />
                         </div>
-                        {/* SKILLS */}
-                        <div className="flex-1 flex items-end justify-between gap-3 pt-2">
-                            {/* FLEE */}
-                            <button
-                                onClick={handleFlee}
-                                className="pointer-events-auto w-16 h-16 rounded-xl bg-red-700/80 border border-red-400/80 flex items-center justify-center text-xl font-bold shadow-[0_0_15px_rgba(255,0,0,0.6)] active:scale-95"
-                            >
-                                {CONST_LABEL_FLEE}
-                            </button>
-                            <SkillGrid
-                                skills={{
-                                    simple: CONST_ASSETS.IMAGES.SKILL_1,
-                                    control: CONST_ASSETS.IMAGES.SKILL_3,
-                                    weapon: CONST_ASSETS.IMAGES.SKILL_WEAPON,
-                                    heavy: CONST_ASSETS.IMAGES.SKILL_2,
-                                    injector: CONST_ASSETS.IMAGES.SKILL_INFUSOR,
-                                    ultimate: CONST_ASSETS.IMAGES.SKILL_4,
-                                }}
-                                onSkill={(type) => handleSkill(type)}
-                            />
-                        </div>
+
+                    </div>
+
+                </div>
+                {/* CRISTAL AREA */}
+                <div className="absolute flex inset-0 items-center justify-center ">
+                    <div className="relative flex items-center justify-center gap-2 pointer-events-none">
+                        <CombatCrystal
+                            hp={playerHealth}
+                            maxHp={100}
+                            damageEvents={playerDamageEvents}
+                            onDamageDone={(id) => handleDamageDone("player", id)}
+                            lastHitTimestamp={playerHitTime}
+                            color={playerColor}
+                        />
+
+                        <motion.button
+                            onClick={() => endCombat("Temps stoppé")}
+                            className="w-16 h-16 rounded-full border-4 border-cyan-400 flex items-center justify-center text-xl font-bold shadow-[0_0_14px_rgba(0,255,255,0.6)] bg-black/40"
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            {timer}
+                        </motion.button>
+
+                        <CombatCrystal
+                            hp={opponentHealth}
+                            maxHp={100}
+                            damageEvents={opponentDamageEvents}
+                            onDamageDone={(id) => handleDamageDone("opponent", id)}
+                            lastHitTimestamp={opponentHitTime}
+                            color={opponentColor}
+                        />
+                    </div>
+                    <div className="absolute inset-0 flex flex-col px-5 py-5 pointer-events-none">
+                        <Title label={CONST_TITLE} />
+                    </div>
+                    {/* SKILLS */}
+                    <div className="absolute bottom-0 right-0 left-0 p-5 flex-1 flex items-end justify-between gap-3 pt-2">
+                        {/* FLEE */}
+                        <button
+                            onClick={handleFlee}
+                            className="pointer-events-auto w-16 h-16 rounded-xl bg-red-700/80 border border-red-400/80 flex items-center justify-center text-xl font-bold shadow-[0_0_15px_rgba(255,0,0,0.6)] active:scale-95"
+                        >
+                            {CONST_LABEL_FLEE}
+                        </button>
+                        <SkillGrid
+                            skills={{
+                                simple: CONST_ASSETS.IMAGES.SKILL_1,
+                                control: CONST_ASSETS.IMAGES.SKILL_3,
+                                weapon: CONST_ASSETS.IMAGES.SKILL_WEAPON,
+                                heavy: CONST_ASSETS.IMAGES.SKILL_2,
+                                injector: CONST_ASSETS.IMAGES.SKILL_INFUSOR,
+                                ultimate: CONST_ASSETS.IMAGES.SKILL_4,
+                            }}
+                            onSkill={(type) => handleSkill(type)}
+                        />
                     </div>
                 </div>
             </div>
+
+
         </div>
     );
 }
