@@ -350,9 +350,12 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             </AnimatePresence>
                         </div>
                     </div>
+                    <div className="absolute inset-0 flex flex-col px-5 py-5">
+                        <Title label={CONST_TITLE} />
+                    </div>
                 </div>
                 {/* PLAYER BACKGROUND */}
-                <div className="relative flex-1">
+                <div className="relative flex-2">
                     <BattleZoneBackground
                         src={playerBackground}
                         scale={1.5}
@@ -414,9 +417,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     </div>
 
                 </div>
-                {/* CRISTAL AREA */}
-                <div className="absolute flex inset-0 items-center justify-center ">
-                    <div className="relative flex items-center justify-center gap-2 pointer-events-none">
+                {/* OVERLAY AREA (UI, Crystals, Skills) */}
+                <div className="absolute inset-0 flex flex-col pointer-events-none">
+
+                    {/* 1. MOCK OPPONENT SPACE (flex-1) */}
+                    <div className="flex-1" />
+
+                    {/* 2. CRYSTALS ON LINE */}
+                    <div className="relative flex items-center justify-center gap-2 z-10 h-0">
                         <CombatCrystal
                             hp={playerHealth}
                             maxHp={100}
@@ -428,7 +436,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
                         <motion.button
                             onClick={() => endCombat("Temps stoppé")}
-                            className="w-16 h-16 rounded-full border-4 border-cyan-400 flex items-center justify-center text-xl font-bold shadow-[0_0_14px_rgba(0,255,255,0.6)] bg-black/40"
+                            className="pointer-events-auto w-16 h-16 rounded-full border-4 border-cyan-400 flex items-center justify-center text-xl font-bold shadow-[0_0_14px_rgba(0,255,255,0.6)] bg-black/40"
                             whileTap={{ scale: 0.9 }}
                         >
                             {timer}
@@ -443,23 +451,26 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             color={opponentColor}
                         />
                     </div>
-                    <div className="absolute inset-0 flex flex-col px-5 py-5 pointer-events-none">
-                        <Title label={CONST_TITLE} />
-                    </div>
-                    {/* SKILLS */}
-                    <div className="absolute bottom-0 right-0 left-0 p-5 flex-1 flex items-end justify-between gap-3 pt-2">
-                        {/* FLEE */}
-                        <button
-                            onClick={handleFlee}
-                            className="pointer-events-auto w-16 h-16 rounded-xl bg-red-700/80 border border-red-400/80 flex items-center justify-center text-xl font-bold shadow-[0_0_15px_rgba(255,0,0,0.6)] active:scale-95"
-                        >
-                            {CONST_LABEL_FLEE}
-                        </button>
-                        <SkillGrid
-                            skills={skills}
-                            cooldowns={playerCooldowns}
-                            onSkill={(type) => handleSkill(type)}
-                        />
+
+                    {/* 3. MOCK PLAYER SPACE (flex-2) */}
+                    <div className="flex-2 relative flex flex-col">
+
+
+                        {/* SKILLS & FLEE at the bottom of the player zone */}
+                        <div className="mt-auto p-5 flex items-end justify-between gap-3 pt-2">
+                            {/* FLEE */}
+                            <button
+                                onClick={handleFlee}
+                                className="pointer-events-auto w-16 h-16 rounded-xl bg-red-700/80 border border-red-400/80 flex items-center justify-center text-xl font-bold shadow-[0_0_15px_rgba(255,0,0,0.6)] active:scale-95"
+                            >
+                                {CONST_LABEL_FLEE}
+                            </button>
+                            <SkillGrid
+                                skills={skills}
+                                cooldowns={playerCooldowns}
+                                onSkill={(type) => handleSkill(type)}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
