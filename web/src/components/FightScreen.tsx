@@ -157,6 +157,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // SKILL EFFECT
     const applySkillEffects = (skill: Skill) => {
+        console.log(skill.name + " launched")
+        /*
         if (skill.damage > 0) {
             applyDamage("enemy", skill.damage);
         }
@@ -179,7 +181,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         if (skill.interrupt > 0) {
             //interruptCastOfEnemy();
-        }
+        }*/
     };
 
     // INTERRUPT CAST
@@ -210,7 +212,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             const pct = Math.min(100, (elapsed / duration) * 100);
             setPlayerCastProgress(pct);
 
-            // FIN DE CAST
             if (pct >= 100) {
                 clearInterval(playerCastRef.current!);
                 playerCastRef.current = null;
@@ -218,15 +219,38 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
                 playSound(skill.impactSound);
                 applySkillEffects(skill);
+                setPlayerCastProgress(0)
                 // triggerCooldown(skill.id, skill.cooldown);
             }
         }, step);
     };
 
     // HANDLE SKILL LAUNCH
-    const handleSkill = (skill: string) => {
-        // -- Instrum : à effacer plus tard
-        console.log(skill);
+    const handleSkill = (skill: number) => {
+        console.log("SKILL LAUNCH : " + skill)
+        switch (skill) {
+            case 0:
+                console.log("Simple attack");
+                break;
+            case 1:
+                console.log("Heavy attack");
+                break;
+            case 2:
+                console.log("Control attack");
+                break;
+            case 3:
+                console.log("Ultimate attack");
+                break;
+            case 4:
+                console.log("Weapon");
+                break;
+            case 5:
+                console.log("Infusor");
+                break;
+        }
+
+        if (skill == 4) return;
+        if (skill == 5) return;
 
         const skills = selectedCharacter
             ? skillSets[selectedCharacter?.symbol as ElementKey]
@@ -239,6 +263,9 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         }
 
         if (!playerEnergy) return;
+
+        startCast(skills[skill]);
+
         // 1. Vérif énergie
         //if (playerEnergy < skill.energyCost) return;
 
@@ -255,7 +282,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         }
     
         // 4. Sinon → CAST
-        startCast(skill);
     
         // gestion énergie & dégâts très simple pour l’instant
         switch (id) {
@@ -363,10 +389,21 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     {/* PLAYER AREA */}
                     <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-15 pl-5 pr-5 gap-2">
                         {/* PLAYER CASTBAR */}
-                        <div className="flex items-center justify-center">
-                            <div className="w-[30%] ">
-                                <CastBar progress={50} />
-                            </div>
+                        <div className="h-2 ">
+                            <AnimatePresence>
+                                {playerIsCasting && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="flex items-center justify-center"
+                                    >
+                                        <div className="w-[30%]">
+                                            <CastBar progress={playerCastProgress} />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                         {/* PLAYER NAME */}
                         <div className="flex items-center justify-center">

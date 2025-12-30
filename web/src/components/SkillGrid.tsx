@@ -14,7 +14,7 @@ export default function SkillGrid({
         injector: string;
         ultimate: string;
     };
-    onSkill: (type: string) => void;
+    onSkill: (type: number) => void;
 }) {
     return (
         <div className="grid grid-cols-3 gap-2 relative w-fit pointer-events-auto">
@@ -22,34 +22,28 @@ export default function SkillGrid({
             <div></div>
             <SkillButton
                 img={skills.weapon}
-                keybind="A"
-                onClick={() => onSkill("weapon")}
+                onClick={() => onSkill(4)}
             />
             <div></div>
             <SkillButton
                 img={skills.simple}
-                keybind="S"
-                onClick={() => onSkill("simple")}
+                onClick={() => onSkill(0)}
             />
             <SkillButton
                 img={skills.control}
-                keybind="P"
-                onClick={() => onSkill("control")}
+                onClick={() => onSkill(2)}
             />
             <SkillButton
                 img={skills.injector}
-                keybind="I"
-                onClick={() => onSkill("injector")}
+                onClick={() => onSkill(5)}
             />
             <SkillButton
                 img={skills.heavy}
-                keybind="C"
-                onClick={() => onSkill("heavy")}
+                onClick={() => onSkill(1)}
             />
             <SkillButton
                 img={skills.ultimate}
-                keybind="U"
-                onClick={() => onSkill("ultimate")}
+                onClick={() => onSkill(3)}
             />
         </div>
     );
