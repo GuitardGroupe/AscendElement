@@ -75,17 +75,6 @@ export default function EnergyBar({
                 }}
             />
 
-            {/* ELECTRIC ARCS */}
-            <div
-                className="absolute inset-0 pointer-events-none animate-energyArcs opacity-40"
-                style={{
-                    clipPath: clip,
-                    background: "url('/effects/electric_arcs.png') repeat-x", // *TU FOURNIS L’IMAGE ICI*
-                    backgroundSize: "200% 100%",
-                    mixBlendMode: "screen",
-                }}
-            />
-
             {/* TOP HIGHLIGHT */}
             <div
                 className="absolute top-0 left-0 w-full h-[20%] bg-white/10 opacity-[0.07] pointer-events-none"

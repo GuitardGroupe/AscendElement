@@ -114,7 +114,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // DAMAGE
     const pushDamageEvent = (
-        target: "player" | "enemy",
+        target: "player" | "opponent",
         value: number,
         type: "normal" | "crit" | "heal" = "normal"
     ) => {
@@ -132,9 +132,9 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     };
 
     // DAMAGE
-    const applyDamage = (target: "player" | "enemy", amount: number) => {
+    const applyDamage = (target: "player" | "opponent", amount: number) => {
         const isCrit = Math.random() < 0.2; // exemple : 20% crit
-        const finalAmount = isCrit ? Math.round(amount * 1.5) : amount;
+        const finalAmount = isCrit ? Math.round(amount * 2) : amount;
         const damageType = isCrit ? "crit" : "normal";
 
         if (target === "player") {
@@ -149,7 +149,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             setOpponentHealth((hp) => {
                 const newHP = Math.max(0, hp - amount);
                 setOpponentHitTime(Date.now());
-                pushDamageEvent("enemy", finalAmount, damageType);
+                pushDamageEvent("opponent", finalAmount, damageType);
                 if (newHP <= 0) endCombat("Joueur vainqueur");
                 return newHP;
             });
@@ -158,7 +158,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // SKILL EFFECT
     const applySkillEffects = (skill: Skill) => {
-        console.log(skill.name + " launched")
+
+        if (skill.damage > 0) {
+            applyDamage("opponent", skill.damage);
+        }
         /*
         if (skill.damage > 0) {
             applyDamage("enemy", skill.damage);
@@ -228,27 +231,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE SKILL LAUNCH
     const handleSkill = (skill: number) => {
-        console.log("SKILL LAUNCH : " + skill)
-        switch (skill) {
-            case 0:
-                console.log("Simple attack");
-                break;
-            case 1:
-                console.log("Heavy attack");
-                break;
-            case 2:
-                console.log("Control attack");
-                break;
-            case 3:
-                console.log("Ultimate attack");
-                break;
-            case 4:
-                console.log("Weapon");
-                break;
-            case 5:
-                console.log("Infusor");
-                break;
-        }
 
         if (skill == 4) return;
         if (skill == 5) return;

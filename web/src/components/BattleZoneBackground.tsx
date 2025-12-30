@@ -8,7 +8,7 @@ export default function BattleZoneBackground({
     className = "",
     scale = 1.25,
     origin = "origin-top-left",
-    objectPosition = "object-left-top", // ou object-[100%_0%]
+    objectPosition = "object-left-top",
     blur = 0,
 }: {
     src: string;
@@ -20,7 +20,6 @@ export default function BattleZoneBackground({
 }) {
     return (
         <div className={`absolute inset-0 overflow-hidden ${className}`}>
-            {/* Wrapper qui gère le zoom */}
             <div
                 className={`w-full h-full ${origin}`}
                 style={{
@@ -35,17 +34,7 @@ export default function BattleZoneBackground({
                     className={`object-cover ${objectPosition}`}
                 />
             </div>
-
-            {/* Overlay sombre */}
             <div className="absolute inset-0 bg-black/50 pointer-events-none" />
         </div>
     );
 }
-
-/*
- src={opponentBackground}
-              scale={1.5}
-              origin="origin-top-left"
-              objectPosition="object-[100%_0%]"
-              blur={0}
-*/

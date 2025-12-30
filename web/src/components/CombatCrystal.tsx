@@ -92,8 +92,6 @@ export default function CombatCrystal({
                             />
                         )}
                     </AnimatePresence>
-
-                    {/* 💥 Flash d'énergie */}
                     <AnimatePresence>
                         {hitEffect && (
                             <motion.div
