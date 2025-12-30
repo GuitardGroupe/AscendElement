@@ -24,6 +24,7 @@ const CONST_LABEL_FLEE = "Fuir";
 interface FightScreenProps {
     onSwitchScreen: (screen: string) => void;
 }
+
 export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     const { playSound } = useSoundStore();
@@ -55,10 +56,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     );
     const [playerIsCasting, setPlayerIsCasting] = useState(false);
     const playerCastRef = useRef<NodeJS.Timeout | null>(null);
+    const playerFinishTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [playerCurrentCastSkill, setPlayerCurrentCastSkill] =
         useState<Skill | null>(null);
     const [playerCastProgress, setPlayerCastProgress] = useState(0);
-    const [playerCooldowns, setPlayerCooldowns] = useState([]);
+    const [playerCooldowns, setPlayerCooldowns] = useState<Record<number, number>>({});
+    const skills = selectedCharacter
+        ? skillSets[selectedCharacter?.symbol as ElementKey]
+        : [];
 
     // OPPONENT
     const opponentBackground = CONST_ASSETS.IMAGES.CHAR_AS;
@@ -72,6 +77,24 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     >([]);
     const [opponentIsCasting, setOpponentIsCasting] = useState(false);
     const [opponentCastProgress, setOpponentCastProgress] = useState(0);
+
+    // COOLDOWN COUNTDOWN
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPlayerCooldowns((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                for (const id in next) {
+                    if (next[id] > 0) {
+                        next[id] = Math.max(0, next[id] - 100);
+                        changed = true;
+                    }
+                }
+                return changed ? next : prev;
+            });
+        }, 100);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleGameOver = () => {
         console.log("HANDLE GAME OVER")
@@ -162,6 +185,9 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (skill.damage > 0) {
             applyDamage("opponent", skill.damage);
         }
+
+
+
         /*
         if (skill.damage > 0) {
             applyDamage("enemy", skill.damage);
@@ -191,6 +217,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     // INTERRUPT CAST
     const interruptCast = () => {
         if (playerCastRef.current) clearInterval(playerCastRef.current);
+        if (playerFinishTimeoutRef.current) clearTimeout(playerFinishTimeoutRef.current);
 
         setPlayerIsCasting(false);
         setPlayerCurrentCastSkill(null);
@@ -219,27 +246,27 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             if (pct >= 100) {
                 clearInterval(playerCastRef.current!);
                 playerCastRef.current = null;
-                setTimeout(() => {
+                playerFinishTimeoutRef.current = setTimeout(() => {
                     setPlayerIsCasting(false);
                     playSound(skill.impactSound);
                     applySkillEffects(skill);
                     setPlayerCastProgress(0);
+                    playerFinishTimeoutRef.current = null;
                 }, 200);
             }
         }, step);
     };
 
+
+
     // HANDLE SKILL LAUNCH
     const handleSkill = (skill: number) => {
+        if (skill == 4 || skill == 5) return;
 
-        if (skill == 4) return;
-        if (skill == 5) return;
-
-        const skills = selectedCharacter
-            ? skillSets[selectedCharacter?.symbol as ElementKey]
-            : [];
-
-        console.log(skills);
+        if (playerCooldowns[skills[skill]?.id] > 0) {
+            console.log("Skill is on cooldown");
+            return;
+        }
 
         if (playerIsCasting) {
             interruptCast();
@@ -247,67 +274,17 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         if (!playerEnergy) return;
 
-        startCast(skills[skill]);
+        const skillToLaunch = skills[skill];
 
-        // 1. Vérif énergie
-        //if (playerEnergy < skill.energyCost) return;
-
-        // 2. Vérif cooldown
-        //if (playerCooldowns[skill.id] > 0) return;
-
-        // 3. Si cast instantané
-        /*
-        if (skill.castTime <= 0) {
-          playSound(skill.impactSound);
-          applySkillEffects(skill);
-          //triggerCooldown(skill.id, skill.cooldown);
-          return;
+        if (skillToLaunch.cooldown > 0) {
+            setPlayerCooldowns((prev) => ({
+                ...prev,
+                [skillToLaunch.id]: skillToLaunch.cooldown,
+            }));
         }
-    
-        // 4. Sinon → CAST
-    
-        // gestion énergie & dégâts très simple pour l’instant
-        switch (id) {
-          case 1: // attaque de base
-            applyDamage("enemy", 10);
-            break;
-          case 2: // attaque lourde
-            if (playerEnergy < 20) return;
-            setPlayerEnergy((e) => e - 20);
-            applyDamage("enemy", 20);
-            break;
-          case 3: // contrôle
-            if (playerEnergy < 25) return;
-            setPlayerEnergy((e) => e - 25);
-            applyDamage("enemy", 5);
-            break;
-          case 4: // ultime
-            if (playerEnergy < 40) return;
-            setPlayerEnergy((e) => e - 40);
-            applyDamage("enemy", 35);
-            setPlayerHP((hp) => Math.min(MAX_HP, hp + 20));
-            break;
-          case 5: // ultime
-            if (playerEnergy < 40) return;
-            setPlayerEnergy((e) => e - 40);
-            applyDamage("enemy", 35);
-            setPlayerHP((hp) => Math.min(MAX_HP, hp + 20));
-            break;
-          case 6: // ultime
-            if (playerEnergy < 40) return;
-            setPlayerEnergy((e) => e - 40);
-            applyDamage("enemy", 35);
-            setPlayerHP((hp) => Math.min(MAX_HP, hp + 20));
-            break;
-        }
-    
-        // cooldown universel 1s
-        setUniversalCd(true);
-        setTimeout(() => setUniversalCd(false), 1000);
-        */
+
+        startCast(skillToLaunch);
     };
-
-
 
     return (
         <div className="relative w-full h-full flex items-center justify-center">
@@ -479,21 +456,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             {CONST_LABEL_FLEE}
                         </button>
                         <SkillGrid
-                            skills={{
-                                simple: CONST_ASSETS.IMAGES.SKILL_1,
-                                control: CONST_ASSETS.IMAGES.SKILL_3,
-                                weapon: CONST_ASSETS.IMAGES.SKILL_WEAPON,
-                                heavy: CONST_ASSETS.IMAGES.SKILL_2,
-                                injector: CONST_ASSETS.IMAGES.SKILL_INFUSOR,
-                                ultimate: CONST_ASSETS.IMAGES.SKILL_4,
-                            }}
+                            skills={skills}
+                            cooldowns={playerCooldowns}
+                            currentSkillId={playerCurrentCastSkill?.id}
                             onSkill={(type) => handleSkill(type)}
                         />
                     </div>
                 </div>
             </div>
-
-
         </div>
     );
 }
