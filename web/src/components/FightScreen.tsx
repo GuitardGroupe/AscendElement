@@ -203,7 +203,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         playSound(skill.castSound);
 
-        const duration = skill.castTime; // en ms
+        const duration = skill.castTime;
         const step = 16; // ~60 FPS
         let elapsed = 0;
 
@@ -215,11 +215,12 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             if (pct >= 100) {
                 clearInterval(playerCastRef.current!);
                 playerCastRef.current = null;
-                setPlayerIsCasting(false);
-
-                playSound(skill.impactSound);
-                applySkillEffects(skill);
-                setPlayerCastProgress(0)
+                setTimeout(() => {
+                    setPlayerIsCasting(false);
+                    playSound(skill.impactSound);
+                    applySkillEffects(skill);
+                    setPlayerCastProgress(0);
+                }, 200);
                 // triggerCooldown(skill.id, skill.cooldown);
             }
         }, step);
@@ -395,7 +396,11 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
+                                        exit={{
+                                            opacity: 0,
+                                            scaleX: 1,
+                                            filter: "brightness(2)"
+                                        }}
                                         className="flex items-center justify-center"
                                     >
                                         <div className="w-[30%]">
