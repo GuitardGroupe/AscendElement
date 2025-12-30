@@ -156,7 +156,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // DAMAGE
     const applyDamage = (target: "player" | "opponent", amount: number) => {
-        const isCrit = Math.random() < 0.2; // exemple : 20% crit
+        const isCrit = Math.random() < 0.5;
         const finalAmount = isCrit ? Math.round(amount * 2) : amount;
         const damageType = isCrit ? "crit" : "normal";
 
@@ -170,7 +170,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             });
         } else {
             setOpponentHealth((hp) => {
-                const newHP = Math.max(0, hp - amount);
+                const newHP = Math.max(0, hp - finalAmount);
                 setOpponentHitTime(Date.now());
                 pushDamageEvent("opponent", finalAmount, damageType);
                 if (newHP <= 0) endCombat("Joueur vainqueur");
@@ -458,7 +458,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         <SkillGrid
                             skills={skills}
                             cooldowns={playerCooldowns}
-                            currentSkillId={playerCurrentCastSkill?.id}
                             onSkill={(type) => handleSkill(type)}
                         />
                     </div>

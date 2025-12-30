@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -18,21 +18,18 @@ export default function SkillButton({
     onClick?: () => void;
 }) {
     const [flashKey, setFlashKey] = useState(0);
-    const [prevCooldown, setPrevCooldown] = useState(cooldown);
+    const [prevPropCooldown, setPrevPropCooldown] = useState(cooldown);
 
-    // Flash when cooldown finishes
-    useEffect(() => {
-        if (prevCooldown > 0 && cooldown === 0) {
-            setFlashKey(Date.now());
+    // Sync state during render (React optimization to avoid cascading renders)
+    if (cooldown !== prevPropCooldown) {
+        setPrevPropCooldown(cooldown);
+        if (prevPropCooldown > 0 && cooldown === 0) {
+            setFlashKey(prev => prev + 1);
         }
-        setPrevCooldown(cooldown);
-    }, [cooldown, prevCooldown]);
+    }
 
     const isOnCooldown = cooldown > 0;
 
-    // Fluid percent for clip-path (inverted logic for "lifting")
-    // If cooldown is max, pct is 100 -> clip is 0 (veil full)
-    // If cooldown is 0, pct is 0 -> clip is 100 (veil gone)
     const veilHeight = maxCooldown > 0 ? (cooldown / maxCooldown) * 100 : 0;
 
     return (
@@ -55,17 +52,32 @@ export default function SkillButton({
                 className={`object-cover pointer-events-none transition-all duration-300 ${isOnCooldown ? "grayscale opacity-50" : "grayscale-0 opacity-100"}`}
             />
 
-            {/* COOLDOWN VEIL - Smooth with CSS transition */}
+            {/* COOLDOWN VEIL - Smooth fade and clip-path */}
             <AnimatePresence>
                 {isOnCooldown && (
                     <motion.div
+                        key="veil"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/70 pointer-events-none flex items-center justify-center transition-[clip-path] duration-150 ease-linear"
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 bg-black/70 pointer-events-none transition-[clip-path] duration-150 ease-linear"
                         style={{
                             clipPath: `inset(0 0 ${100 - veilHeight}% 0)`,
                         }}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* TIMER TEXT - Instant disappearance */}
+            <AnimatePresence>
+                {isOnCooldown && (
+                    <motion.div
+                        key="timer"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, transition: { duration: 0 } }} // Immediate disappearance
+                        className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
                     >
                         <span className="text-[11px] font-bold text-white/90 tabular-nums drop-shadow-md">
                             {(cooldown / 1000).toFixed(1)}s

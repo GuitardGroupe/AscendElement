@@ -43,7 +43,6 @@ export default function CombatCrystal({
         <div className="w-40 h-40 relative flex items-center justify-center">
             <motion.div
                 className={`flex items-center justify-center`}
-                // 🔥 Véritable secousse avec translation X/Y
                 animate={
                     hitEffect
                         ? {

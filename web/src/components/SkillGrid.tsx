@@ -6,12 +6,10 @@ import { Skill } from "@/lib/skills";
 export default function SkillGrid({
     skills,
     cooldowns = {},
-    currentSkillId,
     onSkill,
 }: {
     skills: Skill[];
     cooldowns?: Record<number, number>;
-    currentSkillId?: number | null;
     onSkill: (type: number) => void;
 }) {
     const getBtn = (idx: number, type: number) => {

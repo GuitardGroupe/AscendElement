@@ -26,7 +26,7 @@ export default function DamagePop({
     }, [id]);
 
     const color =
-        type === "crit" ? "#ffd76b" : type === "heal" ? "#5cff87" : "#ff4d4d";
+        type === "crit" ? "#ff4d4d" : type === "heal" ? "#5cff87" : "#ffd76b";
 
     const shadow =
         type === "crit"
