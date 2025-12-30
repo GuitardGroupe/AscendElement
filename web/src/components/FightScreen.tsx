@@ -71,6 +71,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         DamageEvent[]
     >([]);
     const [opponentIsCasting, setOpponentIsCasting] = useState(false);
+    const [opponentCastProgress, setOpponentCastProgress] = useState(0);
 
     const handleGameOver = () => {
         console.log("HANDLE GAME OVER")
@@ -204,11 +205,11 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         playSound(skill.castSound);
 
         const duration = skill.castTime;
+        const startTime = Date.now();
         const step = 16; // ~60 FPS
-        let elapsed = 0;
 
         playerCastRef.current = setInterval(() => {
-            elapsed += step;
+            const elapsed = Date.now() - startTime;
             const pct = Math.min(100, (elapsed / duration) * 100);
             setPlayerCastProgress(pct);
 
@@ -221,7 +222,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     applySkillEffects(skill);
                     setPlayerCastProgress(0);
                 }, 200);
-                // triggerCooldown(skill.id, skill.cooldown);
             }
         }, step);
     };
@@ -369,11 +369,26 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         <div className="mr-5 flex justify-end text-l font-semibold">
                             {opponentName}
                         </div>
-                        {/* OPPONENT CASTBAR  */}
-                        <div className="flex items-center justify-center">
-                            <div className="w-[30%] ">
-                                <CastBar progress={85} />
-                            </div>
+                        {/* OPPONENT CASTBAR */}
+                        <div className="h-2 ">
+                            <AnimatePresence>
+                                {opponentIsCasting && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{
+                                            opacity: 0,
+                                            scaleX: 1,
+                                            filter: "brightness(2)"
+                                        }}
+                                        className="flex items-center justify-center"
+                                    >
+                                        <div className="w-[35%]">
+                                            <CastBar progress={opponentCastProgress} />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
@@ -403,7 +418,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                         }}
                                         className="flex items-center justify-center"
                                     >
-                                        <div className="w-[30%]">
+                                        <div className="w-[35%]">
                                             <CastBar progress={playerCastProgress} />
                                         </div>
                                     </motion.div>

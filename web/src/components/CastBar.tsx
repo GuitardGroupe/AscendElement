@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function CastBar({
     progress, // 0 → 100
@@ -26,7 +26,7 @@ export default function CastBar({
 
             {/* Barre de remplissage */}
             <motion.div
-                className="absolute left-0 top-0 h-full transition-all duration-80 ease-linear"
+                className="absolute left-0 top-0 h-full"
                 style={{
                     width: pct,
                     background: `linear-gradient(90deg, ${color} 0%, ${color}cc 40%, ${color}aa 70%, ${color}88 100%)`,
