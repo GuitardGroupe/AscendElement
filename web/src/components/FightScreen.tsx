@@ -337,6 +337,13 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         blur={0}
                     />
                     <DarkOverlay />
+                    {/* OPPONNENT FRAME (LITHIUM RED) */}
+                    <div className="absolute inset-0 pointer-events-none z-10"
+                        style={{
+                            border: '1px solid rgba(245, 73, 39, 0.3)',
+                            boxShadow: 'inset 0 0 60px rgba(245, 73, 39, 0.2)',
+                        }}
+                    />
                     {/* OPPONENT AREA */}
                     <div className="absolute inset-0 flex-1 flex flex-col justify-end pb-15 pl-5 pr-5 gap-2">
                         {/* OPPONENT ENERGY */}
@@ -401,6 +408,13 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         blur={0}
                     />
                     <DarkOverlay />
+                    {/* PLAYER FRAME (HYDROGEN BLUE) */}
+                    <div className="absolute inset-0 pointer-events-none z-10"
+                        style={{
+                            border: '1px solid rgba(0, 255, 255, 0.3)',
+                            boxShadow: 'inset 0 0 60px rgba(0, 255, 255, 0.2)',
+                        }}
+                    />
                     {/* PLAYER AREA */}
                     <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-15 pl-5 pr-5 gap-2">
                         {/* PLAYER CASTBAR */}
