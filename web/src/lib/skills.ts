@@ -1,9 +1,9 @@
 import { CONST_ASSETS } from '@/lib/preloader';
 
-const CONST_SKILL01_IMG = CONST_ASSETS.IMAGES.SKILL_1;
-const CONST_SKILL02_IMG = CONST_ASSETS.IMAGES.SKILL_2;
-const CONST_SKILL03_IMG = CONST_ASSETS.IMAGES.SKILL_3;
-const CONST_SKILL04_IMG = CONST_ASSETS.IMAGES.SKILL_4;
+const CONST_SKILL01_IMG = CONST_ASSETS.IMAGES.SKILL_01;
+const CONST_SKILL02_IMG = CONST_ASSETS.IMAGES.SKILL_02;
+const CONST_SKILL03_IMG = CONST_ASSETS.IMAGES.SKILL_03;
+const CONST_SKILL04_IMG = CONST_ASSETS.IMAGES.SKILL_04;
 const CONST_SOUND_SPELL_CAST = CONST_ASSETS.SOUNDS.SPELL_CAST;
 const CONST_SOUND_SPELL_IMPACT = CONST_ASSETS.SOUNDS.SPELL_IMPACT;
 const CONST_SOUND_SWORD_CAST = CONST_ASSETS.SOUNDS.SWORD_CAST;
@@ -29,33 +29,37 @@ export type Skill = {
     interrupt: number;
 };
 
+export type Item = {
+    id: number;
+    name: string;
+    icon: string;
+
+    cooldown: number;
+    energyCost: number;
+    castTime: number;
+
+    castSound: string;
+    impactSound: string;
+
+    damage: number;
+    heal: number;
+    stun: number;
+    recover: number;
+    shield: number;
+    interrupt: number;
+};
+
 export type ElementKey = "As" | "Br" | "Ga" | "Kr" | "Li" | "Zn";
 
 export const skillSets: Record<ElementKey, Skill[]> = {
     As: [
         {
             id: 1,
-            name: "Attaque légère",
+            name: "Frappe",
             icon: CONST_SKILL01_IMG,
-            cooldown: 500,
+            cooldown: 800,
             energyCost: 0,
-            castTime: 500,
-            castSound: CONST_SOUND_SWORD_CAST,
-            impactSound: CONST_SOUND_SWORD_IMPACT,
-            damage: 2,
-            heal: 0,
-            stun: 0,
-            recover: 0,
-            shield: 0,
-            interrupt: 0,
-        },
-        {
-            id: 2,
-            name: "Attaque lourde",
-            icon: CONST_SKILL02_IMG,
-            cooldown: 1000,
-            energyCost: 10,
-            castTime: 1000,
+            castTime: 750,
             castSound: CONST_SOUND_SWORD_CAST,
             impactSound: CONST_SOUND_SWORD_IMPACT,
             damage: 5,
@@ -66,14 +70,30 @@ export const skillSets: Record<ElementKey, Skill[]> = {
             interrupt: 0,
         },
         {
-            id: 3,
-            name: "Contrôle",
-            icon: CONST_SKILL03_IMG,
-            cooldown: 1500,
-            energyCost: 20,
+            id: 2,
+            name: "Flèche magique",
+            icon: CONST_SKILL02_IMG,
+            cooldown: 2000,
+            energyCost: 10,
             castTime: 1500,
             castSound: CONST_SOUND_SPELL_CAST,
             impactSound: CONST_SOUND_SPELL_IMPACT,
+            damage: 5,
+            heal: 0,
+            stun: 0,
+            recover: 0,
+            shield: 0,
+            interrupt: 0,
+        },
+        {
+            id: 3,
+            name: "Choc",
+            icon: CONST_SKILL03_IMG,
+            cooldown: 4000,
+            energyCost: 20,
+            castTime: 0,
+            castSound: "",
+            impactSound: CONST_ASSETS.SOUNDS.CONTROL_IMPACT,
             damage: 10,
             heal: 0,
             stun: 0,
@@ -83,14 +103,14 @@ export const skillSets: Record<ElementKey, Skill[]> = {
         },
         {
             id: 4,
-            name: "Ultime",
+            name: "Frappe divine",
             icon: CONST_SKILL04_IMG,
-            cooldown: 2000,
+            cooldown: 8000,
             energyCost: 30,
-            castTime: 2000,
-            castSound: CONST_SOUND_SPELL_CAST,
-            impactSound: CONST_SOUND_SPELL_IMPACT,
-            damage: 15,
+            castTime: 4500,
+            castSound: CONST_ASSETS.SOUNDS.ULTIMATE_CAST,
+            impactSound: CONST_ASSETS.SOUNDS.ULTIMATE_IMPACT,
+            damage: 30,
             heal: 0,
             stun: 0,
             recover: 0,

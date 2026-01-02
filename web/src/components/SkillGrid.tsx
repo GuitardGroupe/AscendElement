@@ -1,18 +1,23 @@
 "use client";
 
 import SkillButton from "./SkillButton";
-import { Skill } from "@/lib/skills";
+import { Skill, Item } from "@/lib/skills";
 
 export default function SkillGrid({
     skills,
+    weapon,
+    stim,
     cooldowns = {},
     onSkill,
 }: {
     skills: Skill[];
+    weapon: Item;
+    stim: Item;
     cooldowns?: Record<number, number>;
     onSkill: (type: number) => void;
 }) {
-    const getBtn = (idx: number, type: number) => {
+
+    const skillButton = (idx: number, type: number) => {
         const skill = skills[idx];
         if (!skill) return <div className="w-16 h-16 rounded-md bg-white/5 border border-white/5" />;
         return (
@@ -25,17 +30,41 @@ export default function SkillGrid({
         );
     };
 
+    const weaponButton = (weapon: Item, type: number) => {
+        if (!weapon) return <div className="w-16 h-16 rounded-md bg-white/5 border border-white/5" />;
+        return (
+            <SkillButton
+                img={weapon.icon}
+                cooldown={cooldowns[weapon.id] || 0}
+                maxCooldown={weapon.cooldown}
+                onClick={() => onSkill(type)}
+            />
+        );
+    };
+
+    const stimButton = (stim: Item, type: number) => {
+        if (!stim) return <div className="w-16 h-16 rounded-md bg-white/5 border border-white/5" />;
+        return (
+            <SkillButton
+                img={stim.icon}
+                cooldown={cooldowns[stim.id] || 0}
+                maxCooldown={stim.cooldown}
+                onClick={() => onSkill(type)}
+            />
+        );
+    };
+
     return (
         <div className="grid grid-cols-3 gap-2 relative w-fit pointer-events-auto">
             <div />
             <div />
-            {getBtn(4, 4)} {/* weapon */}
+            {weaponButton(weapon, 4)} {/* weapon */}
             <div />
-            {getBtn(0, 0)} {/* simple */}
-            {getBtn(2, 2)} {/* control */}
-            {getBtn(5, 5)} {/* injector */}
-            {getBtn(1, 1)} {/* heavy */}
-            {getBtn(3, 3)} {/* ultimate */}
+            {skillButton(0, 0)} {/* simple */}
+            {skillButton(2, 2)} {/* control */}
+            {stimButton(stim, 5)} {/* injector */}
+            {skillButton(1, 1)} {/* heavy */}
+            {skillButton(3, 3)} {/* ultimate */}
         </div>
     );
 }

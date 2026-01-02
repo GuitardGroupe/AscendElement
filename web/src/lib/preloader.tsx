@@ -18,6 +18,12 @@ export const CONST_ASSETS = {
         SKILL_2: `/${V}/images/webp/skill02.webp`,
         SKILL_3: `/${V}/images/webp/skill03.webp`,
         SKILL_4: `/${V}/images/webp/skill04.webp`,
+        SKILL_01: `/${V}/images/webp/skilllight.webp`,
+        SKILL_02: `/${V}/images/webp/skillheavy.webp`,
+        SKILL_03: `/${V}/images/webp/skillcontrol.webp`,
+        SKILL_04: `/${V}/images/webp/skillultimate.webp`,
+        ITEM_01: `/${V}/images/webp/itemstim.webp`,
+        ITEM_02: `/${V}/images/webp/itemgun.webp`,
         SKILL_INFUSOR: `/${V}/images/webp/infusor.webp`,
         SKILL_WEAPON: `/${V}/images/webp/weapon.webp`,
         FIGHT_CRYSTAL_DAMAGED: `/${V}/images/webp/fightcrystaldamaged.webp`,
@@ -32,6 +38,9 @@ export const CONST_ASSETS = {
         SPELL_IMPACT: `/${V}/sounds/ui/spellimpact.mp3`,
         SWORD_CAST: `/${V}/sounds/ui/swordcast.mp3`,
         SWORD_IMPACT: `/${V}/sounds/ui/swordimpact.mp3`,
+        CONTROL_IMPACT: `/${V}/sounds/ui/control.mp3`,
+        ULTIMATE_IMPACT: `/${V}/sounds/ui/ultimateimpact.mp3`,
+        ULTIMATE_CAST: `/${V}/sounds/ui/ultimatecast.mp3`,
     }
 };
 

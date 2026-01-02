@@ -21,6 +21,43 @@ const CONST_OPPONENT_MAX_ENERGY = 100;
 const CONST_OPPONENT_MAX_HP = 100;
 const CONST_LABEL_FLEE = "Fuir";
 
+const weapon = {
+    id: 8,
+    name: "Relique",
+    icon: CONST_ASSETS.IMAGES.ITEM_02,
+    cooldown: 500,
+    energyCost: 0,
+    castTime: 500,
+    castSound: "CONST_SOUND_SWORD_CAST",
+    impactSound: "CONST_SOUND_SWORD_IMPACT",
+    damage: 2,
+    heal: 0,
+    stun: 0,
+    recover: 0,
+    shield: 0,
+    interrupt: 0,
+};
+
+const stim = {
+    id: 9,
+    name: "Attaque légère",
+    icon: CONST_ASSETS.IMAGES.ITEM_01,
+    cooldown: 500,
+    energyCost: 0,
+    castTime: 500,
+    castSound: "CONST_SOUND_SWORD_CAST",
+    impactSound: "CONST_SOUND_SWORD_IMPACT",
+    damage: 2,
+    heal: 0,
+    stun: 0,
+    recover: 0,
+    shield: 0,
+    interrupt: 0,
+};
+
+
+
+
 interface FightScreenProps {
     onSwitchScreen: (screen: string) => void;
 }
@@ -295,8 +332,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     <BattleZoneBackground
                         src={opponentBackground}
                         scale={1.5}
-                        origin="origin-top-left"
-                        objectPosition="object-[100%_0%]"
+                        origin="origin-top-right"
+                        objectPosition="object-[0%_0%]"
                         blur={0}
                     />
                     <DarkOverlay />
@@ -329,7 +366,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             {opponentName}
                         </div>
                         {/* OPPONENT CASTBAR */}
-                        <div className="h-2 ">
+                        <div className="h-8 ">
                             <AnimatePresence>
                                 {opponentIsCasting && (
                                     <motion.div
@@ -359,15 +396,15 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     <BattleZoneBackground
                         src={playerBackground}
                         scale={1.5}
-                        origin="origin-top-right"
-                        objectPosition="object-[0%_0%]"
+                        origin="origin-top-left"
+                        objectPosition="object-[100%_0%]"
                         blur={0}
                     />
                     <DarkOverlay />
                     {/* PLAYER AREA */}
                     <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-15 pl-5 pr-5 gap-2">
                         {/* PLAYER CASTBAR */}
-                        <div className="h-2 ">
+                        <div className="h-8 ">
                             <AnimatePresence>
                                 {playerIsCasting && (
                                     <motion.div
@@ -381,7 +418,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                         className="flex items-center justify-center"
                                     >
                                         <div className="w-[35%]">
-                                            <CastBar progress={playerCastProgress} />
+                                            <CastBar
+                                                progress={playerCastProgress}
+                                                label={playerCurrentCastSkill?.name}
+                                            />
                                         </div>
                                     </motion.div>
                                 )}
@@ -467,6 +507,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             </button>
                             <SkillGrid
                                 skills={skills}
+                                weapon={weapon}
+                                stim={stim}
                                 cooldowns={playerCooldowns}
                                 onSkill={(type) => handleSkill(type)}
                             />
