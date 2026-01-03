@@ -49,7 +49,7 @@ export type Item = {
     interrupt: number;
 };
 
-export type ElementKey = "As" | "Br" | "Ga" | "Kr" | "Li" | "Zn";
+export type ElementKey = "As" | "Br" | "Ga" | "Kr" | "Kn" | "Zn";
 
 export const skillSets: Record<ElementKey, Skill[]> = {
     As: [
@@ -316,7 +316,7 @@ export const skillSets: Record<ElementKey, Skill[]> = {
             interrupt: 0,
         },
     ],
-    Li: [
+    Kn: [
         {
             id: 1,
             name: "Frappe",

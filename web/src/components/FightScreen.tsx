@@ -16,9 +16,9 @@ import { Skill, skillSets, ElementKey } from "@/lib/skills";
 
 import { CONST_ASSETS } from '@/lib/preloader';
 const CONST_TITLE = "BATTLE";
-const CONST_OPPONENT_NAME = "Arsenic";
-const CONST_OPPONENT_MAX_ENERGY = 100;
-const CONST_OPPONENT_MAX_HP = 100;
+const CONST_OPPONENT_NAME = "Gobelin stupide";
+const CONST_OPPONENT_MAX_ENERGY = 20;
+const CONST_OPPONENT_MAX_HP = 55;
 const CONST_LABEL_FLEE = "Fuir";
 
 const weapon = {
@@ -64,8 +64,16 @@ interface FightScreenProps {
 
 export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
-    const { playSound } = useSoundStore();
+    const { playSound, playMusic, stopSound } = useSoundStore();
     const [winner, setWinner] = useState<string | null>(null);
+
+    // MUSIC
+    useEffect(() => {
+        playMusic(CONST_ASSETS.SOUNDS.BATTLE_THEME_01, 0.2);
+        return () => {
+            stopSound(CONST_ASSETS.SOUNDS.BATTLE_THEME_01);
+        };
+    }, [playMusic, stopSound]);
 
     // TIMER
     const [timer, setTimer] = useState(180);
@@ -103,7 +111,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         : [];
 
     // OPPONENT
-    const opponentBackground = CONST_ASSETS.IMAGES.CHAR_AS;
+    const opponentBackground = CONST_ASSETS.IMAGES.MONSTER_GOBLIN;
     const opponentName = CONST_OPPONENT_NAME;
     const opponentColor = "#F54927";
     const [opponentHealth, setOpponentHealth] = useState(100);
@@ -331,7 +339,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 <div className="relative flex-1">
                     <BattleZoneBackground
                         src={opponentBackground}
-                        scale={1.5}
+                        scale={1}
                         origin="origin-top-right"
                         objectPosition="object-[0%_0%]"
                         blur={0}
@@ -340,7 +348,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     {/* OPPONNENT FRAME (LITHIUM RED) */}
                     <div className="absolute inset-0 pointer-events-none z-10"
                         style={{
-                            border: '1px solid rgba(245, 73, 39, 0.3)',
                             boxShadow: 'inset 0 0 60px rgba(245, 73, 39, 0.2)',
                         }}
                     />
@@ -411,14 +418,13 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     {/* PLAYER FRAME (HYDROGEN BLUE) */}
                     <div className="absolute inset-0 pointer-events-none z-10"
                         style={{
-                            border: '1px solid rgba(0, 255, 255, 0.3)',
                             boxShadow: 'inset 0 0 60px rgba(0, 255, 255, 0.2)',
                         }}
                     />
                     {/* PLAYER AREA */}
                     <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-15 pl-5 pr-5 gap-2">
                         {/* PLAYER CASTBAR */}
-                        <div className="h-8 ">
+                        <div className="h-3 ">
                             <AnimatePresence>
                                 {playerIsCasting && (
                                     <motion.div

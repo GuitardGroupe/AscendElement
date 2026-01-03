@@ -14,6 +14,8 @@ export const CONST_ASSETS = {
         CHAR_KR: `/${V}/images/webp/kr.webp`,
         CHAR_LI: `/${V}/images/webp/li.webp`,
         CHAR_ZN: `/${V}/images/webp/zn.webp`,
+        CHAR_KNIGHT: `/${V}/images/webp/knight.webp`,
+        CHAR_KNIGHT_FULL: `/${V}/images/webp/knightfull.webp`,
         SKILL_1: `/${V}/images/webp/skill01.webp`,
         SKILL_2: `/${V}/images/webp/skill02.webp`,
         SKILL_3: `/${V}/images/webp/skill03.webp`,
@@ -28,6 +30,7 @@ export const CONST_ASSETS = {
         SKILL_WEAPON: `/${V}/images/webp/weapon.webp`,
         FIGHT_CRYSTAL_DAMAGED: `/${V}/images/webp/fightcrystaldamaged.webp`,
         FIGHT_CRYSTAL_INTACT: `/${V}/images/webp/fightcrystalintact.webp`,
+        MONSTER_GOBLIN: `/${V}/images/webp/goblin.webp`,
     },
     SOUNDS: {
         CLICK: `/${V}/sounds/ui/click.mp3`,
@@ -41,6 +44,7 @@ export const CONST_ASSETS = {
         CONTROL_IMPACT: `/${V}/sounds/ui/control.mp3`,
         ULTIMATE_IMPACT: `/${V}/sounds/ui/ultimateimpact.mp3`,
         ULTIMATE_CAST: `/${V}/sounds/ui/ultimatecast.mp3`,
+        BATTLE_THEME_01: `/${V}/sounds/ui/battletheme01.mp3`,
     }
 };
 
