@@ -28,6 +28,8 @@ export const CONST_ASSETS = {
         ITEM_02: `/${V}/images/webp/itemgun.webp`,
         SKILL_INFUSOR: `/${V}/images/webp/infusor.webp`,
         SKILL_WEAPON: `/${V}/images/webp/weapon.webp`,
+        SKILL_EVADE: `/${V}/images/webp/skillevade.webp`,
+        SKILL_DODGE: `/${V}/images/webp/skilldodge.webp`,
         FIGHT_CRYSTAL_DAMAGED: `/${V}/images/webp/fightcrystaldamaged.webp`,
         FIGHT_CRYSTAL_INTACT: `/${V}/images/webp/fightcrystalintact.webp`,
         MONSTER_GOBLIN: `/${V}/images/webp/goblin.webp`,

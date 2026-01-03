@@ -8,12 +8,14 @@ export default function SkillGrid({
     weapon,
     stim,
     cooldowns = {},
+    currentEnergy = 0,
     onSkill,
 }: {
     skills: Skill[];
     weapon: Item;
     stim: Item;
     cooldowns?: Record<number, number>;
+    currentEnergy?: number;
     onSkill: (type: number) => void;
 }) {
 
@@ -25,6 +27,8 @@ export default function SkillGrid({
                 img={skill.icon}
                 cooldown={cooldowns[skill.id] || 0}
                 maxCooldown={skill.cooldown}
+                energyCost={skill.energyCost}
+                currentEnergy={currentEnergy}
                 onClick={() => onSkill(type)}
             />
         );
@@ -37,6 +41,8 @@ export default function SkillGrid({
                 img={weapon.icon}
                 cooldown={cooldowns[weapon.id] || 0}
                 maxCooldown={weapon.cooldown}
+                energyCost={weapon.energyCost}
+                currentEnergy={currentEnergy}
                 onClick={() => onSkill(type)}
             />
         );
@@ -49,6 +55,8 @@ export default function SkillGrid({
                 img={stim.icon}
                 cooldown={cooldowns[stim.id] || 0}
                 maxCooldown={stim.cooldown}
+                energyCost={stim.energyCost}
+                currentEnergy={currentEnergy}
                 onClick={() => onSkill(type)}
             />
         );

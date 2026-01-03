@@ -39,7 +39,7 @@ export default function HealthBar({
                 height,
                 clipPath: outerClip,
                 background: "linear-gradient(to bottom, #111, #060606)",
-                boxShadow: "0 0 10px rgba(0,0,0,0.6)",
+                filter: "drop-shadow(0 0 8px rgba(0,0,0,0.8))",
             }}
         >
             {/* CHIP DAMAGE */}
@@ -76,7 +76,7 @@ export default function HealthBar({
 
             {/* INNER GLOW */}
             <div
-                className="absolute inset-0 opacity-30 bg-gradient-to-b from-transparent via-black/40 to-transparent pointer-events-none"
+                className="absolute inset-0 opacity-30 bg-linear-to-b from-transparent via-black/40 to-transparent pointer-events-none"
                 style={{ clipPath: innerClip }}
             />
 

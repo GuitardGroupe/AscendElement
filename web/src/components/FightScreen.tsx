@@ -23,8 +23,8 @@ const CONST_LABEL_FLEE = "Fuir";
 
 const weapon = {
     id: 8,
-    name: "Relique",
-    icon: CONST_ASSETS.IMAGES.ITEM_02,
+    name: "Evasion",
+    icon: CONST_ASSETS.IMAGES.SKILL_DODGE,
     cooldown: 500,
     energyCost: 0,
     castTime: 500,
@@ -69,7 +69,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // MUSIC
     useEffect(() => {
-        playMusic(CONST_ASSETS.SOUNDS.BATTLE_THEME_01, 0.2);
+        playMusic(CONST_ASSETS.SOUNDS.BATTLE_THEME_01, 0.1);
         return () => {
             stopSound(CONST_ASSETS.SOUNDS.BATTLE_THEME_01);
         };
@@ -92,9 +92,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const [playerHealth, setPlayerHealth] = useState(
         selectedCharacter?.stat_hp ?? 50
     );
-    const [playerEnergy, setPlayerEnergy] = useState(
-        selectedCharacter?.stat_energy ?? 50
-    );
+    const [playerEnergy, setPlayerEnergy] = useState(0);
     const [playerHitTime, setPlayerHitTime] = useState(0);
     const [playerDamageEvents, setPlayerDamageEvents] = useState<DamageEvent[]>(
         []
@@ -114,8 +112,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const opponentBackground = CONST_ASSETS.IMAGES.MONSTER_GOBLIN;
     const opponentName = CONST_OPPONENT_NAME;
     const opponentColor = "#F54927";
-    const [opponentHealth, setOpponentHealth] = useState(100);
-    const [opponentEnergy, setOpponentEnergy] = useState(100);
+    const [opponentHealth, setOpponentHealth] = useState(CONST_OPPONENT_MAX_HP);
+    const [opponentEnergy, setOpponentEnergy] = useState(CONST_OPPONENT_MAX_ENERGY);
     const [opponentHitTime, setOpponentHitTime] = useState(0);
     const [opponentDamageEvents, setOpponentDamageEvents] = useState<
         DamageEvent[]
@@ -123,9 +121,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const [opponentIsCasting, setOpponentIsCasting] = useState(false);
     const [opponentCastProgress, setOpponentCastProgress] = useState(0);
 
-    // COOLDOWN COUNTDOWN
+    // COOLDOWN & ENERGY REGEN
     useEffect(() => {
         const interval = setInterval(() => {
+            // Cooldowns
             setPlayerCooldowns((prev) => {
                 const next = { ...prev };
                 let changed = false;
@@ -137,9 +136,21 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 }
                 return changed ? next : prev;
             });
+
+            // Energy Regen (passive)
+            setPlayerEnergy((e) => {
+                const maxEnergy = selectedCharacter?.stat_energy ?? 100;
+                const regenPerSec = selectedCharacter?.stat_energy_regen ?? 2;
+                const regenPerTick = regenPerSec / 10; // 100ms interval
+
+                if (e < maxEnergy) {
+                    return Math.min(maxEnergy, e + regenPerTick);
+                }
+                return e;
+            });
         }, 100);
         return () => clearInterval(interval);
-    }, []);
+    }, [selectedCharacter?.stat_energy, selectedCharacter?.stat_energy_regen]);
 
     const handleGameOver = () => {
         console.log("HANDLE GAME OVER")
@@ -306,20 +317,40 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE SKILL LAUNCH
     const handleSkill = (skill: number) => {
-        if (skill == 4 || skill == 5) return;
+        if (skill == 4 || skill == 5) {
+            // Special handling for weapon and stim since they are Items not Skills in the array
+            // But they still have energy cost
+            const item = skill === 4 ? weapon : stim;
+            if (playerCooldowns[item.id] > 0) return;
+            if (playerEnergy < item.energyCost) return;
 
-        if (playerCooldowns[skills[skill]?.id] > 0) {
+            if (item.cooldown > 0) {
+                setPlayerCooldowns((prev) => ({
+                    ...prev,
+                    [item.id]: item.cooldown,
+                }));
+            }
+            setPlayerEnergy((e) => e - item.energyCost);
+            startCast(item as unknown as Skill);
+            return;
+        }
+
+        const skillToLaunch = skills[skill];
+        if (!skillToLaunch) return;
+
+        if (playerCooldowns[skillToLaunch.id] > 0) {
             console.log("Skill is on cooldown");
+            return;
+        }
+
+        if (playerEnergy < skillToLaunch.energyCost) {
+            console.log("Not enough energy");
             return;
         }
 
         if (playerIsCasting) {
             interruptCast();
         }
-
-        if (!playerEnergy) return;
-
-        const skillToLaunch = skills[skill];
 
         if (skillToLaunch.cooldown > 0) {
             setPlayerCooldowns((prev) => ({
@@ -328,6 +359,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             }));
         }
 
+        setPlayerEnergy((e) => e - skillToLaunch.energyCost);
         startCast(skillToLaunch);
     };
 
@@ -376,7 +408,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             </div>
                         </div>
                         {/* OPPONENT NAME */}
-                        <div className="mr-5 flex justify-end text-l font-semibold">
+                        <div className="mr-5 flex justify-end text-l font-semibold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                             {opponentName}
                         </div>
                         {/* OPPONENT CASTBAR */}
@@ -449,7 +481,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         </div>
                         {/* PLAYER NAME */}
                         <div className="flex items-center justify-center">
-                            <div className="ml-5 flex-1 text-l font-semibold">
+                            <div className="ml-5 flex-1 text-l font-semibold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                                 {playerName}
                             </div>
                         </div>
@@ -530,6 +562,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                 weapon={weapon}
                                 stim={stim}
                                 cooldowns={playerCooldowns}
+                                currentEnergy={playerEnergy}
                                 onSkill={(type) => handleSkill(type)}
                             />
                         </div>
@@ -546,7 +579,7 @@ function DarkOverlay() {
 
 function Title({ label = "label" }: { label?: string }) {
     return (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 text-lg font-bold tracking-[0.3em] uppercase text-white">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 text-lg font-bold tracking-[0.3em] uppercase text-white" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
             {label}
         </div>
     );

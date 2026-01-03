@@ -9,12 +9,16 @@ export default function SkillButton({
     size = 64,
     cooldown = 0,
     maxCooldown = 0,
+    energyCost = 0,
+    currentEnergy = 0,
     onClick,
 }: {
     img: string;
     size?: number;
     cooldown?: number;
     maxCooldown?: number;
+    energyCost?: number;
+    currentEnergy?: number;
     onClick?: () => void;
 }) {
     const [flashKey, setFlashKey] = useState(0);
@@ -29,27 +33,33 @@ export default function SkillButton({
     }
 
     const isOnCooldown = cooldown > 0;
+    const isLowEnergy = currentEnergy < energyCost;
+    const isDisabled = isOnCooldown || isLowEnergy;
 
     const veilHeight = maxCooldown > 0 ? (cooldown / maxCooldown) * 100 : 0;
 
     return (
         <motion.div
             className="relative rounded-md overflow-hidden bg-[#0c0f14] border border-white/10 transition-all cursor-pointer"
-            style={{ width: size, height: size }}
+            style={{
+                width: size,
+                height: size,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.6)"
+            }}
             animate={{ scale: 1, borderColor: "rgba(255,255,255,0.1)" }}
-            whileTap={!isOnCooldown ? {
+            whileTap={!isDisabled ? {
                 scale: 0.92,
                 borderColor: "rgba(255,255,255,0.4)",
                 backgroundColor: "rgba(255,255,255,0.05)"
             } : {}}
             transition={{ duration: 0.1 }}
-            onClick={() => !isOnCooldown && onClick?.()}
+            onClick={() => !isDisabled && onClick?.()}
         >
             <Image
                 src={img}
                 fill
                 alt="skill"
-                className={`object-cover pointer-events-none transition-all duration-300 ${isOnCooldown ? "grayscale opacity-50" : "grayscale-0 opacity-100"}`}
+                className={`object-cover pointer-events-none transition-all duration-300 ${isDisabled ? "grayscale opacity-50" : "grayscale-0 opacity-100"}`}
             />
 
             {/* COOLDOWN VEIL - Smooth fade and clip-path */}
@@ -68,6 +78,27 @@ export default function SkillButton({
                     />
                 )}
             </AnimatePresence>
+
+            {/* LOW ENERGY VEIL - Reddish tint */}
+            <AnimatePresence>
+                {!isOnCooldown && isLowEnergy && (
+                    <motion.div
+                        key="energy-veil"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="absolute inset-0 bg-red-900/30 pointer-events-none"
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* ENERGY COST */}
+            {energyCost > 0 && (
+                <div className="absolute top-0 right-0 px-1 bg-blue-900/80 rounded-bl-md border-l border-b border-blue-400/30 z-20">
+                    <span className={`text-[10px] font-bold ${isLowEnergy ? "text-red-400" : "text-blue-200"}`}>
+                        {energyCost}
+                    </span>
+                </div>
+            )}
 
             {/* TIMER TEXT - Instant disappearance */}
             <AnimatePresence>
@@ -100,7 +131,7 @@ export default function SkillButton({
             </AnimatePresence>
 
             {/* GLOW WHEN READY */}
-            {!isOnCooldown && (
+            {!isDisabled && (
                 <motion.div
                     className="absolute inset-0 border border-white/20 rounded-md pointer-events-none shadow-[inset_0_0_10px_rgba(255,255,255,0.1)]"
                     animate={{ opacity: [0.3, 0.6, 0.3] }}

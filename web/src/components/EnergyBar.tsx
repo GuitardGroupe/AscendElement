@@ -37,7 +37,7 @@ export default function EnergyBar({
                 height,
                 clipPath: clip,
                 background: "linear-gradient(to bottom, #0a0f18, #06080d)",
-                boxShadow: "0 0 12px rgba(0,0,0,0.5)",
+                filter: "drop-shadow(0 0 10px rgba(0,0,0,0.7))",
             }}
         >
             {/* CHIP DAMAGE */}
@@ -83,7 +83,7 @@ export default function EnergyBar({
 
             {/* TEXT */}
             <div className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-white pointer-events-none">
-                {displayValue}/{max}
+                {Math.floor(displayValue)}/{Math.floor(max)}
             </div>
 
             <style jsx>{`
