@@ -422,9 +422,9 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         }}
                     />
                     {/* PLAYER AREA */}
-                    <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-15 pl-5 pr-5 gap-2">
+                    <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-10 pl-5 pr-5 gap-2">
                         {/* PLAYER CASTBAR */}
-                        <div className="h-3 ">
+                        <div className="h-6 ">
                             <AnimatePresence>
                                 {playerIsCasting && (
                                     <motion.div
