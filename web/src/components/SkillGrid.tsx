@@ -10,6 +10,8 @@ export default function SkillGrid({
     cooldowns = {},
     currentEnergy = 0,
     onSkill,
+    isCasting = false,
+    currentCastSkillId = null,
 }: {
     skills: Skill[];
     weapon: Item;
@@ -17,6 +19,8 @@ export default function SkillGrid({
     cooldowns?: Record<number, number>;
     currentEnergy?: number;
     onSkill: (type: number) => void;
+    isCasting?: boolean;
+    currentCastSkillId?: number | null;
 }) {
 
     const skillButton = (idx: number, type: number) => {
@@ -29,6 +33,7 @@ export default function SkillGrid({
                 maxCooldown={skill.cooldown}
                 energyCost={skill.energyCost}
                 currentEnergy={currentEnergy}
+                isCasting={isCasting && currentCastSkillId === skill.id}
                 onClick={() => onSkill(type)}
             />
         );
@@ -43,6 +48,7 @@ export default function SkillGrid({
                 maxCooldown={weapon.cooldown}
                 energyCost={weapon.energyCost}
                 currentEnergy={currentEnergy}
+                isCasting={isCasting && currentCastSkillId === weapon.id}
                 onClick={() => onSkill(type)}
             />
         );
@@ -57,6 +63,7 @@ export default function SkillGrid({
                 maxCooldown={stim.cooldown}
                 energyCost={stim.energyCost}
                 currentEnergy={currentEnergy}
+                isCasting={isCasting && currentCastSkillId === stim.id}
                 onClick={() => onSkill(type)}
             />
         );

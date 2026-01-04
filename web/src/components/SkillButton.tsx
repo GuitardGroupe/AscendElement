@@ -11,6 +11,7 @@ export default function SkillButton({
     maxCooldown = 0,
     energyCost = 0,
     currentEnergy = 0,
+    isCasting = false,
     onClick,
 }: {
     img: string;
@@ -19,6 +20,7 @@ export default function SkillButton({
     maxCooldown?: number;
     energyCost?: number;
     currentEnergy?: number;
+    isCasting?: boolean;
     onClick?: () => void;
 }) {
     const [flashKey, setFlashKey] = useState(0);
@@ -34,7 +36,8 @@ export default function SkillButton({
 
     const isOnCooldown = cooldown > 0;
     const isLowEnergy = currentEnergy < energyCost;
-    const isDisabled = isOnCooldown || isLowEnergy;
+    // We allow interaction if it's casting (to cancel) OR if it's available
+    const isDisabled = !isCasting && (isOnCooldown || isLowEnergy);
 
     const veilHeight = maxCooldown > 0 ? (cooldown / maxCooldown) * 100 : 0;
 
@@ -47,13 +50,13 @@ export default function SkillButton({
                 boxShadow: "0 4px 12px rgba(0,0,0,0.6)"
             }}
             animate={{ scale: 1, borderColor: "rgba(255,255,255,0.1)" }}
-            whileTap={!isDisabled ? {
+            whileTap={!isDisabled || isCasting ? {
                 scale: 0.92,
                 borderColor: "rgba(255,255,255,0.4)",
                 backgroundColor: "rgba(255,255,255,0.05)"
             } : {}}
             transition={{ duration: 0.1 }}
-            onClick={() => !isDisabled && onClick?.()}
+            onClick={() => (isCasting || !isDisabled) && onClick?.()}
         >
             <Image
                 src={img}
@@ -127,6 +130,20 @@ export default function SkillButton({
                         animate={{ opacity: 0 }}
                         transition={{ duration: 0.6, ease: "easeOut" }}
                     />
+                )}
+            </AnimatePresence>
+
+            {/* CANCEL OVERLAY */}
+            <AnimatePresence>
+                {isCasting && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-red-600/40 flex flex-col items-center justify-center pointer-events-none z-30"
+                    >
+                        <span className="text-[9px] font-black text-white leading-none tracking-tighter shadow-sm">CANCEL</span>
+                    </motion.div>
                 )}
             </AnimatePresence>
 
