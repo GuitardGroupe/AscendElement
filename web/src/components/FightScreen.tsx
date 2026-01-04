@@ -3,7 +3,7 @@
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { useSoundStore } from "@/store/useSoundStore";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import CombatCrystal from "@/components/CombatCrystal";
 import BattleZoneBackground from "@/components/BattleZoneBackground";
@@ -13,12 +13,10 @@ import CastBar from "@/components/CastBar";
 import type { DamageEvent } from "@/components/DamagePop";
 import SkillGrid from "@/components/SkillGrid";
 import { Skill, skillSets, ElementKey } from "@/lib/skills";
+import { monstersSkills, monsters, MonsterSkill } from "@/lib/monsters";
 
 import { CONST_ASSETS } from '@/lib/preloader';
 const CONST_TITLE = "BATTLE";
-const CONST_OPPONENT_NAME = "Gobelin stupide";
-const CONST_OPPONENT_MAX_ENERGY = 20;
-const CONST_OPPONENT_MAX_HP = 55;
 const CONST_LABEL_FLEE = "Fuir";
 
 const weapon = {
@@ -66,15 +64,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     const { playSound, playMusic, stopSound } = useSoundStore();
     const [winner, setWinner] = useState<string | null>(null);
-    /*
-        // MUSIC
-        useEffect(() => {
-            playMusic(CONST_ASSETS.SOUNDS.BATTLE_THEME_01, 0.1);
-            return () => {
-                stopSound(CONST_ASSETS.SOUNDS.BATTLE_THEME_01);
-            };
-        }, [playMusic, stopSound]);
-    */
+    const opponent = monsters[0];
 
     // TIMER
     const [timer, setTimer] = useState(180);
@@ -111,89 +101,69 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // OPPONENT
     const opponentBackground = CONST_ASSETS.IMAGES.MONSTER_GOBLIN;
-    const opponentName = CONST_OPPONENT_NAME;
-    const opponentColor = "#F54927";
-    const [opponentHealth, setOpponentHealth] = useState(CONST_OPPONENT_MAX_HP);
-    const [opponentEnergy, setOpponentEnergy] = useState(CONST_OPPONENT_MAX_ENERGY);
+    const opponentName = opponent.name;
+    //const opponentColor = "#F54927";
+    const [opponentHealth, setOpponentHealth] = useState(opponent.stat_hp);
+    const [opponentEnergy, setOpponentEnergy] = useState(opponent.stat_energy);
     const [opponentHitTime, setOpponentHitTime] = useState(0);
     const [opponentDamageEvents, setOpponentDamageEvents] = useState<
         DamageEvent[]
     >([]);
     const [opponentIsCasting, setOpponentIsCasting] = useState(false);
+    const opponentCastRef = useRef<NodeJS.Timeout | null>(null);
+    const opponentFinishTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [opponentCurrentCastSkill, setOpponentCurrentCastSkill] =
+        useState<MonsterSkill | null>(null);
     const [opponentCastProgress, setOpponentCastProgress] = useState(0);
+    const [opponentCooldowns, setOpponentCooldowns] = useState<Record<number, number>>({});
 
-    // COOLDOWN & ENERGY REGEN
+    // AI Refs to avoid interval resets
+    const opponentStateRef = useRef({
+        energy: opponentEnergy,
+        cooldowns: opponentCooldowns,
+        isCasting: opponentIsCasting,
+        winner: winner
+    });
+
     useEffect(() => {
-        const interval = setInterval(() => {
-            // Cooldowns
-            setPlayerCooldowns((prev) => {
-                const next = { ...prev };
-                let changed = false;
-                for (const id in next) {
-                    if (next[id] > 0) {
-                        next[id] = Math.max(0, next[id] - 100);
-                        changed = true;
-                    }
-                }
-                return changed ? next : prev;
-            });
+        opponentStateRef.current = {
+            energy: opponentEnergy,
+            cooldowns: opponentCooldowns,
+            isCasting: opponentIsCasting,
+            winner: winner
+        };
+    }, [opponentEnergy, opponentCooldowns, opponentIsCasting, winner]);
 
-            // Energy Regen (passive)
-            setPlayerEnergy((e) => {
-                const maxEnergy = selectedCharacter?.stat_energy ?? 100;
-                const regenPerSec = selectedCharacter?.stat_energy_regen ?? 2;
-                const regenPerTick = regenPerSec / 10; // 100ms interval
 
-                if (e < maxEnergy) {
-                    return Math.min(maxEnergy, e + regenPerTick);
-                }
-                return e;
-            });
-        }, 100);
-        return () => clearInterval(interval);
-    }, [selectedCharacter?.stat_energy, selectedCharacter?.stat_energy_regen]);
-
-    const handleGameOver = () => {
+    const handleGameOver = useCallback(() => {
         console.log("HANDLE GAME OVER")
         playSound(CONST_ASSETS.SOUNDS.ACCEPTATION, 0.6);
         onSwitchScreen("lobby");
-    };
+    }, [onSwitchScreen, playSound]);
 
     // DAMAGE
-    const handleDamageDone = (target: "player" | "opponent", id: string) => {
+    const handleDamageDone = useCallback((target: "player" | "opponent", id: string) => {
         if (target === "player") {
             setPlayerDamageEvents((prev) => prev.filter((d) => d.id !== id));
         } else {
             setOpponentDamageEvents((prev) => prev.filter((d) => d.id !== id));
         }
-    };
+    }, []);
 
     // GAME OVER
-    const endCombat = (who: string) => {
-        console.log("HANDLE END COMBAT")
-        //if (winner) return;
-        //setWinner(who);
+    const endCombat = useCallback((who: string) => {
+        console.log("HANDLE END COMBAT", who)
         handleGameOver()
-    };
+    }, [handleGameOver]);
 
     // FLEE
-    const handleFlee = () => {
+    const handleFlee = useCallback(() => {
         console.log("HANDLE FLEE")
         endCombat("Fuite");
-    };
+    }, [endCombat]);
 
-    // TIME OVER
-    useEffect(() => {
-        if (timer === 0 && !winner) {
-            flushSync(() => {
-                setWinner("Temps écoulé");
-            });
-            setTimeout(() => handleGameOver, 3000);
-        }
-    }, [timer, winner]);
-
-    // DAMAGE
-    const pushDamageEvent = (
+    // DAMAGE EVENT
+    const pushDamageEvent = useCallback((
         target: "player" | "opponent",
         value: number,
         type: "normal" | "crit" | "heal" = "normal"
@@ -209,10 +179,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         } else {
             setOpponentDamageEvents((prev) => [...prev, ev]);
         }
-    };
+    }, []);
 
-    // DAMAGE
-    const applyDamage = (target: "player" | "opponent", amount: number) => {
+    // APPLY DAMAGE
+    const applyDamage = useCallback((target: "player" | "opponent", amount: number) => {
         const isCrit = Math.random() < 0.5;
         const finalAmount = isCrit ? Math.round(amount * 2) : amount;
         const damageType = isCrit ? "crit" : "normal";
@@ -234,45 +204,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 return newHP;
             });
         }
-    };
-
-    // SKILL EFFECT
-    const applySkillEffects = (skill: Skill) => {
-
-        if (skill.damage > 0) {
-            applyDamage("opponent", skill.damage);
-        }
-
-
-
-        /*
-        if (skill.damage > 0) {
-            applyDamage("enemy", skill.damage);
-        }
-
-        if (skill.heal > 0) {
-            //healPlayer(skill.heal);
-        }
-
-        if (skill.stun > 0) {
-            //applyStun("enemy", skill.stun);
-        }
-
-        if (skill.recover > 0) {
-            //setEnergy((e) => Math.min(maxEnergy, e + skill.recover));
-        }
-
-        if (skill.shield > 0) {
-            //applyShield("player", skill.shield);
-        }
-
-        if (skill.interrupt > 0) {
-            //interruptCastOfEnemy();
-        }*/
-    };
+    }, [endCombat, pushDamageEvent]);
 
     // INTERRUPT CAST
-    const interruptCast = () => {
+    const interruptCast = useCallback(() => {
         if (playerCastRef.current) clearInterval(playerCastRef.current);
         if (playerFinishTimeoutRef.current) clearTimeout(playerFinishTimeoutRef.current);
 
@@ -283,10 +218,44 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         setPlayerIsCasting(false);
         setPlayerCurrentCastSkill(null);
         setPlayerCastProgress(0);
-    };
+    }, [playerCurrentCastSkill, stopSound]);
 
-    // CAST
-    const startCast = (skill: Skill) => {
+    // SKILL EFFECT
+    const applySkillEffects = useCallback((skill: Skill) => {
+        if (skill.damage > 0) {
+            applyDamage("opponent", skill.damage);
+        }
+        if (skill.heal > 0) {
+            setPlayerHealth(hp => Math.min(selectedCharacter?.stat_hp ?? 100, hp + skill.heal));
+            pushDamageEvent("player", skill.heal, "heal");
+        }
+        // Interrupt logic: if skill has interrupt, stop opponent cast
+        if (skill.interrupt > 0 && opponentIsCasting) {
+            if (opponentCastRef.current) clearInterval(opponentCastRef.current);
+            if (opponentFinishTimeoutRef.current) clearTimeout(opponentFinishTimeoutRef.current);
+            setOpponentIsCasting(false);
+            setOpponentCurrentCastSkill(null);
+            setOpponentCastProgress(0);
+        }
+    }, [applyDamage, selectedCharacter?.stat_hp, opponentIsCasting, pushDamageEvent]);
+
+    // OPPONENT SKILL EFFECT
+    const applyOpponentSkillEffects = useCallback((skill: MonsterSkill) => {
+        if (skill.damage > 0) {
+            applyDamage("player", skill.damage);
+        }
+        if (skill.heal > 0) {
+            setOpponentHealth(hp => Math.min(opponent.stat_hp, hp + skill.heal));
+            pushDamageEvent("opponent", skill.heal, "heal");
+        }
+        // Interrupt logic: if monster skill has interrupt, stop player cast
+        if (skill.interrupt > 0 && playerIsCasting) {
+            interruptCast();
+        }
+    }, [applyDamage, opponent.stat_hp, playerIsCasting, interruptCast, pushDamageEvent]);
+
+    // START CAST
+    const startCast = useCallback((skill: Skill) => {
         if (playerCastRef.current) clearInterval(playerCastRef.current);
 
         setPlayerIsCasting(true);
@@ -297,7 +266,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         const duration = skill.castTime;
         const startTime = Date.now();
-        const step = 16; // ~60 FPS
+        const step = 16;
 
         playerCastRef.current = setInterval(() => {
             const elapsed = Date.now() - startTime;
@@ -324,7 +293,139 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 }, 200);
             }
         }, step);
-    };
+    }, [playSound, applySkillEffects]);
+
+    // START OPPONENT CAST
+    const startOpponentCast = useCallback((skill: MonsterSkill) => {
+        if (opponentCastRef.current) clearInterval(opponentCastRef.current);
+
+        setOpponentIsCasting(true);
+        setOpponentCurrentCastSkill(skill);
+        setOpponentCastProgress(0);
+
+        const duration = skill.castTime;
+        const startTime = Date.now();
+        const step = 16;
+
+        opponentCastRef.current = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const pct = Math.min(100, (elapsed / duration) * 100);
+            setOpponentCastProgress(pct);
+
+            if (pct >= 100) {
+                clearInterval(opponentCastRef.current!);
+                opponentCastRef.current = null;
+                opponentFinishTimeoutRef.current = setTimeout(() => {
+                    if (skill.cooldown > 0) {
+                        setOpponentCooldowns((prev) => ({
+                            ...prev,
+                            [skill.id]: skill.cooldown,
+                        }));
+                    }
+
+                    setOpponentEnergy((e) => e - skill.energyCost);
+                    setOpponentIsCasting(false);
+                    applyOpponentSkillEffects(skill);
+                    setOpponentCastProgress(0);
+                    opponentFinishTimeoutRef.current = null;
+                }, 200);
+            }
+        }, step);
+    }, [applyOpponentSkillEffects]);
+
+    // --- EFFECTS ---
+
+    // REGEN & COOLDOWN LOOP
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPlayerCooldowns((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                for (const id in next) {
+                    if (next[id] > 0) {
+                        next[id] = Math.max(0, next[id] - 100);
+                        changed = true;
+                    }
+                }
+                return changed ? next : prev;
+            });
+
+            setOpponentCooldowns((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                for (const id in next) {
+                    if (next[id] > 0) {
+                        next[id] = Math.max(0, next[id] - 100);
+                        changed = true;
+                    }
+                }
+                return changed ? next : prev;
+            });
+
+            setPlayerEnergy((e) => {
+                const maxEnergy = selectedCharacter?.stat_energy ?? 100;
+                const regenPerSec = selectedCharacter?.stat_energy_regen ?? 2;
+                const regenPerTick = regenPerSec / 10;
+                if (e < maxEnergy) return Math.min(maxEnergy, e + regenPerTick);
+                return e;
+            });
+
+            setOpponentEnergy((e) => {
+                const maxEnergy = opponent.stat_energy;
+                const regenPerSec = opponent.stat_energy_regen;
+                const regenPerTick = regenPerSec / 10;
+                if (e < maxEnergy) return Math.min(maxEnergy, e + regenPerTick);
+                return e;
+            });
+
+            setOpponentHealth((hp) => {
+                const maxHp = opponent.stat_hp;
+                const regenPerSec = opponent.stat_hp_regen;
+                const regenPerTick = regenPerSec / 10;
+                if (hp > 0 && hp < maxHp) return Math.min(maxHp, hp + regenPerTick);
+                return hp;
+            });
+        }, 100);
+        return () => clearInterval(interval);
+    }, [selectedCharacter?.stat_energy, selectedCharacter?.stat_energy_regen, opponent.stat_energy, opponent.stat_energy_regen, opponent.stat_hp, opponent.stat_hp_regen]);
+
+    // AI DECISION LOOP
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const { energy, cooldowns, isCasting, winner: hasWinner } = opponentStateRef.current;
+
+            if (hasWinner) return;
+
+            if (!isCasting) {
+                const availableSkills = opponent.skills
+                    .map(id => monstersSkills.find(s => s.id === id))
+                    .filter(s => s !== undefined)
+                    .filter(s => (cooldowns[s!.id] || 0) <= 0)
+                    .filter(s => energy >= s!.energyCost);
+
+                if (availableSkills.length > 0) {
+                    const bestSkill = availableSkills.sort((a, b) => b!.power - a!.power)[0];
+                    if (bestSkill) {
+                        startOpponentCast(bestSkill);
+                    }
+                }
+            }
+        }, 500);
+
+        return () => clearInterval(interval);
+    }, [opponent.skills, startOpponentCast]); // Stable dependencies
+
+    // TIME OVER
+    useEffect(() => {
+        if (timer === 0 && !winner) {
+            flushSync(() => {
+                setWinner("Temps écoulé");
+            });
+            setTimeout(handleGameOver, 3000);
+        }
+    }, [timer, winner, handleGameOver]);
+
+
 
 
 
@@ -406,7 +507,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             <div className="flex justify-start w-[40%]">
                                 <EnergyBar
                                     current={opponentEnergy}
-                                    max={CONST_OPPONENT_MAX_ENERGY}
+                                    max={opponent.stat_energy}
                                 />
                             </div>
                         </div>
@@ -419,7 +520,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             <div className="flex-1 flex justify-end">
                                 <HealthBar
                                     current={opponentHealth}
-                                    max={CONST_OPPONENT_MAX_HP}
+                                    max={opponent.stat_hp}
                                 />
                             </div>
                         </div>
@@ -442,7 +543,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                         className="flex items-center justify-center"
                                     >
                                         <div className="w-[35%]">
-                                            <CastBar progress={opponentCastProgress} />
+                                            <CastBar
+                                                progress={opponentCastProgress}
+                                                label={opponentCurrentCastSkill?.name}
+                                            />
                                         </div>
                                     </motion.div>
                                 )}
@@ -556,7 +660,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             damageEvents={opponentDamageEvents}
                             onDamageDone={(id) => handleDamageDone("opponent", id)}
                             lastHitTimestamp={opponentHitTime}
-                            color={opponentColor}
+                            color={"#F54927"}
                         />
                     </div>
 
