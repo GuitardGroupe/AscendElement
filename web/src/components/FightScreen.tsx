@@ -14,6 +14,7 @@ import type { DamageEvent } from "@/components/DamagePop";
 import SkillGrid from "@/components/SkillGrid";
 import { Skill, skillSets, ElementKey } from "@/lib/skills";
 import { monstersSkills, monsters, MonsterSkill } from "@/lib/monsters";
+import { stims, Stim } from "@/lib/stim";
 
 import { CONST_ASSETS } from '@/lib/preloader';
 const CONST_TITLE = "BATTLE";
@@ -98,6 +99,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const skills = selectedCharacter
         ? skillSets[selectedCharacter?.symbol as ElementKey]
         : [];
+
+    // STIMS
+    const [stimUsages, setStimUsages] = useState<Record<number, number>>(() => {
+        const initial: Record<number, number> = {};
+        stims.forEach(s => initial[s.id] = s.usages);
+        return initial;
+    });
+    const [isHealing, setIsHealing] = useState(false);
 
     // OPPONENT
     const opponentBackground = CONST_ASSETS.IMAGES.MONSTER_GOBLIN;
@@ -480,6 +489,34 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         startCast(skillToLaunch);
     };
 
+    // HANDLE STIM USE
+    const handleStim = (type: number, id?: number) => {
+        if (type !== 5 || id === undefined) return;
+
+        const stim = stims.find(s => s.id === id);
+        if (!stim) return;
+
+        if ((playerCooldowns[stim.id] || 0) > 0) return;
+        if ((stimUsages[stim.id] || 0) <= 0) return;
+
+        // Instant use
+        playSound(stim.sound);
+
+        // Healing
+        setPlayerHealth(hp => Math.min(selectedCharacter?.stat_hp ?? 100, hp + stim.heal));
+        pushDamageEvent("player", stim.heal, "heal");
+
+        // Usages
+        setStimUsages(prev => ({ ...prev, [stim.id]: prev[stim.id] - 1 }));
+
+        // Cooldown
+        setPlayerCooldowns(prev => ({ ...prev, [stim.id]: stim.cooldown }));
+
+        // Visual Effect (2s green perfusion)
+        setIsHealing(true);
+        setTimeout(() => setIsHealing(false), 2000);
+    };
+
     return (
         <div className="relative w-full h-full flex items-center justify-center">
             {/* BACKGROUND */}
@@ -568,9 +605,11 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     />
                     <DarkOverlay />
                     {/* PLAYER FRAME (HYDROGEN BLUE) */}
-                    <div className="absolute inset-0 pointer-events-none z-10"
+                    <div className="absolute inset-0 pointer-events-none z-10 transition-shadow duration-500"
                         style={{
-                            boxShadow: 'inset 0 0 60px rgba(0, 255, 255, 0.2)',
+                            boxShadow: isHealing
+                                ? 'inset 0 0 60px rgba(0, 255, 0, 0.6)' // Green perfusion
+                                : 'inset 0 0 60px rgba(0, 255, 255, 0.2)', // Default blue
                         }}
                     />
                     {/* PLAYER AREA */}
@@ -680,12 +719,16 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             <SkillGrid
                                 skills={skills}
                                 weapon={weapon}
-                                stim={stim}
+                                stims={stims}
+                                stimUsages={stimUsages}
                                 cooldowns={playerCooldowns}
                                 currentEnergy={playerEnergy}
                                 isCasting={playerIsCasting}
                                 currentCastSkillId={playerCurrentCastSkill?.id}
-                                onSkill={(type) => handleSkill(type)}
+                                onSkill={(type, id) => {
+                                    if (type === 5) handleStim(type, id);
+                                    else handleSkill(type);
+                                }}
                             />
                         </div>
                     </div>

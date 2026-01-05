@@ -12,6 +12,8 @@ export default function SkillButton({
     energyCost = 0,
     currentEnergy = 0,
     isCasting = false,
+    usages = undefined,
+    showTimer = true,
     onClick,
 }: {
     img: string;
@@ -21,6 +23,8 @@ export default function SkillButton({
     energyCost?: number;
     currentEnergy?: number;
     isCasting?: boolean;
+    usages?: number;
+    showTimer?: boolean;
     onClick?: () => void;
 }) {
     const [flashKey, setFlashKey] = useState(0);
@@ -36,8 +40,9 @@ export default function SkillButton({
 
     const isOnCooldown = cooldown > 0;
     const isLowEnergy = currentEnergy < energyCost;
+    const isOutOfUsages = usages !== undefined && usages <= 0;
     // We allow interaction if it's casting (to cancel) OR if it's available
-    const isDisabled = !isCasting && (isOnCooldown || isLowEnergy);
+    const isDisabled = !isCasting && (isOnCooldown || isLowEnergy || isOutOfUsages);
 
     const veilHeight = maxCooldown > 0 ? (cooldown / maxCooldown) * 100 : 0;
 
@@ -105,7 +110,7 @@ export default function SkillButton({
 
             {/* TIMER TEXT - Instant disappearance */}
             <AnimatePresence>
-                {isOnCooldown && (
+                {isOnCooldown && showTimer && (
                     <motion.div
                         key="timer"
                         initial={{ opacity: 0 }}
@@ -119,6 +124,15 @@ export default function SkillButton({
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* USAGES COUNT */}
+            {usages !== undefined && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                    <span className={`text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,1)] ${isOutOfUsages ? "opacity-30" : "opacity-100"}`}>
+                        {usages}
+                    </span>
+                </div>
+            )}
 
             {/* READY FLASH */}
             <AnimatePresence>
