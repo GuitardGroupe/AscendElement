@@ -12,49 +12,13 @@ import EnergyBar from "@/components/EnergyBar";
 import CastBar from "@/components/CastBar";
 import type { DamageEvent } from "@/components/DamagePop";
 import SkillGrid from "@/components/SkillGrid";
-import { Skill, skillSets, ElementKey } from "@/lib/skills";
+import { Skill, skillSets, ElementKey, defenses, Defense } from "@/lib/skills";
 import { monstersSkills, monsters, MonsterSkill } from "@/lib/monsters";
 import { stims, Stim } from "@/lib/stim";
 
 import { CONST_ASSETS } from '@/lib/preloader';
 const CONST_TITLE = "BATTLE";
 const CONST_LABEL_FLEE = "Fuir";
-
-const weapon = {
-    id: 8,
-    name: "Evasion",
-    icon: CONST_ASSETS.IMAGES.SKILL_DODGE,
-    cooldown: 500,
-    energyCost: 0,
-    castTime: 500,
-    castSound: "CONST_SOUND_SWORD_CAST",
-    impactSound: "CONST_SOUND_SWORD_IMPACT",
-    damage: 2,
-    heal: 0,
-    stun: 0,
-    recover: 0,
-    shield: 0,
-    interrupt: 0,
-};
-
-const stim = {
-    id: 9,
-    name: "Attaque légère",
-    icon: CONST_ASSETS.IMAGES.ITEM_01,
-    cooldown: 500,
-    energyCost: 0,
-    castTime: 500,
-    castSound: "CONST_SOUND_SWORD_CAST",
-    impactSound: "CONST_SOUND_SWORD_IMPACT",
-    damage: 2,
-    heal: 0,
-    stun: 0,
-    recover: 0,
-    shield: 0,
-    interrupt: 0,
-};
-
-
 
 
 interface FightScreenProps {
@@ -108,6 +72,9 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     });
     const [isHealing, setIsHealing] = useState(false);
 
+    // DEFENSES
+    const [activeDefense, setActiveDefense] = useState<{ defense: Defense, remaining: number } | null>(null);
+
     // OPPONENT
     const opponentBackground = CONST_ASSETS.IMAGES.MONSTER_GOBLIN;
     const opponentName = opponent.name;
@@ -125,6 +92,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         useState<MonsterSkill | null>(null);
     const [opponentCastProgress, setOpponentCastProgress] = useState(0);
     const [opponentCooldowns, setOpponentCooldowns] = useState<Record<number, number>>({});
+
+    const activeDefenseRef = useRef<{ defense: Defense; remaining: number } | null>(null);
 
     // AI Refs to avoid interval resets
     const opponentStateRef = useRef({
@@ -215,13 +184,19 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         }
     }, [endCombat, pushDamageEvent]);
 
-    // INTERRUPT CAST
     const interruptCast = useCallback(() => {
         if (playerCastRef.current) clearInterval(playerCastRef.current);
         if (playerFinishTimeoutRef.current) clearTimeout(playerFinishTimeoutRef.current);
 
-        if (playerCurrentCastSkill?.castSound) {
-            stopSound(playerCurrentCastSkill.castSound);
+        if (playerCurrentCastSkill) {
+            if (playerCurrentCastSkill.castSound) {
+                stopSound(playerCurrentCastSkill.castSound);
+            }
+            // Apply recovery cooldown penalty to the interrupted skill
+            setPlayerCooldowns((prev) => ({
+                ...prev,
+                [playerCurrentCastSkill.id]: 1000,
+            }));
         }
 
         setPlayerIsCasting(false);
@@ -242,14 +217,30 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (skill.interrupt > 0 && opponentIsCasting) {
             if (opponentCastRef.current) clearInterval(opponentCastRef.current);
             if (opponentFinishTimeoutRef.current) clearTimeout(opponentFinishTimeoutRef.current);
+
+            // PUNISHMENT: Apply FULL cooldown to the interrupted skill
+            if (opponentCurrentCastSkill) {
+                setOpponentCooldowns((prev) => ({
+                    ...prev,
+                    [opponentCurrentCastSkill.id]: opponentCurrentCastSkill.cooldown,
+                }));
+            }
+
             setOpponentIsCasting(false);
             setOpponentCurrentCastSkill(null);
             setOpponentCastProgress(0);
         }
-    }, [applyDamage, selectedCharacter?.stat_hp, opponentIsCasting, pushDamageEvent]);
+    }, [applyDamage, selectedCharacter?.stat_hp, opponentIsCasting, opponentCurrentCastSkill, pushDamageEvent]);
 
     // OPPONENT SKILL EFFECT
     const applyOpponentSkillEffects = useCallback((skill: MonsterSkill) => {
+        // DODGE CHECK
+        const currentDefense = activeDefenseRef.current;
+        if (currentDefense?.defense && currentDefense.defense.dodge > 0) {
+            console.log("Dodged!");
+            return;
+        }
+
         if (skill.damage > 0) {
             applyDamage("player", skill.damage);
         }
@@ -312,6 +303,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         setOpponentCurrentCastSkill(skill);
         setOpponentCastProgress(0);
 
+        if (skill.castSound) playSound(skill.castSound);
+
         const duration = skill.castTime;
         const startTime = Date.now();
         const step = 16;
@@ -334,13 +327,23 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
                     setOpponentEnergy((e) => e - skill.energyCost);
                     setOpponentIsCasting(false);
-                    applyOpponentSkillEffects(skill);
+
+                    // DODGE CHECK
+                    const currentDefense = activeDefenseRef.current;
+                    const isDodging = currentDefense?.defense && currentDefense.defense.dodge > 0;
+                    if (!isDodging) {
+                        if (skill.impactSound) playSound(skill.impactSound);
+                        applyOpponentSkillEffects(skill);
+                    } else {
+                        console.log("Dodged!");
+                    }
+
                     setOpponentCastProgress(0);
                     opponentFinishTimeoutRef.current = null;
                 }, 200);
             }
         }, step);
-    }, [applyOpponentSkillEffects]);
+    }, [playSound, applyOpponentSkillEffects]);
 
     // --- EFFECTS ---
 
@@ -393,6 +396,22 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 const regenPerTick = regenPerSec / 10;
                 if (hp > 0 && hp < maxHp) return Math.min(maxHp, hp + regenPerTick);
                 return hp;
+            });
+
+            // DEFENSE DURATION
+            setActiveDefense(prev => {
+                if (!prev) {
+                    activeDefenseRef.current = null;
+                    return null;
+                }
+                const nextRemaining = prev.remaining - 100;
+                if (nextRemaining <= 0) {
+                    activeDefenseRef.current = null;
+                    return null;
+                }
+                const next = { ...prev, remaining: nextRemaining };
+                activeDefenseRef.current = next;
+                return next;
             });
         }, 100);
         return () => clearInterval(interval);
@@ -466,10 +485,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (playerIsCasting && playerCurrentCastSkill?.id === skillToLaunch.id) {
             interruptCast();
             playSound(CONST_ASSETS.SOUNDS.DESACTIVATION, 0.5);
-            setPlayerCooldowns((prev) => ({
-                ...prev,
-                [skillToLaunch.id]: 1000,
-            }));
             return;
         }
 
@@ -515,6 +530,25 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         // Visual Effect (2s green perfusion)
         setIsHealing(true);
         setTimeout(() => setIsHealing(false), 2000);
+    };
+
+    // HANDLE DEFENSE USE
+    const handleDefense = (id: number) => {
+        const defense = defenses.find(d => d.id === id);
+        if (!defense) return;
+
+        if (playerCooldowns[defense.id] > 0) return;
+
+        // Instant effect
+        if (defense.sound) playSound(defense.sound);
+
+        // Cooldown starts immediately
+        setPlayerCooldowns(prev => ({ ...prev, [defense.id]: defense.cooldown }));
+
+        // Activate defense
+        const newDefense = { defense, remaining: defense.duration };
+        setActiveDefense(newDefense);
+        activeDefenseRef.current = newDefense;
     };
 
     return (
@@ -676,14 +710,29 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
                     {/* 2. CRYSTALS ON LINE */}
                     <div className="relative flex items-center justify-center gap-2 z-10 h-0">
-                        <CombatCrystal
-                            hp={playerHealth}
-                            maxHp={100}
-                            damageEvents={playerDamageEvents}
-                            onDamageDone={(id) => handleDamageDone("player", id)}
-                            lastHitTimestamp={playerHitTime}
-                            color={playerColor}
-                        />
+                        <div className="relative">
+                            <CombatCrystal
+                                hp={playerHealth}
+                                maxHp={100}
+                                damageEvents={playerDamageEvents}
+                                onDamageDone={(id) => handleDamageDone("player", id)}
+                                lastHitTimestamp={playerHitTime}
+                                color={playerColor}
+                            />
+                            {/* SHIELD OVERLAY */}
+                            <AnimatePresence>
+                                {activeDefense && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1.1 }}
+                                        exit={{ opacity: 0, scale: 1.5 }}
+                                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                    >
+                                        <div className="w-24 h-24 rounded-full border-2 border-cyan-400/50 bg-cyan-400/10 backdrop-blur-[1px] shadow-[0_0_20px_rgba(0,255,255,0.3)]" />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
 
                         <motion.button
                             onClick={() => endCombat("Temps stoppé")}
@@ -718,7 +767,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             </button>
                             <SkillGrid
                                 skills={skills}
-                                weapon={weapon}
+                                defenses={defenses}
                                 stims={stims}
                                 stimUsages={stimUsages}
                                 cooldowns={playerCooldowns}
@@ -727,6 +776,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                 currentCastSkillId={playerCurrentCastSkill?.id}
                                 onSkill={(type, id) => {
                                     if (type === 5) handleStim(type, id);
+                                    else if (type === 4) handleDefense(id!);
                                     else handleSkill(type);
                                 }}
                             />

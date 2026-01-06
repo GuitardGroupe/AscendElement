@@ -49,6 +49,24 @@ export type Item = {
     interrupt: number;
 };
 
+export type Defense = {
+    id: number;
+    name: string;
+    icon: string;
+
+    cooldown: number;
+    duration: number;
+
+    sound: string;
+
+    shield: number;
+    interrupt: number;
+    absorb: number;
+    dodge: number;
+    reflect: number;
+    stun: number;
+};
+
 export type ElementKey = "As" | "Br" | "Ga" | "Kr" | "Kn" | "Zn";
 
 export const skillSets: Record<ElementKey, Skill[]> = {
@@ -99,7 +117,7 @@ export const skillSets: Record<ElementKey, Skill[]> = {
             stun: 0,
             recover: 0,
             shield: 0,
-            interrupt: 0,
+            interrupt: 1,
         },
         {
             id: 4,
@@ -363,7 +381,7 @@ export const skillSets: Record<ElementKey, Skill[]> = {
             stun: 0,
             recover: 0,
             shield: 0,
-            interrupt: 0,
+            interrupt: 1,
         },
         {
             id: 4,
@@ -449,3 +467,23 @@ export const skillSets: Record<ElementKey, Skill[]> = {
         },
     ],
 };
+
+export const defenses = [
+    {
+        id: 20,
+        name: "Esquive",
+        icon: CONST_ASSETS.IMAGES.SKILL_DODGE,
+
+        cooldown: 5000,
+        duration: 3000,
+
+        sound: "",
+
+        shield: 0,
+        interrupt: 0,
+        absorb: 0,
+        dodge: 1,
+        reflect: 0,
+        stun: 0,
+    }
+]

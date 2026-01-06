@@ -2,11 +2,11 @@
 
 import SkillButton from "./SkillButton";
 import { Stim } from "@/lib/stim";
-import { Skill, Item } from "@/lib/skills";
+import { Skill, Defense } from "@/lib/skills";
 
 export default function SkillGrid({
     skills,
-    weapon,
+    defenses,
     stims,
     stimUsages = {},
     cooldowns = {},
@@ -16,7 +16,7 @@ export default function SkillGrid({
     currentCastSkillId = null,
 }: {
     skills: Skill[];
-    weapon: Item;
+    defenses: Defense[];
     stims: Stim[];
     stimUsages?: Record<number, number>;
     cooldowns?: Record<number, number>;
@@ -42,17 +42,18 @@ export default function SkillGrid({
         );
     };
 
-    const weaponButton = (weapon: Item, type: number) => {
-        if (!weapon) return <div className="w-16 h-16 rounded-md bg-white/5 border border-white/5" />;
+    const defenseButton = (idx: number, type: number) => {
+        const defense = defenses[idx];
+        if (!defense) return <div className="w-16 h-16 rounded-md bg-white/5 border border-white/5" />;
         return (
             <SkillButton
-                img={weapon.icon}
-                cooldown={cooldowns[weapon.id] || 0}
-                maxCooldown={weapon.cooldown}
-                energyCost={weapon.energyCost}
+                img={defense.icon}
+                cooldown={cooldowns[defense.id] || 0}
+                maxCooldown={defense.cooldown}
+                energyCost={0}
                 currentEnergy={currentEnergy}
-                isCasting={isCasting && currentCastSkillId === weapon.id}
-                onClick={() => onSkill(type)}
+                isCasting={false}
+                onClick={() => onSkill(type, defense.id)}
             />
         );
     };
@@ -67,6 +68,7 @@ export default function SkillGrid({
                 maxCooldown={stim.cooldown}
                 usages={stimUsages[stim.id]}
                 showTimer={false}
+                anySkillCasting={isCasting}
                 onClick={() => onSkill(type, stim.id)}
             />
         );
@@ -76,7 +78,7 @@ export default function SkillGrid({
         <div className="grid grid-cols-3 gap-2 relative w-fit pointer-events-auto">
             <div />
             <div />
-            {weaponButton(weapon, 4)} {/* weapon */}
+            {defenseButton(0, 4)} {/* defense */}
             <div />
             {skillButton(0, 0)} {/* simple */}
             {skillButton(2, 2)} {/* control */}

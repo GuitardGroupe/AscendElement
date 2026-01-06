@@ -28,6 +28,8 @@ export type MonsterSkill = {
     recover: number;
     shield: number;
     interrupt: number;
+    castSound?: string;
+    impactSound?: string;
 };
 
 export const monsters = [
@@ -47,7 +49,7 @@ export const monsters = [
     },
 ];
 
-export const monstersSkills = [
+export const monstersSkills: MonsterSkill[] = [
     {
         id: 0,
         power: 1,
@@ -61,19 +63,23 @@ export const monstersSkills = [
         recover: 0,
         shield: 0,
         interrupt: 0,
+        castSound: "CONST_SOUND_SWORD_CAST",
+        impactSound: "CONST_SOUND_SWORD_IMPACT",
     },
     {
         id: 1,
         power: 2,
         name: "Morsure",
         cooldown: 5000,
-        energyCost: 50,
-        castTime: 5000,
-        damage: 20,
+        energyCost: 0,
+        castTime: 1500,
+        damage: 15,
         heal: 0,
         stun: 0,
         recover: 0,
         shield: 0,
         interrupt: 0,
-    },
-]
+        castSound: "CONST_SOUND_MAGIC_CAST",
+        impactSound: "CONST_SOUND_MAGIC_IMPACT",
+    }
+];

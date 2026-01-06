@@ -12,6 +12,7 @@ export default function SkillButton({
     energyCost = 0,
     currentEnergy = 0,
     isCasting = false,
+    anySkillCasting = false,
     usages = undefined,
     showTimer = true,
     onClick,
@@ -23,28 +24,39 @@ export default function SkillButton({
     energyCost?: number;
     currentEnergy?: number;
     isCasting?: boolean;
+    anySkillCasting?: boolean;
     usages?: number;
     showTimer?: boolean;
     onClick?: () => void;
 }) {
     const [flashKey, setFlashKey] = useState(0);
     const [prevPropCooldown, setPrevPropCooldown] = useState(cooldown);
+    const [dynamicMax, setDynamicMax] = useState(0);
 
     // Sync state during render (React optimization to avoid cascading renders)
     if (cooldown !== prevPropCooldown) {
         setPrevPropCooldown(cooldown);
         if (prevPropCooldown > 0 && cooldown === 0) {
             setFlashKey(prev => prev + 1);
+            setDynamicMax(0);
+        }
+        // If the cooldown just started or jumped (e.g. penalty), track the new max
+        if (cooldown > dynamicMax) {
+            setDynamicMax(cooldown);
         }
     }
 
     const isOnCooldown = cooldown > 0;
     const isLowEnergy = currentEnergy < energyCost;
     const isOutOfUsages = usages !== undefined && usages <= 0;
-    // We allow interaction if it's casting (to cancel) OR if it's available
-    const isDisabled = !isCasting && (isOnCooldown || isLowEnergy || isOutOfUsages);
+    const isBlockedByCasting = anySkillCasting && !isCasting;
 
-    const veilHeight = maxCooldown > 0 ? (cooldown / maxCooldown) * 100 : 0;
+    // We allow interaction if it's casting (to cancel) OR if it's available
+    const isDisabled = isBlockedByCasting || (!isCasting && (isOnCooldown || isLowEnergy || isOutOfUsages));
+
+    // Use dynamicMax to ensure the veil is always relative to the current cooldown duration (e.g. 1s penalty vs 8s normal CD)
+    const currentMax = dynamicMax > 0 ? dynamicMax : maxCooldown;
+    const veilHeight = currentMax > 0 ? (cooldown / currentMax) * 100 : 0;
 
     return (
         <motion.div
@@ -125,10 +137,23 @@ export default function SkillButton({
                 )}
             </AnimatePresence>
 
-            {/* USAGES COUNT */}
+            {/* BLOCK BY CASTING VEIL - Black veil */}
+            <AnimatePresence>
+                {isBlockedByCasting && (
+                    <motion.div
+                        key="casting-block-veil"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/60 pointer-events-none z-20"
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* USAGES COUNT - Top right badge style */}
             {usages !== undefined && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                    <span className={`text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,1)] ${isOutOfUsages ? "opacity-30" : "opacity-100"}`}>
+                <div className="absolute top-0 right-0 px-1.5 bg-black/80 rounded-bl-md border-l border-b border-white/20 z-30">
+                    <span className={`text-[11px] font-black text-white ${isOutOfUsages ? "opacity-30" : "opacity-100"}`}>
                         {usages}
                     </span>
                 </div>
