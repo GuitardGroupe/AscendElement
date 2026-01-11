@@ -14,7 +14,7 @@ import type { DamageEvent } from "@/components/DamagePop";
 import SkillGrid from "@/components/SkillGrid";
 import { Skill, skillSets, ElementKey, defenses, Defense } from "@/lib/skills";
 import { monstersSkills, monsters, MonsterSkill } from "@/lib/monsters";
-import { stims, Stim } from "@/lib/stim";
+import { stims } from "@/lib/stim";
 
 import { CONST_ASSETS } from '@/lib/preloader';
 const CONST_TITLE = "BATTLE";
@@ -27,7 +27,7 @@ interface FightScreenProps {
 
 export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
-    const { playSound, playMusic, stopSound } = useSoundStore();
+    const { playSound, stopSound } = useSoundStore();
     const [winner, setWinner] = useState<string | null>(null);
     const opponent = monsters[0];
 
@@ -92,6 +92,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         useState<MonsterSkill | null>(null);
     const [opponentCastProgress, setOpponentCastProgress] = useState(0);
     const [opponentCooldowns, setOpponentCooldowns] = useState<Record<number, number>>({});
+    const monsterDecisionRef = useRef<{ skill: MonsterSkill; executeAt: number } | null>(null);
+    const opponentIsCastingRef = useRef(false);
 
     const activeDefenseRef = useRef<{ defense: Defense; remaining: number } | null>(null);
 
@@ -100,21 +102,28 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         energy: opponentEnergy,
         cooldowns: opponentCooldowns,
         isCasting: opponentIsCasting,
-        winner: winner
+        winner: winner,
     });
+
+    const playerIsCastingRef = useRef(playerIsCasting);
+    const opponentHealthRef = useRef(opponentHealth);
 
     useEffect(() => {
         opponentStateRef.current = {
             energy: opponentEnergy,
             cooldowns: opponentCooldowns,
             isCasting: opponentIsCasting,
-            winner: winner
+            winner: winner,
         };
-    }, [opponentEnergy, opponentCooldowns, opponentIsCasting, winner]);
+        playerIsCastingRef.current = playerIsCasting;
+        opponentHealthRef.current = opponentHealth;
+    }, [opponentEnergy, opponentCooldowns, opponentIsCasting, winner, playerIsCasting, opponentHealth]);
 
 
     const handleGameOver = useCallback(() => {
         console.log("HANDLE GAME OVER")
+        monsterDecisionRef.current = null;
+        opponentIsCastingRef.current = false;
         playSound(CONST_ASSETS.SOUNDS.ACCEPTATION, 0.6);
         onSwitchScreen("lobby");
     }, [onSwitchScreen, playSound]);
@@ -227,6 +236,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             }
 
             setOpponentIsCasting(false);
+            opponentIsCastingRef.current = false;
             setOpponentCurrentCastSkill(null);
             setOpponentCastProgress(0);
         }
@@ -249,10 +259,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             pushDamageEvent("opponent", skill.heal, "heal");
         }
         // Interrupt logic: if monster skill has interrupt, stop player cast
-        if (skill.interrupt > 0 && playerIsCasting) {
+        if (skill.interrupt > 0 && playerIsCastingRef.current) {
             interruptCast();
         }
-    }, [applyDamage, opponent.stat_hp, playerIsCasting, interruptCast, pushDamageEvent]);
+    }, [applyDamage, opponent.stat_hp, interruptCast, pushDamageEvent]);
 
     // START CAST
     const startCast = useCallback((skill: Skill) => {
@@ -300,6 +310,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (opponentCastRef.current) clearInterval(opponentCastRef.current);
 
         setOpponentIsCasting(true);
+        opponentIsCastingRef.current = true;
         setOpponentCurrentCastSkill(skill);
         setOpponentCastProgress(0);
 
@@ -327,6 +338,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
                     setOpponentEnergy((e) => e - skill.energyCost);
                     setOpponentIsCasting(false);
+                    opponentIsCastingRef.current = false;
 
                     // DODGE CHECK
                     const currentDefense = activeDefenseRef.current;
@@ -417,31 +429,47 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         return () => clearInterval(interval);
     }, [selectedCharacter?.stat_energy, selectedCharacter?.stat_energy_regen, opponent.stat_energy, opponent.stat_energy_regen, opponent.stat_hp, opponent.stat_hp_regen]);
 
-    // AI DECISION LOOP
+    // AI DECISION LOOP - Stable Single Instance
     useEffect(() => {
         const interval = setInterval(() => {
-            const { energy, cooldowns, isCasting, winner: hasWinner } = opponentStateRef.current;
+            const { energy, cooldowns, winner: hasWinner } = opponentStateRef.current;
+            const isCasting = opponentIsCastingRef.current;
 
-            if (hasWinner) return;
+            if (hasWinner || isCasting) return;
 
-            if (!isCasting) {
-                const availableSkills = opponent.skills
-                    .map(id => monstersSkills.find(s => s.id === id))
-                    .filter(s => s !== undefined)
-                    .filter(s => (cooldowns[s!.id] || 0) <= 0)
-                    .filter(s => energy >= s!.energyCost);
+            // 1. If we have a pending decision
+            if (monsterDecisionRef.current) {
+                if (Date.now() >= monsterDecisionRef.current.executeAt) {
+                    const skill = monsterDecisionRef.current.skill;
+                    monsterDecisionRef.current = null;
+                    startOpponentCast(skill);
+                }
+                return;
+            }
 
-                if (availableSkills.length > 0) {
-                    const bestSkill = availableSkills.sort((a, b) => b!.power - a!.power)[0];
-                    if (bestSkill) {
-                        startOpponentCast(bestSkill);
-                    }
+            // 2. Pick a skill
+            const availableSkills = opponent.skills
+                .map(id => monstersSkills.find(s => s.id === id))
+                .filter(s => s !== undefined)
+                .filter(s => (cooldowns[s!.id] || 0) <= 0)
+                .filter(s => energy >= s!.energyCost);
+
+            if (availableSkills.length > 0) {
+                const bestSkill = availableSkills.sort((a, b) =>
+                    ((b?.damage ?? 0) + (b?.shield ?? 0)) - ((a?.damage ?? 0) + (a?.shield ?? 0))
+                )[0];
+
+                if (bestSkill) {
+                    monsterDecisionRef.current = {
+                        skill: bestSkill,
+                        executeAt: Date.now() + (opponent.stat_celerity || 2000)
+                    };
                 }
             }
-        }, 500);
+        }, 100);
 
         return () => clearInterval(interval);
-    }, [opponent.skills, startOpponentCast]); // Stable dependencies
+    }, [startOpponentCast]);
 
     // TIME OVER
     useEffect(() => {
@@ -529,7 +557,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         // Visual Effect (2s green perfusion)
         setIsHealing(true);
-        setTimeout(() => setIsHealing(false), 2000);
+        setTimeout(() => setIsHealing(false), 500);
     };
 
     // HANDLE DEFENSE USE
@@ -538,6 +566,11 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (!defense) return;
 
         if (playerCooldowns[defense.id] > 0) return;
+
+        // INTERRUPT CURRENT CAST ON DODGE
+        if (playerIsCasting && defense.dodge > 0) {
+            interruptCast();
+        }
 
         // Instant effect
         if (defense.sound) playSound(defense.sound);

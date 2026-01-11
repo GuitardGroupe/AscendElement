@@ -475,9 +475,9 @@ export const defenses = [
         icon: CONST_ASSETS.IMAGES.SKILL_DODGE,
 
         cooldown: 5000,
-        duration: 3000,
+        duration: 500,
 
-        sound: "",
+        sound: CONST_ASSETS.SOUNDS.AVOID,
 
         shield: 0,
         interrupt: 0,

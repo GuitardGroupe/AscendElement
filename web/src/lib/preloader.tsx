@@ -47,6 +47,13 @@ export const CONST_ASSETS = {
         ULTIMATE_IMPACT: `/${V}/sounds/ui/ultimateimpact.mp3`,
         ULTIMATE_CAST: `/${V}/sounds/ui/ultimatecast.mp3`,
         BATTLE_THEME_01: `/${V}/sounds/ui/battletheme01.mp3`,
+        DODGE: `/${V}/sounds/ui/dodge.mp3`,
+        HEAL: `/${V}/sounds/ui/heal.mp3`,
+        AVOID: `/${V}/sounds/ui/avoid.mp3`,
+        GOBLIN_CAST_LIGHT: `/${V}/sounds/ui/goblinattack.mp3`,
+        GOBLIN_CAST_HEAVY: `/${V}/sounds/ui/goblinlaugh.mp3`,
+        GOBLIN_IMPACT_LIGHT: `/${V}/sounds/ui/fleshhit.mp3`,
+        GOBLIN_IMPACT_HEAVY: `/${V}/sounds/ui/goblinbite.mp3`,
     }
 };
 
