@@ -30,10 +30,10 @@ export default function DamagePop({
 
     const shadow =
         type === "crit"
-            ? "0 0 14px rgba(255,215,107,0.9)"
+            ? "0 0 10px rgba(255,0,0,0.7)"
             : type === "heal"
                 ? "0 0 10px rgba(92,255,135,0.7)"
-                : "0 0 10px rgba(255,0,0,0.7)";
+                : "0 0 14px rgba(255,215,107,0.9)";
 
     const sizeClass = type === "crit" ? "text-2xl" : "text-xl";
 

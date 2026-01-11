@@ -32,6 +32,8 @@ export const CONST_ASSETS = {
         SKILL_DODGE: `/${V}/images/webp/skilldodge.webp`,
         FIGHT_CRYSTAL_DAMAGED: `/${V}/images/webp/fightcrystaldamaged.webp`,
         FIGHT_CRYSTAL_INTACT: `/${V}/images/webp/fightcrystalintact.webp`,
+        FIGHT_CRYSTAL_DAMAGED_OP: `/${V}/images/webp/fightcrystaldamagedop.webp`,
+        FIGHT_CRYSTAL_INTACT_OP: `/${V}/images/webp/fightcrystalintactop.webp`,
         MONSTER_GOBLIN: `/${V}/images/webp/goblin.webp`,
     },
     SOUNDS: {

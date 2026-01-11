@@ -751,6 +751,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                 onDamageDone={(id) => handleDamageDone("player", id)}
                                 lastHitTimestamp={playerHitTime}
                                 color={playerColor}
+                                opponent={true}
                             />
                             {/* SHIELD OVERLAY */}
                             <AnimatePresence>

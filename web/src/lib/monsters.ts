@@ -39,8 +39,8 @@ export const monsters = [
         name: "Gobelin",
         img: CONST_ASSETS.IMAGES.MONSTER_GOBLIN,
         stat_celerity: 2000,
-        stat_hp: 100, // nombre d epoints de vie max
-        stat_energy: 100, // nombre de points d'énergie max
+        stat_hp: 80, // nombre d epoints de vie max
+        stat_energy: 80, // nombre de points d'énergie max
         stat_hp_regen: 0, // coef de regen par seconde
         stat_energy_regen: 5, // coef de regen par seconde
         stat_attack: 1, // nombre de points de dégats infligés à chaque attaque
@@ -73,7 +73,7 @@ export const monstersSkills: MonsterSkill[] = [
         power: 2,
         name: "Morsure",
         cooldown: 6000,
-        energyCost: 0,
+        energyCost: 60,
         castTime: 3000,
         damage: 20,
         heal: 0,

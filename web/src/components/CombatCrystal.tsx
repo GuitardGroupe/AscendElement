@@ -1,9 +1,15 @@
 import { CONST_ASSETS } from '@/lib/preloader';
 
-const getCrystalImage = (hp: number, maxHp: number) => {
+const getCrystalImage = (hp: number, maxHp: number, opponent?: boolean) => {
     const ratio = hp / maxHp;
-    if (ratio <= 0.5) return CONST_ASSETS.IMAGES.FIGHT_CRYSTAL_DAMAGED;
-    return CONST_ASSETS.IMAGES.FIGHT_CRYSTAL_INTACT;
+    if (!opponent) {
+        if (ratio <= 0.5) return CONST_ASSETS.IMAGES.FIGHT_CRYSTAL_DAMAGED_OP;
+        return CONST_ASSETS.IMAGES.FIGHT_CRYSTAL_INTACT_OP;
+    } else {
+        if (ratio <= 0.5) return CONST_ASSETS.IMAGES.FIGHT_CRYSTAL_DAMAGED;
+        return CONST_ASSETS.IMAGES.FIGHT_CRYSTAL_INTACT;
+    }
+
 };
 
 import Image from "next/image";
@@ -19,6 +25,7 @@ export default function CombatCrystal({
     lastHitTimestamp,
     damageEvents,
     onDamageDone,
+    opponent,
 }: {
     hp: number;
     maxHp: number;
@@ -26,8 +33,9 @@ export default function CombatCrystal({
     lastHitTimestamp: any;
     damageEvents: DamageEvent[];
     onDamageDone: (id: string) => void;
+    opponent?: boolean;
 }) {
-    const src = getCrystalImage(hp, maxHp);
+    const src = getCrystalImage(hp, maxHp, opponent);
     const [hitEffect, setHitEffect] = useState(false);
 
     useEffect(() => {
