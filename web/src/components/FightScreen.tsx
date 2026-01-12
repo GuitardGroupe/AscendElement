@@ -102,7 +102,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const [isComboMode, setIsComboMode] = useState(false);
     const [comboHitsCount, setComboHitsCount] = useState(0);
     const [hitPosition, setHitPosition] = useState({ x: 50, y: 50 });
-    const [hitFlash, setHitFlash] = useState(false);
     const comboTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // AI Refs to avoid interval resets
@@ -230,7 +229,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
         comboTimeoutRef.current = setTimeout(() => {
             setComboTriggerActive(false);
-        }, 2000);
+        }, 1000);
     }, [isComboMode]);
 
     const startComboMode = useCallback(() => {
@@ -242,7 +241,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         comboTimeoutRef.current = setTimeout(() => {
             setIsComboMode(false);
             setComboHitsCount(0);
-        }, 2000);
+        }, 1000);
     }, []);
 
     const handleComboHit = useCallback(() => {
@@ -253,10 +252,6 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         applyDamage("opponent", combo.damage, false);
         playSound(combo.impactSound);
 
-        // Trigger hit flash
-        setHitFlash(true);
-        setTimeout(() => setHitFlash(false), 150);
-
         // Restore energy
         setPlayerEnergy(e => {
             const maxEnergy = selectedCharacter?.stat_energy ?? 100;
@@ -264,7 +259,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         });
 
         const nextCount = comboHitsCount + 1;
-        if (nextCount >= 5) {
+        if (nextCount >= 3) {
             setIsComboMode(false);
             setComboHitsCount(0);
             if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
@@ -275,7 +270,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             comboTimeoutRef.current = setTimeout(() => {
                 setIsComboMode(false);
                 setComboHitsCount(0);
-            }, 2000);
+            }, 1000);
         }
     }, [isComboMode, comboHitsCount, applyDamage, playSound, selectedCharacter?.stat_energy]);
 
@@ -796,44 +791,41 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             />
                         </div>
 
-                        {/* COMBO TRIGGER BUTTON */}
+                        {/* COMBO TRIGGER BUTTON - AAA REDESIGN */}
                         <AnimatePresence>
                             {comboTriggerActive && (
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-                                    animate={{
-                                        opacity: 1,
-                                        scale: [1, 1.05, 1],
-                                        rotate: 0
-                                    }}
-                                    exit={{ opacity: 0, scale: 1.5, filter: "blur(10px)" }}
-                                    transition={{
-                                        duration: 0.3,
-                                        scale: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
-                                    }}
+                                    initial={{ opacity: 0, scale: 0.5 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 1.5 }}
                                     className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
                                 >
-                                    <button
+                                    <motion.button
                                         onClick={startComboMode}
-                                        className="pointer-events-auto relative group"
+                                        className="pointer-events-auto relative w-28 h-28 rounded-full flex items-center justify-center overflow-hidden border border-cyan-400/50 bg-cyan-950/40 backdrop-blur-md shadow-[0_0_40px_rgba(0,255,255,0.4)]"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        animate={{
+                                            boxShadow: [
+                                                "0 0 20px rgba(0,255,255,0.3)",
+                                                "0 0 50px rgba(0,255,255,0.6)",
+                                                "0 0 20px rgba(0,255,255,0.3)"
+                                            ]
+                                        }}
+                                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                                     >
-                                        {/* Outer Glow Ring */}
-                                        <div className="absolute -inset-4 bg-amber-500/30 rounded-full blur-xl group-hover:bg-amber-500/50 transition-colors" />
-
-                                        <div className="relative w-28 h-28 rounded-full bg-linear-to-br from-amber-400 via-yellow-500 to-amber-600 border-4 border-white/80 shadow-[0_0_40px_rgba(251,191,36,0.6)] flex flex-col items-center justify-center overflow-hidden active:scale-90 transition-transform">
-                                            {/* Glass Overlay */}
-                                            <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" />
-
-                                            <motion.div
-                                                className="absolute inset-0 bg-linear-to-b from-transparent via-white/40 to-transparent h-1/2 w-full"
-                                                animate={{ top: ['-50%', '100%'] }}
-                                                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                                            />
-
-                                            <span className="relative z-10 text-black font-black text-xl tracking-tighter drop-shadow-sm leading-none">COMBO</span>
-                                            <span className="relative z-10 text-black/80 font-bold text-[10px] uppercase tracking-widest mt-1">Activate</span>
+                                        <div className="absolute inset-0 bg-linear-to-t from-cyan-500/20 to-transparent" />
+                                        <div className="z-10 flex flex-col items-center">
+                                            <span className="text-[10px] uppercase tracking-[0.3em] font-light text-cyan-200">Trigger</span>
+                                            <span className="text-xl font-bold tracking-widest text-white drop-shadow-[0_0_8px_rgba(0,255,255,0.8)]">COMBO</span>
                                         </div>
-                                    </button>
+                                        {/* Outer pulse ring */}
+                                        <motion.div
+                                            className="absolute inset-0 rounded-full border border-cyan-400"
+                                            animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
+                                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                                        />
+                                    </motion.button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -924,95 +916,79 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     </div>
                 </div>
 
-                {/* COMBO MODE OVERLAY */}
+                {/* COMBO MODE OVERLAY - AAA REDESIGN */}
                 <AnimatePresence>
                     {isComboMode && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 z-100 flex items-center justify-center pointer-events-none overflow-hidden"
+                            className="absolute inset-0 z-100 flex items-center justify-center pointer-events-none"
                         >
-                            {/* HIT FLASH */}
-                            <AnimatePresence>
-                                {hitFlash && (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="absolute inset-0 bg-white/20 z-50 pointer-events-none"
-                                    />
-                                )}
-                            </AnimatePresence>
-
-                            {/* THE DARK CIRCLE ON BATTLEZONE - Improved Mask */}
-                            <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-black/80 rounded-full border-10 border-yellow-400/10 blur-md shadow-[0_0_150px_rgba(0,0,0,1)]" />
-
-                            {/* Scanning Ring Decoration */}
+                            {/* THE ENERGY VORTEX ON BATTLEZONE */}
                             <motion.div
-                                className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full border-2 border-white/5 border-dashed"
-                                animate={{ rotate: 360 }}
-                                transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                                className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-black/60 rounded-full border-4 border-yellow-500/20 shadow-[0_0_100px_rgba(0,0,0,0.9)]"
+                                animate={{
+                                    boxShadow: ["0 0 60px rgba(0,0,0,0.8)", "0 0 100px rgba(0,0,0,1)", "0 0 60px rgba(0,0,0,0.8)"],
+                                    scale: [1, 1.02, 1]
+                                }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                             />
 
                             {/* THE HIT BUTTON AT RANDOM POSITION */}
                             <motion.button
                                 key={comboHitsCount}
-                                initial={{ scale: 0, opacity: 0, rotate: -45 }}
-                                animate={{
-                                    scale: 1,
-                                    opacity: 1,
-                                    rotate: 0,
-                                    left: `${hitPosition.x}%`,
-                                    top: `${hitPosition.y}%`
-                                }}
-                                transition={{ type: "spring", damping: 15, stiffness: 200 }}
-                                whileTap={{ scale: 0.85 }}
+                                initial={{ scale: 0, opacity: 0, rotate: -20 }}
+                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                exit={{ scale: 1.5, opacity: 0 }}
+                                whileTap={{ scale: 0.9 }}
                                 onClick={handleComboHit}
-                                className="pointer-events-auto absolute w-24 h-24 rounded-full border-4 border-white/20 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                                className="pointer-events-auto absolute w-24 h-24 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(255,200,0,0.6)]"
                                 style={{
+                                    left: `${hitPosition.x}%`,
+                                    top: `${hitPosition.y}%`,
                                     transform: 'translate(-50%, -50%)'
                                 }}
                             >
-                                {/* SVG PROGRESS RING - 2s countdown (2000ms from code) */}
-                                <svg className="absolute inset-0 w-full h-full -rotate-90 scale-x-[-1]">
-                                    <motion.circle
-                                        cx="48"
-                                        cy="48"
-                                        r="40"
-                                        stroke="white"
-                                        strokeWidth="4"
-                                        fill="transparent"
-                                        strokeDasharray="251"
-                                        initial={{ strokeDashoffset: 0 }}
-                                        animate={{ strokeDashoffset: 251 }}
-                                        transition={{ duration: 2, ease: "linear" }}
+                                {/* Inner Energy Core */}
+                                <div className="relative w-full h-full rounded-full bg-linear-to-br from-yellow-100 via-yellow-400 to-orange-600 border-2 border-white/60 flex items-center justify-center overflow-hidden shadow-inner">
+                                    <span className="text-white font-black text-2xl tracking-tighter italic drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] z-10">HIT!</span>
+                                    {/* Glint effect */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-white/30 -skew-x-12"
+                                        animate={{ left: ["-150%", "150%"] }}
+                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.5 }}
                                     />
-                                </svg>
-
-                                <div className="relative z-10 w-full h-full bg-linear-to-br from-white via-neutral-100 to-neutral-300 flex items-center justify-center">
-                                    <span className="text-neutral-900 font-extrabold text-2xl drop-shadow-sm tracking-tighter">HIT</span>
+                                    {/* Plasma Pulse */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-yellow-300 opacity-20"
+                                        animate={{ opacity: [0.1, 0.4, 0.1] }}
+                                        transition={{ duration: 0.5, repeat: Infinity }}
+                                    />
                                 </div>
+                                {/* Outer Bloom Ring */}
+                                <motion.div
+                                    className="absolute -inset-3 rounded-full border-2 border-yellow-400"
+                                    animate={{ scale: [1, 1.3], opacity: [0.4, 0] }}
+                                    transition={{ duration: 0.6, repeat: Infinity }}
+                                />
                             </motion.button>
 
-                            {/* HIT COUNTER UI */}
-                            <div className="absolute top-24 flex flex-col items-center gap-3">
-                                <div className="text-white/40 text-[9px] font-bold uppercase tracking-[0.3em]">Chain Magnitude</div>
-                                <div className="flex gap-2.5">
-                                    {[...Array(5)].map((_, i) => (
+                            {/* PROGRESS PIPS - ENERGY CHARGE STYLE */}
+                            <div className="absolute top-12 flex gap-3">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="relative w-8 h-2 bg-black/50 overflow-hidden rounded-sm border border-white/10 shadow-lg">
                                         <motion.div
-                                            key={i}
+                                            className={`absolute inset-0 ${i < comboHitsCount ? "bg-linear-to-r from-yellow-300 to-yellow-500 shadow-[0_0_15px_#facc15]" : ""}`}
                                             initial={false}
                                             animate={{
-                                                scale: i < comboHitsCount ? [1, 1.4, 1] : 1,
-                                                rotate: i < comboHitsCount ? 45 : 0,
-                                                backgroundColor: i < comboHitsCount ? "rgba(251, 191, 36, 1)" : "rgba(255, 255, 255, 0.05)",
-                                                borderColor: i < comboHitsCount ? "rgba(255, 255, 255, 1)" : "rgba(255, 255, 255, 0.1)"
+                                                opacity: i < comboHitsCount ? 1 : 0,
+                                                scaleX: i < comboHitsCount ? 1 : 0
                                             }}
-                                            className="w-4 h-4 rounded-sm border shadow-xl"
+                                            style={{ originX: 0 }}
                                         />
-                                    ))}
-                                </div>
+                                    </div>
+                                ))}
                             </div>
                         </motion.div>
                     )}
