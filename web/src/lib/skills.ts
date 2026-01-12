@@ -29,6 +29,18 @@ export type Skill = {
     interrupt: number;
 };
 
+export type Combo = {
+    id: number;
+    name: string;
+
+    energyRestored: number;
+
+    impactSound: string;
+
+    damage: number;
+
+};
+
 export type Item = {
     id: number;
     name: string;
@@ -487,3 +499,13 @@ export const defenses = [
         stun: 0,
     }
 ]
+
+export const combos: Combo[] = [
+    {
+        id: 1,
+        name: "combo",
+        energyRestored: 10,
+        impactSound: CONST_SOUND_SWORD_IMPACT,
+        damage: 5,
+    }
+]   

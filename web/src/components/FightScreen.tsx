@@ -12,7 +12,7 @@ import EnergyBar from "@/components/EnergyBar";
 import CastBar from "@/components/CastBar";
 import type { DamageEvent } from "@/components/DamagePop";
 import SkillGrid from "@/components/SkillGrid";
-import { Skill, skillSets, ElementKey, defenses, Defense } from "@/lib/skills";
+import { Skill, skillSets, ElementKey, defenses, Defense, combos } from "@/lib/skills";
 import { monstersSkills, monsters, MonsterSkill } from "@/lib/monsters";
 import { stims } from "@/lib/stim";
 
@@ -97,6 +97,13 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     const activeDefenseRef = useRef<{ defense: Defense; remaining: number } | null>(null);
 
+    // COMBOS
+    const [comboTriggerActive, setComboTriggerActive] = useState(false);
+    const [isComboMode, setIsComboMode] = useState(false);
+    const [comboHitsCount, setComboHitsCount] = useState(0);
+    const [hitPosition, setHitPosition] = useState({ x: 50, y: 50 });
+    const comboTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     // AI Refs to avoid interval resets
     const opponentStateRef = useRef({
         energy: opponentEnergy,
@@ -145,9 +152,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // FLEE
     const handleFlee = useCallback(() => {
+        if (isComboMode) return;
         console.log("HANDLE FLEE")
         endCombat("Fuite");
-    }, [endCombat]);
+    }, [endCombat, isComboMode]);
 
     // DAMAGE EVENT
     const pushDamageEvent = useCallback((
@@ -169,8 +177,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     }, []);
 
     // APPLY DAMAGE
-    const applyDamage = useCallback((target: "player" | "opponent", amount: number) => {
-        const isCrit = Math.random() < 0.5;
+    const applyDamage = useCallback((target: "player" | "opponent", amount: number, canCrit: boolean = true) => {
+        const isCrit = canCrit ? Math.random() < 0.6 : false; // Reduced crit chance for balance
         const finalAmount = isCrit ? Math.round(amount * 2) : amount;
         const damageType = isCrit ? "crit" : "normal";
 
@@ -191,6 +199,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 return newHP;
             });
         }
+        return isCrit;
     }, [endCombat, pushDamageEvent]);
 
     const interruptCast = useCallback(() => {
@@ -213,34 +222,80 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         setPlayerCastProgress(0);
     }, [playerCurrentCastSkill, stopSound]);
 
+    // COMBO LOGIC
+    const startComboTrigger = useCallback(() => {
+        if (isComboMode) return;
+        setComboTriggerActive(true);
+        if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
+        comboTimeoutRef.current = setTimeout(() => {
+            setComboTriggerActive(false);
+        }, 2000);
+    }, [isComboMode]);
+
+    const startComboMode = useCallback(() => {
+        setComboTriggerActive(false);
+        setIsComboMode(true);
+        setComboHitsCount(0);
+        setHitPosition({ x: 30 + Math.random() * 40, y: 30 + Math.random() * 40 });
+        if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
+        comboTimeoutRef.current = setTimeout(() => {
+            setIsComboMode(false);
+            setComboHitsCount(0);
+        }, 2000);
+    }, []);
+
+    const handleComboHit = useCallback(() => {
+        if (!isComboMode) return;
+        const combo = combos[0]; // Assuming only one combo type for now
+
+        // Damage opponent (no crit)
+        applyDamage("opponent", combo.damage, false);
+        playSound(combo.impactSound);
+
+        // Restore energy
+        setPlayerEnergy(e => {
+            const maxEnergy = selectedCharacter?.stat_energy ?? 100;
+            return Math.min(maxEnergy, e + combo.energyRestored);
+        });
+
+        const nextCount = comboHitsCount + 1;
+        if (nextCount >= 5) {
+            setIsComboMode(false);
+            setComboHitsCount(0);
+            if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
+        } else {
+            setComboHitsCount(nextCount);
+            setHitPosition({ x: 20 + Math.random() * 60, y: 20 + Math.random() * 60 });
+            if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
+            comboTimeoutRef.current = setTimeout(() => {
+                setIsComboMode(false);
+                setComboHitsCount(0);
+            }, 2000);
+        }
+    }, [isComboMode, comboHitsCount, applyDamage, playSound, selectedCharacter?.stat_energy]);
+
     // SKILL EFFECT
     const applySkillEffects = useCallback((skill: Skill) => {
+        let wasCrit = false;
         if (skill.damage > 0) {
-            applyDamage("opponent", skill.damage);
+            wasCrit = applyDamage("opponent", skill.damage);
         }
         if (skill.heal > 0) {
             setPlayerHealth(hp => Math.min(selectedCharacter?.stat_hp ?? 100, hp + skill.heal));
             pushDamageEvent("player", skill.heal, "heal");
         }
         // Interrupt logic: if skill has interrupt, stop opponent cast
-        if (skill.interrupt > 0 && opponentIsCasting) {
+        if (skill.interrupt > 0 && opponentIsCastingRef.current) {
             if (opponentCastRef.current) clearInterval(opponentCastRef.current);
             if (opponentFinishTimeoutRef.current) clearTimeout(opponentFinishTimeoutRef.current);
-
-            // PUNISHMENT: Apply FULL cooldown to the interrupted skill
-            if (opponentCurrentCastSkill) {
-                setOpponentCooldowns((prev) => ({
-                    ...prev,
-                    [opponentCurrentCastSkill.id]: opponentCurrentCastSkill.cooldown,
-                }));
-            }
 
             setOpponentIsCasting(false);
             opponentIsCastingRef.current = false;
             setOpponentCurrentCastSkill(null);
             setOpponentCastProgress(0);
         }
-    }, [applyDamage, selectedCharacter?.stat_hp, opponentIsCasting, opponentCurrentCastSkill, pushDamageEvent]);
+        return wasCrit;
+    }, [applyDamage, selectedCharacter?.stat_hp, pushDamageEvent]);
 
     // OPPONENT SKILL EFFECT
     const applyOpponentSkillEffects = useCallback((skill: MonsterSkill) => {
@@ -297,13 +352,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     setPlayerEnergy((e) => e - skill.energyCost);
                     setPlayerIsCasting(false);
                     playSound(skill.impactSound);
-                    applySkillEffects(skill);
+                    const wasCrit = applySkillEffects(skill);
+                    if (wasCrit) startComboTrigger();
                     setPlayerCastProgress(0);
                     playerFinishTimeoutRef.current = null;
                 }, 200);
             }
         }, step);
-    }, [playSound, applySkillEffects]);
+    }, [playSound, applySkillEffects, startComboTrigger]);
 
     // START OPPONENT CAST
     const startOpponentCast = useCallback((skill: MonsterSkill) => {
@@ -487,6 +543,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE SKILL LAUNCH
     const handleSkill = (skill: number) => {
+        if (isComboMode) return; // Restriction
         if (skill == 4 || skill == 5) {
             /*
             const item = skill === 4 ? weapon : stim;
@@ -534,6 +591,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE STIM USE
     const handleStim = (type: number, id?: number) => {
+        if (isComboMode) return; // Restriction
         if (type !== 5 || id === undefined) return;
 
         const stim = stims.find(s => s.id === id);
@@ -562,6 +620,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE DEFENSE USE
     const handleDefense = (id: number) => {
+        if (isComboMode) return; // Restriction
         const defense = defenses.find(d => d.id === id);
         if (!defense) return;
 
@@ -732,6 +791,25 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             />
                         </div>
 
+                        {/* COMBO TRIGGER BUTTON */}
+                        <AnimatePresence>
+                            {comboTriggerActive && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.5 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 1.5 }}
+                                    className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
+                                >
+                                    <button
+                                        onClick={startComboMode}
+                                        className="pointer-events-auto w-24 h-24 rounded-full bg-yellow-400 border-4 border-white text-black font-bold text-lg shadow-[0_0_30px_rgba(255,255,0,0.8)] active:scale-95 transition-transform"
+                                    >
+                                        COMBO!
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                     </div>
 
                 </div>
@@ -817,6 +895,44 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         </div>
                     </div>
                 </div>
+
+                {/* COMBO MODE OVERLAY */}
+                <AnimatePresence>
+                    {isComboMode && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none"
+                        >
+                            {/* THE DARK CIRCLE ON BATTLEZONE */}
+                            <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-black/60 rounded-full border-4 border-yellow-400/30 blur-sm shadow-[0_0_100px_rgba(0,0,0,0.9)]" />
+
+                            {/* THE HIT BUTTON AT RANDOM POSITION */}
+                            <motion.button
+                                key={comboHitsCount}
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                whileTap={{ scale: 0.8 }}
+                                onClick={handleComboHit}
+                                className="pointer-events-auto absolute w-24 h-24 rounded-full bg-white border-8 border-yellow-500 flex items-center justify-center text-yellow-600 font-extrabold text-2xl shadow-[0_0_20px_white]"
+                                style={{
+                                    left: `${hitPosition.x}%`,
+                                    top: `${hitPosition.y}%`,
+                                    transform: 'translate(-50%, -50%)'
+                                }}
+                            >
+                                HIT
+                            </motion.button>
+
+                            <div className="absolute top-10 flex gap-2">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className={`w-4 h-4 rounded-full border-2 ${i < comboHitsCount ? "bg-yellow-400 border-yellow-200" : "bg-black/40 border-white/20"}`} />
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
