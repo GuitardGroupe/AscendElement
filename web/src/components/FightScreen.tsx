@@ -102,6 +102,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const [isComboMode, setIsComboMode] = useState(false);
     const [comboHitsCount, setComboHitsCount] = useState(0);
     const [hitPosition, setHitPosition] = useState({ x: 50, y: 50 });
+    const [hitFlash, setHitFlash] = useState(false);
     const comboTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // AI Refs to avoid interval resets
@@ -251,6 +252,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         // Damage opponent (no crit)
         applyDamage("opponent", combo.damage, false);
         playSound(combo.impactSound);
+
+        // Trigger hit flash
+        setHitFlash(true);
+        setTimeout(() => setHitFlash(false), 150);
 
         // Restore energy
         setPlayerEnergy(e => {
@@ -525,7 +530,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         }, 100);
 
         return () => clearInterval(interval);
-    }, [startOpponentCast]);
+    }, [startOpponentCast, opponent.skills, opponent.stat_celerity]);
 
     // TIME OVER
     useEffect(() => {
@@ -795,16 +800,39 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         <AnimatePresence>
                             {comboTriggerActive && (
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.5 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 1.5 }}
+                                    initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+                                    animate={{
+                                        opacity: 1,
+                                        scale: [1, 1.05, 1],
+                                        rotate: 0
+                                    }}
+                                    exit={{ opacity: 0, scale: 1.5, filter: "blur(10px)" }}
+                                    transition={{
+                                        duration: 0.3,
+                                        scale: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
+                                    }}
                                     className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
                                 >
                                     <button
                                         onClick={startComboMode}
-                                        className="pointer-events-auto w-24 h-24 rounded-full bg-yellow-400 border-4 border-white text-black font-bold text-lg shadow-[0_0_30px_rgba(255,255,0,0.8)] active:scale-95 transition-transform"
+                                        className="pointer-events-auto relative group"
                                     >
-                                        COMBO!
+                                        {/* Outer Glow Ring */}
+                                        <div className="absolute -inset-4 bg-amber-500/30 rounded-full blur-xl group-hover:bg-amber-500/50 transition-colors" />
+
+                                        <div className="relative w-28 h-28 rounded-full bg-linear-to-br from-amber-400 via-yellow-500 to-amber-600 border-4 border-white/80 shadow-[0_0_40px_rgba(251,191,36,0.6)] flex flex-col items-center justify-center overflow-hidden active:scale-90 transition-transform">
+                                            {/* Glass Overlay */}
+                                            <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" />
+
+                                            <motion.div
+                                                className="absolute inset-0 bg-linear-to-b from-transparent via-white/40 to-transparent h-1/2 w-full"
+                                                animate={{ top: ['-50%', '100%'] }}
+                                                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                            />
+
+                                            <span className="relative z-10 text-black font-black text-xl tracking-tighter drop-shadow-sm leading-none">COMBO</span>
+                                            <span className="relative z-10 text-black/80 font-bold text-[10px] uppercase tracking-widest mt-1">Activate</span>
+                                        </div>
                                     </button>
                                 </motion.div>
                             )}
@@ -903,32 +931,88 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 z-[100] flex items-center justify-center pointer-events-none"
+                            className="absolute inset-0 z-100 flex items-center justify-center pointer-events-none overflow-hidden"
                         >
-                            {/* THE DARK CIRCLE ON BATTLEZONE */}
-                            <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-black/60 rounded-full border-4 border-yellow-400/30 blur-sm shadow-[0_0_100px_rgba(0,0,0,0.9)]" />
+                            {/* HIT FLASH */}
+                            <AnimatePresence>
+                                {hitFlash && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="absolute inset-0 bg-white/20 z-50 pointer-events-none"
+                                    />
+                                )}
+                            </AnimatePresence>
+
+                            {/* THE DARK CIRCLE ON BATTLEZONE - Improved Mask */}
+                            <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-black/80 rounded-full border-10 border-yellow-400/10 blur-md shadow-[0_0_150px_rgba(0,0,0,1)]" />
+
+                            {/* Scanning Ring Decoration */}
+                            <motion.div
+                                className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full border-2 border-white/5 border-dashed"
+                                animate={{ rotate: 360 }}
+                                transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                            />
 
                             {/* THE HIT BUTTON AT RANDOM POSITION */}
                             <motion.button
                                 key={comboHitsCount}
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                whileTap={{ scale: 0.8 }}
-                                onClick={handleComboHit}
-                                className="pointer-events-auto absolute w-24 h-24 rounded-full bg-white border-8 border-yellow-500 flex items-center justify-center text-yellow-600 font-extrabold text-2xl shadow-[0_0_20px_white]"
-                                style={{
+                                initial={{ scale: 0, opacity: 0, rotate: -45 }}
+                                animate={{
+                                    scale: 1,
+                                    opacity: 1,
+                                    rotate: 0,
                                     left: `${hitPosition.x}%`,
-                                    top: `${hitPosition.y}%`,
+                                    top: `${hitPosition.y}%`
+                                }}
+                                transition={{ type: "spring", damping: 15, stiffness: 200 }}
+                                whileTap={{ scale: 0.85 }}
+                                onClick={handleComboHit}
+                                className="pointer-events-auto absolute w-24 h-24 rounded-full border-4 border-white/20 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                                style={{
                                     transform: 'translate(-50%, -50%)'
                                 }}
                             >
-                                HIT
+                                {/* SVG PROGRESS RING - 2s countdown (2000ms from code) */}
+                                <svg className="absolute inset-0 w-full h-full -rotate-90 scale-x-[-1]">
+                                    <motion.circle
+                                        cx="48"
+                                        cy="48"
+                                        r="40"
+                                        stroke="white"
+                                        strokeWidth="4"
+                                        fill="transparent"
+                                        strokeDasharray="251"
+                                        initial={{ strokeDashoffset: 0 }}
+                                        animate={{ strokeDashoffset: 251 }}
+                                        transition={{ duration: 2, ease: "linear" }}
+                                    />
+                                </svg>
+
+                                <div className="relative z-10 w-full h-full bg-linear-to-br from-white via-neutral-100 to-neutral-300 flex items-center justify-center">
+                                    <span className="text-neutral-900 font-extrabold text-2xl drop-shadow-sm tracking-tighter">HIT</span>
+                                </div>
                             </motion.button>
 
-                            <div className="absolute top-10 flex gap-2">
-                                {[...Array(5)].map((_, i) => (
-                                    <div key={i} className={`w-4 h-4 rounded-full border-2 ${i < comboHitsCount ? "bg-yellow-400 border-yellow-200" : "bg-black/40 border-white/20"}`} />
-                                ))}
+                            {/* HIT COUNTER UI */}
+                            <div className="absolute top-24 flex flex-col items-center gap-3">
+                                <div className="text-white/40 text-[9px] font-bold uppercase tracking-[0.3em]">Chain Magnitude</div>
+                                <div className="flex gap-2.5">
+                                    {[...Array(5)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            initial={false}
+                                            animate={{
+                                                scale: i < comboHitsCount ? [1, 1.4, 1] : 1,
+                                                rotate: i < comboHitsCount ? 45 : 0,
+                                                backgroundColor: i < comboHitsCount ? "rgba(251, 191, 36, 1)" : "rgba(255, 255, 255, 0.05)",
+                                                borderColor: i < comboHitsCount ? "rgba(255, 255, 255, 1)" : "rgba(255, 255, 255, 0.1)"
+                                            }}
+                                            className="w-4 h-4 rounded-sm border shadow-xl"
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         </motion.div>
                     )}
