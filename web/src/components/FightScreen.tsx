@@ -267,13 +267,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         const combo = combos[0];
         const nextCount = comboHitsCount + 1;
 
-        // 3rd hit deals double damage as an impactful finisher
-        const finalDamage = nextCount === 3 ? combo.damage * 2 : combo.damage;
-        applyDamage("opponent", finalDamage, false);
+        // Play the buildup sound on each hit
+        playSound(combo.comboSound);
 
-        playSound(combo.impactSound);
-
-        // Restore energy
+        // Restore energy per hit
         setPlayerEnergy(e => {
             const maxEnergy = selectedCharacter?.stat_energy ?? 100;
             return Math.max(0, Math.min(maxEnergy, e + combo.energyRestored));
@@ -284,16 +281,34 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
 
         if (nextCount >= 3) {
-            // Small delay to let the animation of the 3rd pip show up
+            // SUCCESS
+            // 1. Wait to let the 3rd pip animation finish (600ms)
             setTimeout(() => {
-                setIsComboMode(false);
-                setComboHitsCount(0);
+                setIsComboMode(false); // Start exit animation
+
+                // 2. Wait for the exit animation (approx 300ms) before applying damage
+                setTimeout(() => {
+                    const totalDamage = combo.damage * 3;
+                    applyDamage("opponent", totalDamage, false);
+                    playSound(combo.impactSound);
+                    setComboHitsCount(0);
+                }, 300);
             }, 600);
         } else {
             setHitPosition({ x: 20 + Math.random() * 60, y: 20 + Math.random() * 60 });
             comboTimeoutRef.current = setTimeout(() => {
-                setIsComboMode(false);
-                setComboHitsCount(0);
+                // TIMEOUT
+                setIsComboMode(false); // Start exit animation
+
+                // Wait for exit animation
+                setTimeout(() => {
+                    const finalDamage = combo.damage * nextCount;
+                    if (finalDamage > 0) {
+                        applyDamage("opponent", finalDamage, false);
+                        playSound(combo.impactSound);
+                    }
+                    setComboHitsCount(0);
+                }, 300);
             }, 1000);
         }
     }, [isComboMode, comboHitsCount, applyDamage, playSound, selectedCharacter?.stat_energy]);

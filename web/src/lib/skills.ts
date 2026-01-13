@@ -37,6 +37,7 @@ export type Combo = {
     energyRestored: number;
 
     impactSound: string;
+    comboSound: string;
 
     damage: number;
 
@@ -184,6 +185,7 @@ export const combos: Combo[] = [
         id: 1,
         name: "combo",
         energyRestored: 10,
+        comboSound: CONST_ASSETS.SOUNDS.COMBO,
         impactSound: CONST_SOUND_SWORD_IMPACT,
         damage: 5,
     }

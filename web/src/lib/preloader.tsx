@@ -56,6 +56,7 @@ export const CONST_ASSETS = {
         GOBLIN_CAST_HEAVY: `/${V}/sounds/ui/goblinlaugh.mp3`,
         GOBLIN_IMPACT_LIGHT: `/${V}/sounds/ui/fleshhit.mp3`,
         GOBLIN_IMPACT_HEAVY: `/${V}/sounds/ui/goblinbite.mp3`,
+        COMBO: `/${V}/sounds/ui/combo.mp3`,
     }
 };
 

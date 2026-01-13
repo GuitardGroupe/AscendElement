@@ -5,9 +5,10 @@ import LoadingScreen from '@/components/LoadingScreen';
 import LobbyScreen from '@/components/LobbyScreen';
 import CharactersScreen from '@/components/CharactersScreen';
 import FightScreen from '@/components/FightScreen';
+import StuffScreen from '@/components/StuffScreen';
 import { AnimatePresence } from 'framer-motion';
 
-type GameState = 'loading' | 'lobby' | 'characters' | 'fight';
+type GameState = 'loading' | 'lobby' | 'characters' | 'fight' | 'inventory';
 
 function useIsMobile() {
 
@@ -42,6 +43,9 @@ export default function Home() {
       case 'characters':
         setGameState('characters');
         break;
+      case 'inventory':
+        setGameState('inventory');
+        break;
       default:
         setGameState('lobby');
         break;
@@ -54,13 +58,16 @@ export default function Home() {
         <LoadingScreen key="loading" onComplete={() => handleGameState('lobby')} />
       )}
       {gameState === 'lobby' && (
-        <LobbyScreen key="lobby" onSwitchScreen={(screen) => handleGameState(screen)} />
+        <LobbyScreen key="lobby" onSwitchScreen={(screen: string) => handleGameState(screen)} />
       )}
       {gameState === 'characters' && (
-        <CharactersScreen key="characters" onSwitchScreen={(screen) => handleGameState(screen)} />
+        <CharactersScreen key="characters" onSwitchScreen={(screen: string) => handleGameState(screen)} />
       )}
       {gameState === 'fight' && (
-        <FightScreen key="fight" onSwitchScreen={(screen) => handleGameState(screen)} />
+        <FightScreen key="fight" onSwitchScreen={(screen: string) => handleGameState(screen)} />
+      )}
+      {gameState === 'inventory' && (
+        <StuffScreen key="inventory" onSwitchScreen={(screen: string) => handleGameState(screen)} />
       )}
     </AnimatePresence>
   );

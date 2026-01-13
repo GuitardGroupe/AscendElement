@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Flame, Hexagon } from 'lucide-react';
+import { Swords, Flame, Hexagon, Package } from 'lucide-react';
 import Image from 'next/image';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
@@ -70,6 +70,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
     const menuItems = [
         { id: 'fight', show: isCrystalActive, label: 'COMBAT', icon: Swords, color: 'text-yellow-400', onClick: () => handleFightClick() },
+        { id: 'inventory', show: isCrystalActive, label: 'STUFF', icon: Package, color: 'text-cyan-400', onClick: () => onSwitchScreen('inventory') },
         { id: 'sacrifice', show: isCrystalActive, label: 'SACRIFICE', icon: Flame, color: 'text-red-400', onClick: () => handleActionClick() },
     ];
 
@@ -122,11 +123,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(item); }}
                                 className="w-16 h-16 rounded-md bg-neutral-900 border-2 border-white/10 flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.8)] overflow-hidden active:border-cyan-500/50"
                             >
-                                <img
-                                    src={'img' in item.data ? item.data.img : item.data.icon}
-                                    className="w-full h-full object-cover"
-                                    alt={item.data.name}
-                                />
+                                <div className="relative w-full h-full">
+                                    <Image
+                                        src={'img' in item.data ? item.data.img : item.data.icon}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                        alt={item.data.name}
+                                    />
+                                </div>
                             </motion.button>
                         ))}
                     </div>
@@ -150,11 +154,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(item); }}
                                 className="w-16 h-16 rounded-md bg-neutral-900 border-2 border-white/10 flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.8)] overflow-hidden active:border-cyan-500/50"
                             >
-                                <img
-                                    src={'img' in item.data ? item.data.img : item.data.icon}
-                                    className="w-full h-full object-cover"
-                                    alt={item.data.name}
-                                />
+                                <div className="relative w-full h-full">
+                                    <Image
+                                        src={'img' in item.data ? item.data.img : item.data.icon}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                        alt={item.data.name}
+                                    />
+                                </div>
                             </motion.button>
                         ))}
                     </div>
@@ -162,7 +169,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
             </main>
 
             {/* Action Menu */}
-            <nav className="absolute bottom-6 left-4 right-4 z-20 grid grid-cols-2 gap-3">
+            <nav className="absolute bottom-6 left-4 right-4 z-20 grid grid-cols-3 gap-2">
                 {menuItems.filter(item => item.show).map((item, index) => (
                     <motion.button
                         key={item.id}
@@ -211,11 +218,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                             <div className="p-8 flex flex-col items-center gap-6 relative z-10">
                                 {/* Large Angular Icon */}
                                 <div className="w-28 h-28 rounded-sm bg-neutral-900 border-2 border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden">
-                                    <img
-                                        src={'img' in selectedInfo.data ? selectedInfo.data.img : selectedInfo.data.icon}
-                                        className="w-full h-full object-cover"
-                                        alt={selectedInfo.data.name}
-                                    />
+                                    <div className="relative w-full h-full">
+                                        <Image
+                                            src={'img' in selectedInfo.data ? selectedInfo.data.img : selectedInfo.data.icon}
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                            alt={selectedInfo.data.name}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="text-center w-full">
