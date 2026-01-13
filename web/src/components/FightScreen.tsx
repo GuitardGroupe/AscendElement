@@ -3,6 +3,7 @@
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { useSoundStore } from "@/store/useSoundStore";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import CombatCrystal from "@/components/CombatCrystal";
@@ -29,6 +30,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     const { playSound, stopSound } = useSoundStore();
     const [winner, setWinner] = useState<string | null>(null);
+    const [combatResult, setCombatResult] = useState<'victory' | 'defeat' | null>(null);
     const opponent = monsters[0];
 
     // TIMER
@@ -147,8 +149,23 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     // GAME OVER
     const endCombat = useCallback((who: string) => {
         console.log("HANDLE END COMBAT", who)
-        handleGameOver()
-    }, [handleGameOver]);
+        setWinner(who);
+
+        if (who === "Fuite") {
+            handleGameOver();
+            return;
+        }
+
+        // Determine result based on health
+        setTimeout(() => {
+            if (opponentHealthRef.current <= 0) {
+                setCombatResult('victory');
+                playSound(CONST_ASSETS.SOUNDS.ACCEPTATION);
+            } else {
+                setCombatResult('defeat');
+            }
+        }, 1500);
+    }, [playSound, handleGameOver]);
 
     // FLEE
     const handleFlee = useCallback(() => {
@@ -178,7 +195,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // APPLY DAMAGE
     const applyDamage = useCallback((target: "player" | "opponent", amount: number, canCrit: boolean = true) => {
-        const isCrit = canCrit ? Math.random() < 0.6 : false; // Reduced crit chance for balance
+        const critChance = target === "opponent" ? (selectedCharacter?.stat_critical ?? 0.1) : 0.05;
+        const isCrit = canCrit ? Math.random() < critChance : false;
         const finalAmount = isCrit ? Math.round(amount * 2) : amount;
         const damageType = isCrit ? "crit" : "normal";
 
@@ -200,7 +218,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             });
         }
         return isCrit;
-    }, [endCombat, pushDamageEvent]);
+    }, [endCombat, pushDamageEvent, selectedCharacter?.stat_critical]);
 
     const interruptCast = useCallback(() => {
         if (playerCastRef.current) clearInterval(playerCastRef.current);
@@ -245,28 +263,34 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     }, []);
 
     const handleComboHit = useCallback(() => {
-        if (!isComboMode) return;
-        const combo = combos[0]; // Assuming only one combo type for now
+        if (!isComboMode || comboHitsCount >= 3) return;
+        const combo = combos[0];
+        const nextCount = comboHitsCount + 1;
 
-        // Damage opponent (no crit)
-        applyDamage("opponent", combo.damage, false);
+        // 3rd hit deals double damage as an impactful finisher
+        const finalDamage = nextCount === 3 ? combo.damage * 2 : combo.damage;
+        applyDamage("opponent", finalDamage, false);
+
         playSound(combo.impactSound);
 
         // Restore energy
         setPlayerEnergy(e => {
             const maxEnergy = selectedCharacter?.stat_energy ?? 100;
-            return Math.min(maxEnergy, e + combo.energyRestored);
+            return Math.max(0, Math.min(maxEnergy, e + combo.energyRestored));
         });
 
-        const nextCount = comboHitsCount + 1;
+        setComboHitsCount(nextCount);
+
+        if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
+
         if (nextCount >= 3) {
-            setIsComboMode(false);
-            setComboHitsCount(0);
-            if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
+            // Small delay to let the animation of the 3rd pip show up
+            setTimeout(() => {
+                setIsComboMode(false);
+                setComboHitsCount(0);
+            }, 600);
         } else {
-            setComboHitsCount(nextCount);
             setHitPosition({ x: 20 + Math.random() * 60, y: 20 + Math.random() * 60 });
-            if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
             comboTimeoutRef.current = setTimeout(() => {
                 setIsComboMode(false);
                 setComboHitsCount(0);
@@ -349,7 +373,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         }));
                     }
 
-                    setPlayerEnergy((e) => e - skill.energyCost);
+                    setPlayerEnergy((e) => Math.max(0, e - skill.energyCost));
                     setPlayerIsCasting(false);
                     playSound(skill.impactSound);
                     const wasCrit = applySkillEffects(skill);
@@ -363,6 +387,12 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // START OPPONENT CAST
     const startOpponentCast = useCallback((skill: MonsterSkill) => {
+        // ENERGY CHECK AT START
+        if (opponentEnergy < skill.energyCost) {
+            console.log("Opponent lacks energy to START cast");
+            return;
+        }
+
         if (opponentCastRef.current) clearInterval(opponentCastRef.current);
 
         setOpponentIsCasting(true);
@@ -392,7 +422,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         }));
                     }
 
-                    setOpponentEnergy((e) => e - skill.energyCost);
+                    setOpponentEnergy((e) => Math.max(0, e - skill.energyCost));
                     setOpponentIsCasting(false);
                     opponentIsCastingRef.current = false;
 
@@ -411,7 +441,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 }, 200);
             }
         }, step);
-    }, [playSound, applyOpponentSkillEffects]);
+    }, [playSound, applyOpponentSkillEffects, opponentEnergy]);
 
     // --- EFFECTS ---
 
@@ -498,7 +528,11 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 if (Date.now() >= monsterDecisionRef.current.executeAt) {
                     const skill = monsterDecisionRef.current.skill;
                     monsterDecisionRef.current = null;
-                    startOpponentCast(skill);
+
+                    // Re-verify energy just before starting to avoid race conditions
+                    if (opponentEnergy >= skill.energyCost) {
+                        startOpponentCast(skill);
+                    }
                 }
                 return;
             }
@@ -525,7 +559,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         }, 100);
 
         return () => clearInterval(interval);
-    }, [startOpponentCast, opponent.skills, opponent.stat_celerity]);
+    }, [startOpponentCast, opponent.skills, opponent.stat_celerity, opponentEnergy]);
 
     // TIME OVER
     useEffect(() => {
@@ -802,27 +836,20 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                 >
                                     <motion.button
                                         onClick={startComboMode}
-                                        className="pointer-events-auto relative w-28 h-28 rounded-full flex items-center justify-center overflow-hidden border border-cyan-400/50 bg-cyan-950/40 backdrop-blur-md shadow-[0_0_40px_rgba(0,255,255,0.4)]"
+                                        className="pointer-events-auto relative w-24 h-24 rounded-full flex items-center justify-center border border-cyan-400/50 bg-cyan-950/60"
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        animate={{
-                                            boxShadow: [
-                                                "0 0 20px rgba(0,255,255,0.3)",
-                                                "0 0 50px rgba(0,255,255,0.6)",
-                                                "0 0 20px rgba(0,255,255,0.3)"
-                                            ]
-                                        }}
-                                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                                     >
-                                        <div className="absolute inset-0 bg-linear-to-t from-cyan-500/20 to-transparent" />
-                                        <div className="z-10 flex flex-col items-center">
-                                            <span className="text-[10px] uppercase tracking-[0.3em] font-light text-cyan-200">Trigger</span>
-                                            <span className="text-xl font-bold tracking-widest text-white drop-shadow-[0_0_8px_rgba(0,255,255,0.8)]">COMBO</span>
-                                        </div>
-                                        {/* Outer pulse ring */}
+                                        {/* AAA Circular Glow - Replaces drop-shadow to avoid square artifacts on Telegram */}
+                                        <div className="absolute inset-0 rounded-full bg-cyan-400/20 blur-xl -z-10" />
+
+                                        <div className="absolute inset-0 bg-linear-to-t from-cyan-500/20 to-transparent rounded-full" />
+                                        <span className="text-lg font-bold tracking-[0.2em] text-white drop-shadow-[0_0_8px_rgba(0,255,255,0.8)] z-10">COMBO</span>
+
+                                        {/* Simple subtle pulse ring */}
                                         <motion.div
                                             className="absolute inset-0 rounded-full border border-cyan-400"
-                                            animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
+                                            animate={{ scale: [1, 1.25], opacity: [0.4, 0] }}
                                             transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
                                         />
                                     </motion.button>
@@ -923,73 +950,224 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 z-100 flex items-center justify-center pointer-events-none"
+                            className="absolute inset-0 z-100 flex items-center justify-center pointer-events-none bg-black/85"
                         >
-                            {/* THE ENERGY VORTEX ON BATTLEZONE */}
+                            {/* THE MAGICAL CONCENTRATION VIEW-FINDER */}
                             <motion.div
-                                className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-black/60 rounded-full border-4 border-yellow-500/20 shadow-[0_0_100px_rgba(0,0,0,0.9)]"
-                                animate={{
-                                    boxShadow: ["0 0 60px rgba(0,0,0,0.8)", "0 0 100px rgba(0,0,0,1)", "0 0 60px rgba(0,0,0,0.8)"],
-                                    scale: [1, 1.02, 1]
-                                }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                            />
-
-                            {/* THE HIT BUTTON AT RANDOM POSITION */}
-                            <motion.button
-                                key={comboHitsCount}
-                                initial={{ scale: 0, opacity: 0, rotate: -20 }}
-                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                                exit={{ scale: 1.5, opacity: 0 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={handleComboHit}
-                                className="pointer-events-auto absolute w-24 h-24 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(255,200,0,0.6)]"
-                                style={{
-                                    left: `${hitPosition.x}%`,
-                                    top: `${hitPosition.y}%`,
-                                    transform: 'translate(-50%, -50%)'
-                                }}
+                                className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-cyan-500/30"
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                             >
-                                {/* Inner Energy Core */}
-                                <div className="relative w-full h-full rounded-full bg-linear-to-br from-yellow-100 via-yellow-400 to-orange-600 border-2 border-white/60 flex items-center justify-center overflow-hidden shadow-inner">
-                                    <span className="text-white font-black text-2xl tracking-tighter italic drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] z-10">HIT!</span>
-                                    {/* Glint effect */}
-                                    <motion.div
-                                        className="absolute inset-0 bg-white/30 -skew-x-12"
-                                        animate={{ left: ["-150%", "150%"] }}
-                                        transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.5 }}
-                                    />
-                                    {/* Plasma Pulse */}
-                                    <motion.div
-                                        className="absolute inset-0 bg-yellow-300 opacity-20"
-                                        animate={{ opacity: [0.1, 0.4, 0.1] }}
-                                        transition={{ duration: 0.5, repeat: Infinity }}
-                                    />
-                                </div>
-                                {/* Outer Bloom Ring */}
-                                <motion.div
-                                    className="absolute -inset-3 rounded-full border-2 border-yellow-400"
-                                    animate={{ scale: [1, 1.3], opacity: [0.4, 0] }}
-                                    transition={{ duration: 0.6, repeat: Infinity }}
-                                />
-                            </motion.button>
+                                <div className="absolute inset-0 rounded-full border-2 border-dashed border-cyan-400/20" />
+                            </motion.div>
 
-                            {/* PROGRESS PIPS - ENERGY CHARGE STYLE */}
-                            <div className="absolute top-12 flex gap-3">
-                                {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="relative w-8 h-2 bg-black/50 overflow-hidden rounded-sm border border-white/10 shadow-lg">
+                            {comboHitsCount < 3 && (
+                                <motion.button
+                                    key={comboHitsCount}
+                                    initial={{ scale: 0, opacity: 0, rotate: -45 }}
+                                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                    exit={{ scale: 1.5, opacity: 0 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={handleComboHit}
+                                    className="pointer-events-auto absolute w-26 h-26 flex items-center justify-center p-2"
+                                    style={{
+                                        left: `${hitPosition.x}%`,
+                                        top: `${hitPosition.y}%`,
+                                        transform: 'translate(-50%, -50%)'
+                                    }}
+                                >
+                                    {/* Impact Shockwave (Appears on spawn) */}
+                                    <motion.div
+                                        className="absolute inset-0 rounded-full border-2 border-cyan-400/50"
+                                        initial={{ scale: 0.5, opacity: 1 }}
+                                        animate={{ scale: 2, opacity: 0 }}
+                                        transition={{ duration: 0.6 }}
+                                    />
+
+                                    {/* Premium Nested Core */}
+                                    <div className="relative w-full h-full rounded-full border-2 border-cyan-200/40 bg-linear-to-br from-cyan-400/80 via-azure-600/90 to-blue-900 overflow-hidden shadow-[0_0_20px_rgba(0,255,255,0.4)] flex items-center justify-center">
+                                        {/* Internal Glass Reflection */}
+                                        <div className="absolute top-[5%] left-[20%] w-[60%] h-[30%] bg-white/20 rounded-full blur-[2px]" />
+
+                                        {/* Text with high-end glow - perfectly centered */}
+                                        <span className="relative z-10 text-white font-black text-2xl tracking-tighter italic drop-shadow-[0_0_10px_rgba(0,255,255,1)] leading-none">HIT</span>
+
+                                        {/* Flowing Plasma Internal */}
                                         <motion.div
-                                            className={`absolute inset-0 ${i < comboHitsCount ? "bg-linear-to-r from-yellow-300 to-yellow-500 shadow-[0_0_15px_#facc15]" : ""}`}
-                                            initial={false}
-                                            animate={{
-                                                opacity: i < comboHitsCount ? 1 : 0,
-                                                scaleX: i < comboHitsCount ? 1 : 0
-                                            }}
-                                            style={{ originX: 0 }}
+                                            className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent"
+                                            animate={{ left: ['-100%', '200%'] }}
+                                            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                                         />
+
+                                        {/* Core Pulse */}
+                                        <motion.div
+                                            className="absolute inset-0 bg-cyan-400/20"
+                                            animate={{ opacity: [0, 0.4, 0] }}
+                                            transition={{ duration: 0.8, repeat: Infinity }}
+                                        />
+                                    </div>
+
+                                    {/* Dual Magical Rings (Premium AAA Layering) */}
+                                    <motion.div
+                                        className="absolute -inset-1 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 border-b-cyan-400 mt-0"
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                    />
+                                    <motion.div
+                                        className="absolute -inset-3 rounded-full border border-dashed border-cyan-200/20"
+                                        animate={{ rotate: -360 }}
+                                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                    />
+                                </motion.button>
+                            )}
+
+                            {/* PREMIUM AAA DIAMOND CHARGE PIPS - AT TOP */}
+                            <div className="absolute top-12 flex gap-6">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="relative w-8 h-8 flex items-center justify-center">
+                                        {/* Diamond Frame (Losange) */}
+                                        <div className="absolute inset-0 rotate-45 border border-cyan-500/40 bg-black/60 shadow-[0_0_10px_rgba(0,0,0,0.5)]" />
+
+                                        {/* Active State with Energy Crystal Flow */}
+                                        <AnimatePresence mode="wait">
+                                            {i < comboHitsCount && (
+                                                <motion.div
+                                                    initial={{ scale: 0, opacity: 0, rotate: 45 }}
+                                                    animate={{ scale: 1, opacity: 1, rotate: 45 }}
+                                                    exit={{ scale: 0, opacity: 0, rotate: 45 }}
+                                                    className="absolute w-[80%] h-[80%] bg-linear-to-br from-cyan-300 via-cyan-500 to-azure-700 shadow-[0_0_15px_rgba(0,255,255,0.8)]"
+                                                >
+                                                    {/* Internal Fluid/Plasma detail - Plays once on fill */}
+                                                    <motion.div
+                                                        className="absolute inset-0 bg-[linear-gradient(45deg,transparent,rgba(255,255,255,0.5),transparent)]"
+                                                        animate={{ left: ['-100%', '100%'] }}
+                                                        transition={{ duration: 0.8, ease: "easeOut" }}
+                                                    />
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+
+                                        {/* Glass Reflection on Diamond */}
+                                        <div className="absolute inset-[2px] rotate-45 bg-linear-to-b from-white/10 to-transparent pointer-events-none" />
                                     </div>
                                 ))}
                             </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* COMBAT RESULTS OVERLAYS */}
+                <AnimatePresence>
+                    {combatResult && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={handleGameOver}
+                            className="absolute inset-0 z-150 flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl cursor-pointer"
+                        >
+                            {combatResult === 'victory' ? (
+                                <motion.div
+                                    initial={{ scale: 0.8, y: 50 }}
+                                    animate={{ scale: 1, y: 0 }}
+                                    className="w-full max-w-sm flex flex-col items-center gap-8"
+                                >
+                                    <div className="text-center">
+                                        <motion.h2
+                                            initial={{ letterSpacing: "1em", opacity: 0 }}
+                                            animate={{ letterSpacing: "0.4em", opacity: 1 }}
+                                            className="text-5xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-yellow-300 to-yellow-600 uppercase"
+                                        >
+                                            VICTOIRE
+                                        </motion.h2>
+                                        <p className="text-cyan-400 font-bold tracking-widest text-[10px] mt-2 opacity-60">MISSION ACCOMPLIE</p>
+                                    </div>
+
+                                    <div className="w-full space-y-4">
+                                        {/* Character XP */}
+                                        <div className="bg-white/5 border border-white/10 rounded-lg p-4 relative overflow-hidden">
+                                            <div className="flex justify-between items-end mb-2">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">XP PERSONNAGE</p>
+                                                <p className="text-sm font-mono text-cyan-400">+125 XP</p>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: "30%" }}
+                                                    animate={{ width: "65%" }}
+                                                    transition={{ duration: 2, delay: 0.5 }}
+                                                    className="h-full bg-linear-to-r from-cyan-600 to-cyan-400"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Loot & Currency */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex flex-col items-center">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">BUTIN</p>
+                                                <div className="w-12 h-12 rounded-md bg-neutral-900 border border-yellow-500/50 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.2)] relative overflow-hidden">
+                                                    <Image
+                                                        src={CONST_ASSETS.IMAGES.SKILL_04}
+                                                        fill
+                                                        style={{ objectFit: 'cover' }}
+                                                        className="rounded-md"
+                                                        alt="loot"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="bg-white/5 border border-white/10 rounded-lg p-4 flex flex-col items-center justify-center">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">CREDITS</p>
+                                                <p className="text-2xl font-mono font-black text-yellow-500">+850</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col items-center gap-2 animate-pulse mt-4">
+                                        <span className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Toucher pour continuer</span>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    initial={{ scale: 0.8, y: 50 }}
+                                    animate={{ scale: 1, y: 0 }}
+                                    className="w-full max-w-sm flex flex-col items-center gap-8"
+                                >
+                                    <div className="text-center">
+                                        <motion.h2
+                                            initial={{ letterSpacing: "1em", opacity: 0 }}
+                                            animate={{ letterSpacing: "0.4em", opacity: 1 }}
+                                            className="text-5xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-red-500 to-red-900 uppercase"
+                                        >
+                                            ÉCHEC
+                                        </motion.h2>
+                                        <p className="text-red-400 font-bold tracking-widest text-[10px] mt-2 opacity-60">SIGNAL PERDU</p>
+                                    </div>
+
+                                    <div className="p-6 bg-red-950/20 border border-red-500/20 rounded-xl text-center">
+                                        <p className="text-sm text-red-100/70 italic leading-relaxed">
+                                            Votre cristal a subi des dommages critiques. {playerName} est hors de combat.
+                                        </p>
+                                    </div>
+
+                                    <div className="w-full bg-white/5 border border-white/10 rounded-lg p-4">
+                                        <div className="flex justify-between items-end mb-2">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">PROGRESSION CRISTAL LOBBY</p>
+                                            <p className="text-sm font-mono text-purple-400">+15 XP</p>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: "10%" }}
+                                                animate={{ width: "15%" }}
+                                                transition={{ duration: 1.5, delay: 0.5 }}
+                                                className="h-full bg-linear-to-r from-purple-800 to-purple-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col items-center gap-2 animate-pulse mt-4">
+                                        <span className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Toucher pour continuer</span>
+                                    </div>
+                                </motion.div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>

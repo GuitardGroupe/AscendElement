@@ -27,6 +27,7 @@ export type Skill = {
     recover: number;
     shield: number;
     interrupt: number;
+    description: string;
 };
 
 export type Combo = {
@@ -59,6 +60,7 @@ export type Item = {
     recover: number;
     shield: number;
     interrupt: number;
+    description: string;
 };
 
 export type Defense = {
@@ -77,6 +79,7 @@ export type Defense = {
     dodge: number;
     reflect: number;
     stun: number;
+    description: string;
 };
 
 export type ElementKey = "Kn";
@@ -98,6 +101,7 @@ export const skillSets: Record<ElementKey, Skill[]> = {
             recover: 0,
             shield: 0,
             interrupt: 0,
+            description: "Une attaque rapide et basique infligeant des dégâts modérés."
         },
         {
             id: 2,
@@ -108,19 +112,20 @@ export const skillSets: Record<ElementKey, Skill[]> = {
             castTime: 1500,
             castSound: CONST_SOUND_SPELL_CAST,
             impactSound: CONST_SOUND_SPELL_IMPACT,
-            damage: 5,
+            damage: 15,
             heal: 0,
             stun: 0,
             recover: 0,
             shield: 0,
             interrupt: 0,
+            description: "Lance un projectile d'énergie pure sur l'ennemi."
         },
         {
             id: 3,
             name: "Choc",
             icon: CONST_SKILL03_IMG,
             cooldown: 4000,
-            energyCost: 50,
+            energyCost: 40,
             castTime: 0,
             castSound: "",
             impactSound: CONST_ASSETS.SOUNDS.CONTROL_IMPACT,
@@ -130,28 +135,30 @@ export const skillSets: Record<ElementKey, Skill[]> = {
             recover: 0,
             shield: 0,
             interrupt: 1,
+            description: "Une explosion d'énergie instantanée qui interrompt l'adversaire."
         },
         {
             id: 4,
             name: "Frappe divine",
             icon: CONST_SKILL04_IMG,
             cooldown: 8000,
-            energyCost: 90,
+            energyCost: 80,
             castTime: 4500,
             castSound: CONST_ASSETS.SOUNDS.ULTIMATE_CAST,
             impactSound: CONST_ASSETS.SOUNDS.ULTIMATE_IMPACT,
-            damage: 30,
+            damage: 25,
             heal: 0,
             stun: 0,
             recover: 0,
             shield: 0,
             interrupt: 0,
+            description: "Une attaque dévastatrice invoquant la puissance des cieux."
         },
     ],
 
 };
 
-export const defenses = [
+export const defenses: Defense[] = [
     {
         id: 20,
         name: "Esquive",
@@ -168,6 +175,7 @@ export const defenses = [
         dodge: 1,
         reflect: 0,
         stun: 0,
+        description: "Une manoeuvre défensive rapide pour éviter les attaques ennemies."
     }
 ]
 
@@ -179,4 +187,4 @@ export const combos: Combo[] = [
         impactSound: CONST_SOUND_SWORD_IMPACT,
         damage: 5,
     }
-]   
+]

@@ -9,6 +9,7 @@ export type Stim = {
     heal: number;
     cooldown: number;
     usages: number;
+    description: string;
 };
 
 export const stims = [
@@ -21,5 +22,6 @@ export const stims = [
         heal: 40,
         cooldown: 2000,
         usages: 3,
+        description: "Un module de soin portable pour restaurer vos points de vie en combat."
     },
 ];
