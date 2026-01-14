@@ -21,14 +21,15 @@ const START_Y = 10;
 export default function MapScreen({ onSwitchScreen }: MapScreenProps) {
     const { playSound } = useSoundStore();
     const {
-        currentNodeId,
-        visitedNodes,
-        defeatedNodes,
-        links,
+        mode,
+        solo,
+        coop,
         setCurrentNode,
         markAsVisited,
         addLink
     } = useAdventureStore();
+
+    const { currentNodeId, visitedNodes, defeatedNodes, links } = mode === 'solo' ? solo : coop;
 
     const viewportRef = useRef<HTMLDivElement>(null);
     const [showMonsterDetails, setShowMonsterDetails] = useState(false);

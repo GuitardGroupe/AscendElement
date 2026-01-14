@@ -100,12 +100,12 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                 <div className="relative w-full h-[500px] flex items-center justify-center perspective-[1000px]">
 
                     {/* Previous Button */}
-                    <button onClick={handlePrev} className={`absolute left-2 z-30 p-4 rounded-full bg-black/20 hover:bg-black/40 border border-white/5 backdrop-blur-md transition-all ${currentIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                    <button onClick={handlePrev} className={`absolute left-2 z-30 p-4 rounded-full bg-black/20 border border-white/5 backdrop-blur-md transition-all active:bg-black/40 ${currentIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                         <ChevronLeft className="text-white" />
                     </button>
 
                     {/* Next Button */}
-                    <button onClick={handleNext} className={`absolute right-2 z-30 p-4 rounded-full bg-black/20 hover:bg-black/40 border border-white/5 backdrop-blur-md transition-all ${currentIndex === characters.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                    <button onClick={handleNext} className={`absolute right-2 z-30 p-4 rounded-full bg-black/20 border border-white/5 backdrop-blur-md transition-all active:bg-black/40 ${currentIndex === characters.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                         <ChevronRight className="text-white" />
                     </button>
 
@@ -121,12 +121,12 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                         >
                             {/* Card Image */}
                             <div className="absolute inset-0 bg-neutral-800">
-                                <Image src={character.img} fill className="object-cover transition-transform duration-700 group-hover:scale-105" alt={character.name} />
+                                <Image src={character.img} fill className="object-cover" alt={character.name} />
                                 <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
                             </div>
 
                             {/* Card Content (Stats) */}
-                            <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-4">
+                            <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col gap-4 bg-linear-to-t from-black/90 to-transparent pt-12">
                                 <div className="space-y-3">
                                     {/* Damage Stat */}
                                     <div className="flex items-center gap-3">
@@ -162,6 +162,17 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* IN CARNER BUTTON */}
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleActivate(); }}
+                                    className="w-full py-3 mt-2 relative group overflow-hidden bg-cyan-600 active:bg-cyan-500 active:scale-95 transition-all rounded-sm shadow-[0_4px_20px_rgba(6,182,212,0.4)]"
+                                >
+                                    <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-size-[250%_250%] animate-[shimmer_2s_infinite]" />
+                                    <span className="relative z-10 text-xs font-black italic tracking-[0.2em] text-white uppercase drop-shadow-md">
+                                        INCARNER
+                                    </span>
+                                </button>
                             </div>
 
                             {/* Hextech Border Decor */}
@@ -179,7 +190,7 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                             onClick={() => handleSelect(idx)}
                             className={`relative w-12 h-12 rounded-lg border-2 overflow-hidden transition-all shrink-0 ${idx === currentIndex
                                 ? 'border-cyan-400 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.5)]'
-                                : 'border-white/10 opacity-50 hover:opacity-100 hover:border-white/30'
+                                : 'border-white/10 opacity-50'
                                 }`}
                         >
                             <Image src={char.img} fill className="object-cover" alt="thumb" />
@@ -188,21 +199,6 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                 </div>
             </main>
 
-            {/* ACTION FOOTER */}
-            <footer className="relative z-20 p-6 pb-8 flex justify-center">
-                <button
-                    onClick={handleActivate}
-                    className="w-full max-w-sm py-4 relative group overflow-hidden bg-cyan-600 hover:bg-cyan-500 active:scale-95 transition-all rounded-sm shadow-[0_4px_20px_rgba(6,182,212,0.4)]"
-                >
-                    <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-size-[250%_250%] animate-[shimmer_2s_infinite]" />
-                    <span className="relative z-10 text-sm font-black italic tracking-[0.2em] text-white uppercase drop-shadow-md">
-                        VERROUILLER
-                    </span>
-                    {/* Corners */}
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white/50" />
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white/50" />
-                </button>
-            </footer>
         </div>
     );
 }

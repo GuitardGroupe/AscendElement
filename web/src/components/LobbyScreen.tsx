@@ -114,14 +114,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     transition={{ delay: 0.1 + idx * 0.1, type: 'spring' }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(item); }}
-                                    className="group relative w-14 h-14"
+                                    className="group relative w-16 h-16"
                                 >
-                                    <div className="absolute inset-0 bg-neutral-900 border border-white/10 rotate-45 group-hover:border-cyan-400/50 transition-colors shadow-lg" />
-                                    <div className="absolute inset-1 bg-neutral-800 rotate-45 overflow-hidden">
-                                        <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover -rotate-45 scale-125" alt="skill" />
+                                    <div className="absolute inset-0 bg-neutral-900 border border-white/10 rounded-2xl transition-colors shadow-lg" />
+                                    <div className="absolute inset-1 bg-neutral-800 rounded-xl overflow-hidden">
+                                        <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover" alt="skill" />
                                     </div>
-                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-neutral-950 border border-white/20 rotate-45 flex items-center justify-center z-10">
-                                        <Zap size={8} className="text-cyan-400 -rotate-45" />
+                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-neutral-950 border border-white/20 rounded-full flex items-center justify-center z-10">
+                                        <Zap size={10} className="text-cyan-400" />
                                     </div>
                                 </motion.button>
                             ))}
@@ -156,14 +156,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     transition={{ delay: 0.1 + idx * 0.1, type: 'spring' }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(item); }}
-                                    className="group relative w-14 h-14"
+                                    className="group relative w-16 h-16"
                                 >
-                                    <div className="absolute inset-0 bg-neutral-900 border border-white/10 rotate-45 group-hover:border-yellow-400/50 transition-colors shadow-lg" />
-                                    <div className="absolute inset-1 bg-neutral-800 rotate-45 overflow-hidden">
-                                        <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover -rotate-45 scale-125" alt="skill" />
+                                    <div className="absolute inset-0 bg-neutral-900 border border-white/10 rounded-2xl transition-colors shadow-lg" />
+                                    <div className="absolute inset-1 bg-neutral-800 rounded-xl overflow-hidden">
+                                        <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover" alt="skill" />
                                     </div>
-                                    <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-neutral-950 border border-white/20 rotate-45 flex items-center justify-center z-10">
-                                        {item.type === 'defense' ? <Shield size={8} className="text-yellow-400 -rotate-45" /> : <Plus size={8} className="text-green-400 -rotate-45" />}
+                                    <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-neutral-950 border border-white/20 rounded-full flex items-center justify-center z-10">
+                                        {item.type === 'defense' ? <Shield size={10} className="text-yellow-400" /> : <Plus size={10} className="text-green-400" />}
                                     </div>
                                 </motion.button>
                             ))}
@@ -173,31 +173,61 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
             </main>
 
             {/* BOTTOM DOCK NAVIGATION */}
-            <nav className="absolute bottom-8 left-6 right-6 z-30">
-                <div className="flex justify-center items-end gap-6">
+            {/* BOTTOM DOCK NAVIGATION (Wild Rift Arc Style) */}
+            <nav className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
+                <div className="flex items-end justify-center gap-6 pb-2">
                     <AnimatePresence>
-                        {menuItems.filter(item => item.show).map((item, index) => (
-                            <motion.button
-                                key={item.id}
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                exit={{ y: 50, opacity: 0 }}
-                                transition={{ delay: index * 0.05, type: 'spring', stiffness: 200 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={item.onClick}
-                                className="relative group flex flex-col items-center justify-center gap-2"
-                            >
-                                <div className={`w-16 h-16 rounded-2xl ${item.bg === 'bg-red-500' ? 'bg-linear-to-br from-red-500 to-red-700' : item.bg === 'bg-cyan-500' ? 'bg-linear-to-br from-cyan-400 to-blue-600' : 'bg-linear-to-br from-blue-500 to-blue-700'} 
-                                    border-t border-white/20 shadow-lg ${item.glow} flex items-center justify-center relative overflow-hidden transition-transform group-hover:-translate-y-2`}
+                        {menuItems.filter(item => item.show).map((item, index) => {
+                            // Arc positioning logic can be purely visual via relative translation or flex alignment
+                            // For simplicity and mobile-first, we use a flex row with translateY for the center button to create an arc effect
+                            // Outer buttons (index 0 and 2) stay lower, Center (index 1) can be slightly raised OR
+                            // In Wild Rift, the "Play" button is usually the biggest and most prominent at the bottom right.
+                            // Here we want a localized menu.
+                            // Let's make them round buttons.
+
+                            const isCenter = index === 1;
+
+                            return (
+                                <motion.button
+                                    key={item.id}
+                                    initial={{ y: 50, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: 50, opacity: 0 }}
+                                    transition={{ delay: index * 0.05, type: 'spring', stiffness: 200 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => { playSound(CONST_SOUND_CLICK); item.onClick(); }}
+                                    className={`
+                                        relative group flex flex-col items-center justify-center
+                                        ${isCenter ? '-mb-2' : ''} 
+                                    `}
                                 >
-                                    <div className="absolute inset-0 bg-linear-to-b from-white/20 to-transparent opacity-50" />
-                                    <item.icon size={28} className="text-white drop-shadow-md relative z-10" />
-                                </div>
-                                <div className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/5">
-                                    <span className="text-[9px] font-black text-white/90 uppercase tracking-widest">{item.label}</span>
-                                </div>
-                            </motion.button>
-                        ))}
+                                    <div className={`
+                                        w-16 h-16 rounded-full border border-opacity-50
+                                        flex items-center justify-center shadow-lg relative overflow-hidden transition-all backdrop-blur-md
+                                        ${item.id === 'adventure'
+                                            ? 'bg-yellow-900/40 border-yellow-500/50 shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:bg-yellow-900/60'
+                                            : item.id === 'sacrifice'
+                                                ? 'bg-red-900/40 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:bg-red-900/60'
+                                                : 'bg-blue-900/40 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:bg-blue-900/60'
+                                        }
+                                    `}>
+                                        {/* Glass Glare */}
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.4),transparent_60%)] pointer-events-none" />
+
+                                        {/* Icon */}
+                                        <item.icon size={24} className={`relative z-10 drop-shadow-md ${item.id === 'adventure' ? 'text-yellow-100' : 'text-white'}`} />
+                                    </div>
+
+                                    {/* Label underneath */}
+                                    <span className={`
+                                        absolute -bottom-6 text-[10px] font-black uppercase tracking-wider
+                                        ${item.id === 'adventure' ? 'text-yellow-500 scale-110' : 'text-gray-400 group-hover:text-white transition-colors'}
+                                    `}>
+                                        {item.label}
+                                    </span>
+                                </motion.button>
+                            );
+                        })}
                     </AnimatePresence>
                 </div>
             </nav>
@@ -222,69 +252,55 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/60 cursor-pointer"
                     >
                         <motion.div
-                            initial={{ scale: 0.8, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0.8, y: 20 }}
-                            className="w-full max-w-sm bg-neutral-900/90 border border-white/10 rounded-xl overflow-hidden shadow-2xl relative"
-                            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="w-full max-w-sm bg-[#08080a] border border-gray-700 rounded-sm shadow-2xl relative overflow-hidden"
+                            onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(null); }}
                         >
-                            {/* Header Gradient */}
-                            <div className="absolute top-0 left-0 right-0 h-32 bg-linear-to-b from-cyan-500/20 to-transparent pointer-events-none" />
+                            {/* Header Image Background */}
+                            <div className="absolute top-0 left-0 right-0 h-40 bg-neutral-800">
+                                <Image src={'img' in selectedInfo.data ? selectedInfo.data.img : selectedInfo.data.icon} fill className="object-cover opacity-60 mask-image-gradient-b" alt="bg" />
+                                <div className="absolute inset-0 bg-linear-to-t from-[#08080a] to-transparent" />
+                            </div>
 
-                            <div className="p-6 pt-8 flex flex-col items-center relative z-10">
-                                {/* Icon Halo */}
-                                <div className="w-24 h-24 mb-6 relative">
-                                    <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full" />
-                                    <div className="relative w-full h-full rounded-2xl bg-neutral-800 border-2 border-white/20 overflow-hidden shadow-inner rotate-45 scale-75">
-                                        <Image src={'img' in selectedInfo.data ? selectedInfo.data.img : selectedInfo.data.icon} fill className="object-cover -rotate-45 scale-150" alt="detail" />
-                                    </div>
-                                </div>
+                            <div className="p-5 pt-32 relative z-10 flex flex-col items-start">
+                                <h3 className="text-2xl font-black italic text-white uppercase tracking-tight mb-0.5">{selectedInfo.data.name}</h3>
+                                <p className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest mb-4">COMPÉTENCE ACTIVE</p>
 
-                                <div className="text-center mb-6">
-                                    <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter mb-1">{selectedInfo.data.name}</h3>
-                                    <div className="flex items-center justify-center gap-2">
-                                        <div className="w-8 h-px bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
-                                        <p className="text-[9px] font-bold text-cyan-400 uppercase tracking-[0.2em]">{selectedInfo.type.toUpperCase()}</p>
-                                        <div className="w-8 h-px bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
-                                    </div>
-                                </div>
+                                <div className="w-full h-px bg-gray-800 mb-4" />
 
-                                <p className="text-center text-sm text-gray-300 leading-relaxed mb-8 italic opacity-80 max-w-[80%]">
+                                <p className="text-sm text-gray-400 leading-relaxed mb-6 italic">
                                     &quot;{selectedInfo.data.description}&quot;
                                 </p>
 
-                                {/* Stats Row */}
-                                <div className="grid grid-cols-2 gap-3 w-full">
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-4 w-full mb-6">
                                     {'damage' in selectedInfo.data && (
-                                        <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex flex-col items-center">
-                                            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Dégâts</span>
-                                            <span className="text-lg font-mono font-bold text-red-500">{selectedInfo.data.damage}</span>
-                                        </div>
-                                    )}
-                                    {'heal' in selectedInfo.data && (
-                                        <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex flex-col items-center">
-                                            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Soin</span>
-                                            <span className="text-lg font-mono font-bold text-emerald-500">{selectedInfo.data.heal}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] text-gray-500 uppercase font-black">Dégâts</span>
+                                            <span className="text-xl font-black text-white">{selectedInfo.data.damage}</span>
                                         </div>
                                     )}
                                     {'energyCost' in selectedInfo.data && (
-                                        <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex flex-col items-center">
-                                            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Énergie</span>
-                                            <span className="text-lg font-mono font-bold text-blue-400">{selectedInfo.data.energyCost}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] text-gray-500 uppercase font-black">Coût</span>
+                                            <span className="text-xl font-black text-blue-400">{selectedInfo.data.energyCost}</span>
                                         </div>
                                     )}
                                     {'cooldown' in selectedInfo.data && (
-                                        <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex flex-col items-center">
-                                            <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Recharge</span>
-                                            <span className="text-lg font-mono font-bold text-yellow-500">{(selectedInfo.data.cooldown / 1000).toFixed(1)}s</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] text-gray-500 uppercase font-black">Récup.</span>
+                                            <span className="text-xl font-black text-yellow-500">{(selectedInfo.data.cooldown / 1000).toFixed(1)}s</span>
                                         </div>
                                     )}
                                 </div>
-
-                                <button onClick={() => setSelectedInfo(null)} className="mt-8 w-full py-3 bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-lg border border-white/5 text-xs font-black uppercase tracking-widest text-white/60 hover:text-white">
-                                    Fermer
-                                </button>
                             </div>
+
+                            {/* Close X */}
+                            <button onClick={() => setSelectedInfo(null)} className="absolute top-3 right-3 p-2 text-white/50 hover:text-white">
+                                <div className="text-xl font-bold">✕</div>
+                            </button>
                         </motion.div>
                     </motion.div>
                 )}

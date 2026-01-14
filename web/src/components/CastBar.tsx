@@ -23,12 +23,8 @@ export default function CastBar({
                 </div>
             )}
             <div
-                className="relative w-full overflow-hidden bg-black/60 backdrop-blur-sm"
-                style={{
-                    height,
-                    clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)",
-                    borderBottom: '1px solid rgba(255,255,255,0.1)'
-                }}
+                className="relative w-full overflow-hidden bg-black/60 backdrop-blur-sm rounded-full border border-white/10 shadow-inner"
+                style={{ height }}
             >
                 {/* BACKGROUND */}
                 <div className="absolute inset-0 bg-neutral-900/80" />
@@ -38,11 +34,11 @@ export default function CastBar({
 
                 {/* FILL */}
                 <motion.div
-                    className="absolute left-0 top-0 h-full flex items-center justify-end overflow-hidden"
+                    className="absolute left-0 top-0 h-full flex items-center justify-end overflow-hidden rounded-full"
                     style={{
                         width: pct,
-                        background: `linear-gradient(90deg, ${color} 0%, white 100%)`, // Gradient to white tip
-                        boxShadow: `0 0 10px ${color}`
+                        background: `linear-gradient(90deg, ${color} 0%, white 100%)`,
+                        boxShadow: `0 0 15px ${color}`
                     }}
                     initial={false}
                     animate={progress === 100 ? {
@@ -53,8 +49,9 @@ export default function CastBar({
                     <div className="h-full w-4 bg-white/80 blur-xs" />
                 </motion.div>
 
-                {/* GRID OVERLAY */}
-                <div className="absolute inset-0 bg-[url('/img/grid-pattern.png')] opacity-20 mix-blend-overlay" />
+                {/* INNER HIGHLIGHT */}
+                <div className="absolute inset-x-0 top-0 h-px bg-white/20 pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-px bg-black/40 pointer-events-none" />
             </div>
         </div>
     );

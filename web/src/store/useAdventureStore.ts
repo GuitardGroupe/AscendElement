@@ -5,13 +5,20 @@ interface Link {
     to: string;
 }
 
-interface AdventureState {
+interface AdventureData {
     currentNodeId: string;
-    visitedNodes: string[]; // Store as array for serialization if needed, though Set is better for lookups
+    visitedNodes: string[];
     defeatedNodes: string[];
     links: Link[];
+}
+
+interface AdventureState {
+    mode: 'solo' | 'coop';
+    solo: AdventureData;
+    coop: AdventureData;
 
     // Actions
+    setMode: (mode: 'solo' | 'coop') => void;
     setCurrentNode: (id: string) => void;
     markAsVisited: (id: string) => void;
     markAsDefeated: (id: string) => void;
@@ -20,33 +27,66 @@ interface AdventureState {
 }
 
 export const useAdventureStore = create<AdventureState>((set) => ({
-    currentNodeId: "10-10",
-    visitedNodes: ["10-10"],
-    defeatedNodes: [],
-    links: [],
+    mode: 'solo',
 
-    setCurrentNode: (id) => set({ currentNodeId: id }),
-
-    markAsVisited: (id) => set((state) => ({
-        visitedNodes: state.visitedNodes.includes(id)
-            ? state.visitedNodes
-            : [...state.visitedNodes, id]
-    })),
-
-    markAsDefeated: (id) => set((state) => ({
-        defeatedNodes: state.defeatedNodes.includes(id)
-            ? state.defeatedNodes
-            : [...state.defeatedNodes, id]
-    })),
-
-    addLink: (from, to) => set((state) => ({
-        links: [...state.links, { from, to }]
-    })),
-
-    resetAdventure: () => set({
+    solo: {
         currentNodeId: "10-10",
         visitedNodes: ["10-10"],
         defeatedNodes: [],
         links: []
-    })
+    },
+
+    coop: {
+        currentNodeId: "10-10",
+        visitedNodes: ["10-10"],
+        defeatedNodes: [],
+        links: []
+    },
+
+    setMode: (mode) => set({ mode }),
+
+    setCurrentNode: (id) => set((state) => ({
+        [state.mode]: { ...state[state.mode], currentNodeId: id }
+    })),
+
+    markAsVisited: (id) => set((state) => {
+        const currentModeState = state[state.mode];
+        if (currentModeState.visitedNodes.includes(id)) return state;
+        return {
+            [state.mode]: {
+                ...currentModeState,
+                visitedNodes: [...currentModeState.visitedNodes, id]
+            }
+        };
+    }),
+
+    markAsDefeated: (id) => set((state) => {
+        const currentModeState = state[state.mode];
+        if (currentModeState.defeatedNodes.includes(id)) return state;
+        return {
+            [state.mode]: {
+                ...currentModeState,
+                defeatedNodes: [...currentModeState.defeatedNodes, id]
+            }
+        };
+    }),
+
+    addLink: (from, to) => set((state) => {
+        const currentModeState = state[state.mode];
+        return {
+            [state.mode]: {
+                ...currentModeState,
+                links: [...currentModeState.links, { from, to }]
+            }
+        };
+    }),
+
+    resetAdventure: () => set((state) => ({
+        [state.mode]: {
+            currentNodeId: "10-10",
+            visitedNodes: ["10-10"],
+            defeatedNodes: [],
+            links: []
+        }
+    }))
 }));

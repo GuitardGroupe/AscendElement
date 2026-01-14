@@ -1,70 +1,57 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 export default function EnergyBar({
     current,
     max,
     height = 22,
-    angle = 11,
 }: {
     current: number;
     max: number;
     height?: number;
-    angle?: number;
 }) {
-    const [displayValue, setDisplayValue] = useState(current);
     const [chipValue, setChipValue] = useState(current);
-    const prevCurrent = useRef(current);
 
     const pct = (v: number) => Math.max(0, Math.min(100, (v / max) * 100)) + "%";
 
-    useEffect(() => {
-        if (current < prevCurrent.current) {
-            setDisplayValue(current);
-            setTimeout(() => setChipValue(current), 250);
-        } else {
-            setDisplayValue(current);
-            setChipValue(current);
-        }
-        prevCurrent.current = current;
-    }, [current]);
+    // Derived state for Energy Gain: Immediate update
+    if (current > chipValue) {
+        setChipValue(current);
+    }
 
-    const clip = `polygon(${angle}px 0%, 100% 0%, calc(100% - ${angle}px) 100%, 0% 100%)`;
+    useEffect(() => {
+        if (current < chipValue) {
+            // Decayed: delayed Chip update
+            const timer = setTimeout(() => setChipValue(current), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [current, chipValue]);
 
     return (
         <div
-            className="relative w-full overflow-hidden bg-black/60 backdrop-blur-sm"
-            style={{
-                height,
-                clipPath: clip,
-                borderBottom: '1px solid rgba(255,255,255,0.1)'
-            }}
+            className="relative w-full overflow-hidden bg-black/60 backdrop-blur-sm rounded-sm border border-white/5 shadow-inner"
+            style={{ height }}
         >
             {/* BACKGROUND */}
             <div className="absolute inset-0 bg-neutral-900/80" />
 
-            {/* CHIP DAMAGE */}
+            {/* CHIP LOSS */}
             <div
-                className="absolute left-0 top-0 h-full transition-all duration-500 ease-out"
-                style={{
-                    width: pct(chipValue),
-                    clipPath: clip,
-                    background: "rgba(255, 255, 255, 0.1)",
-                }}
+                className="absolute left-0 top-0 h-full transition-all duration-500 ease-out bg-white/20"
+                style={{ width: pct(chipValue) }}
             />
 
             {/* TRUE ENERGY */}
             <div
                 className="absolute left-0 top-0 h-full transition-all duration-300 ease-out flex items-center justify-end overflow-hidden"
                 style={{
-                    width: pct(displayValue),
-                    clipPath: clip,
+                    width: pct(current),
                     background: "linear-gradient(90deg, #0040ff 0%, #0077ff 50%, #00b3ff 100%)",
                     boxShadow: "0 0 15px rgba(0, 128, 255, 0.4)"
                 }}
             >
-                <div className="h-full w-2 bg-white/20 blur-[2px]" />
+                <div className="h-full w-2 bg-white/30 blur-[2px]" />
             </div>
 
             {/* ENERGY ARCS ANIMATION */}
@@ -77,16 +64,14 @@ export default function EnergyBar({
                 }}
             />
 
-            {/* INNER GLOW BORDER */}
-            <div className="absolute inset-0 border-t border-white/10 opacity-50 pointer-events-none" style={{ clipPath: clip }} />
-
-            {/* GRID OVERLAY */}
-            <div className="absolute inset-0 bg-[url('/img/grid-pattern.png')] opacity-10 mix-blend-overlay" />
+            {/* INNER HIGHLIGHT */}
+            <div className="absolute inset-x-0 top-0 h-px bg-white/20 pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-px bg-black/40 pointer-events-none" />
 
             {/* TEXT */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <span className="text-[10px] font-black text-white drop-shadow-md tracking-wider">
-                    {Math.floor(displayValue)} <span className="text-gray-400 text-[8px]">/ {Math.floor(max)}</span>
+                    {Math.floor(current)} <span className="text-gray-400 text-[8px]">/ {Math.floor(max)}</span>
                 </span>
             </div>
 

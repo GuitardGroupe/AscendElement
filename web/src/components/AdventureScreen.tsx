@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { User, Users, Swords, ArrowLeft, Lock } from 'lucide-react';
 import { useSoundStore } from '@/store/useSoundStore';
+import { useAdventureStore } from '@/store/useAdventureStore';
 import { CONST_ASSETS } from '@/lib/preloader';
 
 interface AdventureScreenProps {
@@ -12,14 +13,23 @@ interface AdventureScreenProps {
 export default function AdventureScreen({ onSwitchScreen }: AdventureScreenProps) {
     const { playSound } = useSoundStore();
 
+    const setMode = useAdventureStore(state => state.setMode);
+
     const handleSoloClick = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
+        setMode('solo');
         onSwitchScreen('map');
     };
 
     const handleBack = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
         onSwitchScreen('lobby');
+    };
+
+    const handleCoopClick = () => {
+        playSound(CONST_ASSETS.SOUNDS.CLICK);
+        setMode('coop');
+        onSwitchScreen('map');
     };
 
     const adventureModes = [
@@ -35,15 +45,15 @@ export default function AdventureScreen({ onSwitchScreen }: AdventureScreenProps
         {
             id: 'coop',
             label: 'COOPÉRATION',
-            desc: 'Bientôt disponible. Associez-vous à d\'autres joueurs.',
+            desc: 'Mode Coopératif (Bêta). Un allié gobelin vous rejoint.',
             icon: Users,
             color: 'from-emerald-600 to-teal-900',
-            active: false,
-            onClick: () => { }
+            active: true,
+            onClick: handleCoopClick
         },
         {
             id: 'pvp',
-            label: 'DUEL JOUER',
+            label: 'DUEL JOUEUR',
             desc: 'Bientôt disponible. Testez votre force contre d\'autres combattants.',
             icon: Swords,
             color: 'from-red-600 to-rose-900',
@@ -78,16 +88,13 @@ export default function AdventureScreen({ onSwitchScreen }: AdventureScreenProps
             </header>
 
             <main className="relative z-10 flex-1 flex flex-col gap-4">
-                {adventureModes.map((mode, idx) => (
+                {adventureModes.map((mode) => (
                     <motion.button
                         key={mode.id}
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: idx * 0.1 }}
                         whileTap={mode.active ? { scale: 0.98 } : {}}
                         onClick={mode.onClick}
                         disabled={!mode.active}
-                        className={`relative w-full p-6 text-left rounded-sm border ${mode.active ? 'border-white/10' : 'border-white/5 opacity-50 cursor-not-allowed'} bg-white/5 overflow-hidden transition-all group`}
+                        className={`relative w-full p-6 text-left rounded-sm border ${mode.active ? 'border-white/10' : 'border-white/5 opacity-50 cursor-not-allowed'} bg-white/5 overflow-hidden transition-all`}
                     >
                         {/* Mode BG Gradient */}
                         <div className={`absolute inset-y-0 left-0 w-1 bg-linear-to-b ${mode.active ? mode.color : 'from-gray-700 to-gray-800'}`} />
@@ -102,11 +109,6 @@ export default function AdventureScreen({ onSwitchScreen }: AdventureScreenProps
                             </div>
                             {!mode.active && <Lock size={20} className="text-gray-700" />}
                         </div>
-
-                        {/* Interactive Shine */}
-                        {mode.active && (
-                            <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                        )}
                     </motion.button>
                 ))}
             </main>

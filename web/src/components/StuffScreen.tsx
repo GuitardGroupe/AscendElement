@@ -79,14 +79,14 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                                 className="relative group flex flex-col items-center gap-2"
                             >
                                 <div className="w-16 h-16 relative">
-                                    {/* Hexagon Border */}
-                                    <div className={`absolute inset-0 rotate-45 border-2 ${slot.img ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'border-white/10 bg-black/40'} transition-all group-hover:border-cyan-400/50`} />
+                                    {/* Square Border */}
+                                    <div className={`absolute inset-0 rounded-xl border-2 ${slot.img ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'border-white/10 bg-black/40'} transition-all`} />
 
                                     {/* Inner Content */}
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         {slot.img ? (
-                                            <div className="w-10 h-10 relative rotate-45 overflow-hidden">
-                                                <Image src={slot.img} fill className="object-cover -rotate-45 scale-150" alt="equip" />
+                                            <div className="w-full h-full relative overflow-hidden rounded-xl">
+                                                <Image src={slot.img} fill className="object-cover" alt="equip" />
                                             </div>
                                         ) : (
                                             <slot.icon size={20} className={`${slot.color} opacity-40`} />
@@ -112,9 +112,9 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                                 key={item.id}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => item.img && setSelectedItem(item)}
-                                className={`aspect-square rounded-sm border ${item.img ? 'bg-neutral-800 border-white/20' : 'bg-white/5 border-white/5'} relative overflow-hidden group hover:border-cyan-500/50 transition-colors`}
+                                className={`aspect-square rounded-sm border ${item.img ? 'bg-neutral-800 border-white/20' : 'bg-white/5 border-white/5'} relative overflow-hidden transition-colors`}
                             >
-                                {item.img && <Image src={item.img} fill className="object-cover p-1" alt="item" />}
+                                {item.img && <Image src={item.img} fill className="object-cover" alt="item" />}
                             </motion.button>
                         ))}
                     </div>
@@ -156,8 +156,8 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 bg-white/5 border-t border-white/5">
-                                <button className="p-4 text-xs font-black text-red-400 uppercase hover:bg-white/5 transition-colors">JETER</button>
-                                <button className="p-4 text-xs font-black text-cyan-400 uppercase border-l border-white/5 hover:bg-white/5 transition-colors">ÉQUIPER</button>
+                                <button className="p-4 text-xs font-black text-red-400 uppercase active:bg-white/5 transition-colors">JETER</button>
+                                <button className="p-4 text-xs font-black text-cyan-400 uppercase border-l border-white/5 active:bg-white/5 transition-colors">ÉQUIPER</button>
                             </div>
                         </motion.div>
                     </motion.div>
