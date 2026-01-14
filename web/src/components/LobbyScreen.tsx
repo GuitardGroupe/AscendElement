@@ -5,6 +5,7 @@ import { Swords, Flame, Hexagon, Package } from 'lucide-react';
 import Image from 'next/image';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
+import { useAdventureStore } from "@/store/useAdventureStore";
 import ElementCrystal from './ElementCrystal';
 
 import { CONST_ASSETS } from '@/lib/preloader';
@@ -69,7 +70,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     }
 
     const menuItems = [
-        { id: 'fight', show: isCrystalActive, label: 'COMBAT', icon: Swords, color: 'text-yellow-400', onClick: () => handleFightClick() },
+        { id: 'adventure', show: isCrystalActive, label: 'AVENTURE', icon: Swords, color: 'text-yellow-400', onClick: () => onSwitchScreen('adventure') },
         { id: 'inventory', show: isCrystalActive, label: 'STUFF', icon: Package, color: 'text-cyan-400', onClick: () => onSwitchScreen('inventory') },
         { id: 'sacrifice', show: isCrystalActive, label: 'SACRIFICE', icon: Flame, color: 'text-red-400', onClick: () => handleActionClick() },
     ];
@@ -79,15 +80,15 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
         onSwitchScreen('characters');
     };
 
+    const { resetAdventure } = useAdventureStore();
+
     const handleActionClick = () => {
+        resetAdventure();
         clearSelectedCharacter();
         playSound(CONST_SOUND_DESACTIVATION, 0.6);
     }
 
-    const handleFightClick = () => {
-        playSound(CONST_SOUND_CLICK, 0.6);
-        onSwitchScreen('fight');
-    }
+
 
     return (
         <div className="flex flex-col h-full bg-neutral-950 text-white p-4 font-sans relative overflow-hidden">

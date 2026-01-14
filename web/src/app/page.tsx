@@ -6,9 +6,11 @@ import LobbyScreen from '@/components/LobbyScreen';
 import CharactersScreen from '@/components/CharactersScreen';
 import FightScreen from '@/components/FightScreen';
 import StuffScreen from '@/components/StuffScreen';
+import AdventureScreen from '@/components/AdventureScreen';
+import MapScreen from '@/components/MapScreen';
 import { AnimatePresence } from 'framer-motion';
 
-type GameState = 'loading' | 'lobby' | 'characters' | 'fight' | 'inventory';
+type GameState = 'loading' | 'lobby' | 'characters' | 'fight' | 'inventory' | 'adventure' | 'map';
 
 function useIsMobile() {
 
@@ -46,6 +48,12 @@ export default function Home() {
       case 'inventory':
         setGameState('inventory');
         break;
+      case 'adventure':
+        setGameState('adventure');
+        break;
+      case 'map':
+        setGameState('map');
+        break;
       default:
         setGameState('lobby');
         break;
@@ -68,6 +76,12 @@ export default function Home() {
       )}
       {gameState === 'inventory' && (
         <StuffScreen key="inventory" onSwitchScreen={(screen: string) => handleGameState(screen)} />
+      )}
+      {gameState === 'adventure' && (
+        <AdventureScreen key="adventure" onSwitchScreen={(screen: string) => handleGameState(screen)} />
+      )}
+      {gameState === 'map' && (
+        <MapScreen key="map" onSwitchScreen={(screen: string) => handleGameState(screen)} />
       )}
     </AnimatePresence>
   );

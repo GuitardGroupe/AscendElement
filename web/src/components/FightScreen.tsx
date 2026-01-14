@@ -17,6 +17,7 @@ import { Skill, skillSets, ElementKey, defenses, Defense, combos } from "@/lib/s
 import { monstersSkills, monsters, MonsterSkill } from "@/lib/monsters";
 import { stims } from "@/lib/stim";
 
+import { useAdventureStore } from "@/store/useAdventureStore";
 import { CONST_ASSETS } from '@/lib/preloader';
 const CONST_TITLE = "BATTLE";
 const CONST_LABEL_FLEE = "Fuir";
@@ -129,13 +130,27 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     }, [opponentEnergy, opponentCooldowns, opponentIsCasting, winner, playerIsCasting, opponentHealth]);
 
 
+    const { currentNodeId, markAsDefeated, resetAdventure } = useAdventureStore();
+    const { clearSelectedCharacter } = useSelectedCharacter();
+
     const handleGameOver = useCallback(() => {
-        console.log("HANDLE GAME OVER")
+        console.log("HANDLE GAME OVER", combatResult)
         monsterDecisionRef.current = null;
         opponentIsCastingRef.current = false;
-        playSound(CONST_ASSETS.SOUNDS.ACCEPTATION, 0.6);
-        onSwitchScreen("lobby");
-    }, [onSwitchScreen, playSound]);
+
+        if (combatResult === 'victory') {
+            markAsDefeated(currentNodeId);
+            onSwitchScreen("map");
+        } else if (combatResult === 'defeat') {
+            resetAdventure();
+            clearSelectedCharacter();
+            onSwitchScreen("lobby");
+        } else {
+            // Fuite or unknown
+            onSwitchScreen("lobby");
+        }
+
+    }, [onSwitchScreen, combatResult, currentNodeId, markAsDefeated, resetAdventure, clearSelectedCharacter]);
 
     // DAMAGE
     const handleDamageDone = useCallback((target: "player" | "opponent", id: string) => {

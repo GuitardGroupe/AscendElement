@@ -13,6 +13,8 @@ export type MONSTER = {
     stat_critical: number;
     stat_haste: number;
     stat_def: number;
+    level: number;
+    description: string;
     skills: number[],
 };
 
@@ -47,6 +49,8 @@ export const monsters = [
         stat_critical: 0.1, // % de chances de faire un coup critique à chaque attaque
         stat_haste: 1, // coefficient de rapidité qui vient multiplier les temps de recharge et de lancement
         stat_def: 0.1, // coefficient de défense qui détermine le % de dégats réduits
+        level: 1,
+        description: "Un charognard agile qui rôde dans les décombres de l'infra-système. Rapide mais fragile.",
         skills: [0, 1],
     },
 ];
