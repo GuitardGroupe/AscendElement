@@ -728,60 +728,64 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         }}
                     />
                     {/* OPPONENT AREA */}
-                    <div className="absolute inset-0 flex-1 flex flex-col justify-end pb-15 pl-5 pr-5 gap-2">
-                        {/* OPPONENT ENERGY */}
-                        <div className="flex justify-end">
-                            <div className="flex justify-start w-[40%]">
-                                <EnergyBar
-                                    current={opponentEnergy}
-                                    max={opponent.stat_energy}
-                                />
+                    <div className="absolute inset-0 flex-1 flex flex-col justify-end pb-12 pl-6 pr-6 gap-2">
+                        {/* OPPONENT HUD FRAME */}
+                        <div className="relative bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                            {/* DECOR CORNERS */}
+                            <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-red-500/50" />
+                            <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-red-500/50" />
+                            <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-red-500/50" />
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-red-500/50" />
+
+                            {/* OPPONENT NAME */}
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">ENNEMI</span>
+                                <span className="text-lg font-black italic text-white tracking-wide uppercase drop-shadow-md">{opponentName}</span>
                             </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            {/* OPPONENT BUFFS */}
-                            <div className="flex flex-1 justify-start text-xs text-white/60">
-                                {/* OPPONENT BUFFS */}
+
+                            <div className="flex items-center gap-4">
+                                {/* OPPONENT HEALTH */}
+                                <div className="flex-1">
+                                    <HealthBar
+                                        current={opponentHealth}
+                                        max={opponent.stat_hp}
+                                        height={18}
+                                    />
+                                </div>
                             </div>
-                            {/* OPPONENT HEALTH */}
-                            <div className="flex-1 flex justify-end">
-                                <HealthBar
-                                    current={opponentHealth}
-                                    max={opponent.stat_hp}
-                                />
+
+                            {/* OPPONENT ENERGY (Small bar under HP) */}
+                            <div className="mt-1 flex justify-end">
+                                <div className="w-1/2">
+                                    <EnergyBar
+                                        current={opponentEnergy}
+                                        max={opponent.stat_energy}
+                                        height={6}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        {/* OPPONENT NAME */}
-                        <div className="mr-5 flex justify-end text-l font-semibold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                            {opponentName}
-                        </div>
-                        {/* OPPONENT CASTBAR */}
-                        <div className="h-8 ">
-                            <AnimatePresence>
-                                {opponentIsCasting && (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{
-                                            opacity: 0,
-                                            scaleX: 1,
-                                            filter: "brightness(2)"
-                                        }}
-                                        className="flex items-center justify-center"
-                                    >
-                                        <div className="w-[35%]">
+
+                            {/* OPPONENT CASTBAR */}
+                            <div className="absolute -bottom-8 left-0 right-0 h-8 flex justify-center">
+                                <AnimatePresence>
+                                    {opponentIsCasting && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="w-[80%] max-w-[200px]"
+                                        >
                                             <CastBar
                                                 progress={opponentCastProgress}
                                                 label={opponentCurrentCastSkill?.name}
+                                                height={8}
+                                                color="#ef4444" // Red cast bar
                                             />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
-                    </div>
-                    <div className="absolute inset-0 flex flex-col px-5 py-5">
-                        <Title label={CONST_TITLE} />
                     </div>
                 </div>
                 {/* PLAYER BACKGROUND */}
@@ -802,57 +806,58 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                 : 'inset 0 0 60px rgba(0, 255, 255, 0.2)', // Default blue
                         }}
                     />
-                    {/* PLAYER AREA */}
-                    <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-10 pl-5 pr-5 gap-2">
-                        {/* PLAYER CASTBAR */}
-                        <div className="h-6 ">
-                            <AnimatePresence>
-                                {playerIsCasting && (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{
-                                            opacity: 0,
-                                            scaleX: 1,
-                                            filter: "brightness(2)"
-                                        }}
-                                        className="flex items-center justify-center"
-                                    >
-                                        <div className="w-[35%]">
-                                            <CastBar
-                                                progress={playerCastProgress}
-                                                label={playerCurrentCastSkill?.name}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                        {/* PLAYER NAME */}
-                        <div className="flex items-center justify-center">
-                            <div className="ml-5 flex-1 text-l font-semibold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                                {playerName}
+                    {/* PLAYER AREA (HUD) */}
+                    <div className="absolute inset-0 flex-1 flex flex-col justify-start pt-6 pl-4 pr-4 pointer-events-none">
+
+                        {/* PLAYER HUD FRAME */}
+                        <div className="relative bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] pointer-events-auto">
+                            {/* DECOR CORNERS */}
+                            <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-cyan-400/50" />
+                            <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-cyan-400/50" />
+                            <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-cyan-400/50" />
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-cyan-400/50" />
+
+                            {/* PLAYER INFO */}
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-lg font-black italic text-white tracking-wide uppercase drop-shadow-md">{playerName}</span>
+                                <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">INITIÉ</span>
                             </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            {/* PLAYER HEALTH */}
-                            <div className="flex-1 flex justify-start">
+
+                            {/* BARS */}
+                            <div className="space-y-1">
                                 <HealthBar
                                     current={playerHealth}
                                     max={selectedCharacter?.stat_hp ?? 100}
+                                    height={20}
                                 />
+                                <div className="flex w-[60%]">
+                                    <EnergyBar
+                                        current={playerEnergy}
+                                        max={selectedCharacter?.stat_energy ?? 50}
+                                        height={6}
+                                    />
+                                </div>
                             </div>
-                            {/* PLAYER BUFFS */}
-                            <div className="flex flex-1 justify-end text-xs text-white/60">
-                                {/* PLAYER BUFFS */}
+
+                            {/* PLAYER CASTBAR OVERLAY */}
+                            <div className="absolute -bottom-12 left-0 right-0 h-8 flex justify-center">
+                                <AnimatePresence>
+                                    {playerIsCasting && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            className="w-[80%] max-w-[200px]"
+                                        >
+                                            <CastBar
+                                                progress={playerCastProgress}
+                                                label={playerCurrentCastSkill?.name}
+                                                height={10}
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
-                        </div>
-                        {/* PLAYER ENERGY */}
-                        <div className="flex justify-start w-[40%]">
-                            <EnergyBar
-                                current={playerEnergy}
-                                max={selectedCharacter?.stat_energy ?? 50}
-                            />
                         </div>
 
                         {/* COMBO TRIGGER BUTTON - AAA REDESIGN */}
@@ -892,6 +897,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 </div>
                 {/* OVERLAY AREA (UI, Crystals, Skills) */}
                 <div className="absolute inset-0 flex flex-col pointer-events-none">
+                    <Title label={CONST_TITLE} />
 
                     {/* 1. MOCK OPPONENT SPACE (flex-1) */}
                     <div className="flex-1" />
@@ -1212,8 +1218,10 @@ function DarkOverlay() {
 
 function Title({ label = "label" }: { label?: string }) {
     return (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 text-lg font-bold tracking-[0.3em] uppercase text-white" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
-            {label}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 z-50">
+            <span className="text-xs font-black tracking-[0.3em] uppercase text-white drop-shadow-md">
+                {label}
+            </span>
         </div>
     );
 }

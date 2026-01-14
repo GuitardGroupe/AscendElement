@@ -34,73 +34,51 @@ export default function HealthBar({
 
     return (
         <div
-            className="relative w-full overflow-hidden"
+            className="relative w-full overflow-hidden bg-black/60 backdrop-blur-sm"
             style={{
                 height,
                 clipPath: outerClip,
-                background: "linear-gradient(to bottom, #111, #060606)",
-                filter: "drop-shadow(0 0 8px rgba(0,0,0,0.8))",
+                borderBottom: '1px solid rgba(255,255,255,0.1)'
             }}
         >
+            {/* BACKGROUND */}
+            <div className="absolute inset-0 bg-neutral-900/80" />
+
             {/* CHIP DAMAGE */}
             <div
                 className="absolute left-0 top-0 h-full transition-all duration-500 ease-out"
                 style={{
                     width: pct(chipHp),
                     clipPath: innerClip,
-                    background:
-                        "linear-gradient(to right, #2a2a2a, #3a3a3a 40%, #1e1e1e)",
-                    opacity: 1,
+                    background: "rgba(255, 255, 255, 0.2)",
                 }}
             />
 
             {/* TRUE HP */}
             <div
-                className="absolute left-0 top-0 h-full transition-all duration-300 ease-out"
+                className="absolute left-0 top-0 h-full transition-all duration-300 ease-out flex items-center justify-end overflow-hidden"
                 style={{
                     width: pct(displayHp),
                     clipPath: innerClip,
-                    background:
-                        "linear-gradient(to right, #700000, #b30000 40%, #ff1b1b)",
-                    boxShadow: "inset 0 0 8px rgba(0,0,0,0.6)",
+                    background: "linear-gradient(90deg, #991b1b 0%, #dc2626 50%, #f87171 100%)",
+                    boxShadow: "0 0 15px rgba(220, 38, 38, 0.4)"
                 }}
-            />
-
-            {/* FLASH */}
-            {displayHp < chipHp && (
-                <div
-                    className="absolute inset-0 animate-tekkenFlash pointer-events-none"
-                    style={{ clipPath: innerClip }}
-                />
-            )}
-
-            {/* INNER GLOW */}
-            <div
-                className="absolute inset-0 opacity-30 bg-linear-to-b from-transparent via-black/40 to-transparent pointer-events-none"
-                style={{ clipPath: innerClip }}
-            />
-
-            {/* TOP HIGHLIGHT */}
-            <div
-                className="absolute top-0 left-0 w-full h-[22%] bg-white/10 opacity-[0.07] pointer-events-none"
-                style={{ clipPath: innerClip }}
-            />
-
-            {/* TEXT */}
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white pointer-events-none">
-                {displayHp}/{max}
+            >
+                <div className="h-full w-2 bg-white/20 blur-[2px]" />
             </div>
 
-            <style jsx>{`
-        @keyframes tekkenFlash {
-          0% {
-            background: rgba(255, 60, 60, 0.4);
-          }
-          100% {
-            background: transparent;
-          }
-        }
-      `}</style>
+            {/* INNER GLOW BORDER */}
+            <div className="absolute inset-0 border-t border-white/10 opacity-50 pointer-events-none" style={{ clipPath: innerClip }} />
+
+            {/* GRID OVERLAY */}
+            <div className="absolute inset-0 bg-[url('/img/grid-pattern.png')] opacity-10 mix-blend-overlay" />
+
+            {/* TEXT */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="text-[10px] font-black text-white drop-shadow-md tracking-wider">
+                    {Math.ceil(displayHp)} <span className="text-gray-400 text-[8px]">/ {max}</span>
+                </span>
+            </div>
         </div>
     );
 }
