@@ -61,7 +61,7 @@ export default function HealthBar({
             {/* TEXT */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <span className="text-[10px] font-black text-white drop-shadow-md tracking-wider">
-                    {Math.ceil(current)} <span className="text-gray-400 text-[8px]">/ {max}</span>
+                    {Math.ceil(current)} <span className="text-white text-[8px]">/ {max}</span>
                 </span>
             </div>
         </div>

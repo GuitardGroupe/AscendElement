@@ -71,7 +71,7 @@ export default function EnergyBar({
             {/* TEXT */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <span className="text-[10px] font-black text-white drop-shadow-md tracking-wider">
-                    {Math.floor(current)} <span className="text-gray-400 text-[8px]">/ {Math.floor(max)}</span>
+                    {Math.floor(current)} <span className="text-white text-[8px]">/ {Math.floor(max)}</span>
                 </span>
             </div>
 

@@ -2,13 +2,16 @@
 
 import { motion } from "framer-motion";
 
+// WoW-Style Clean Cast Bar
 export default function CastBar({
-    progress,
-    label, // 0 → 100
-    height = 12,
-    color = "#4db8ff",
+    progress, // 0 or 100 (Start/End)
+    duration = 0, // Duration in ms
+    label,
+    height = 24,
+    color = "#fcd34d",
 }: {
     progress: number;
+    duration?: number;
     label?: string;
     height?: number;
     color?: string;
@@ -16,43 +19,47 @@ export default function CastBar({
     const pct = Math.max(0, Math.min(progress, 100)) + "%";
 
     return (
-        <div className="flex flex-col items-center gap-1 w-full">
-            {label && (
-                <div className="text-[9px] uppercase font-black text-cyan-400 tracking-[0.2em] animate-pulse">
-                    {label}
-                </div>
-            )}
+        <div className="relative w-full flex flex-col items-center justify-center">
+            {/* FRAME - Metallic/Iron Border */}
             <div
-                className="relative w-full overflow-hidden bg-black/60 backdrop-blur-sm rounded-full border border-white/10 shadow-inner"
+                className="relative w-full bg-[#0a0a0a] rounded-[2px] border border-[#404040] shadow-[0_0_0_1px_black,0_4px_6px_rgba(0,0,0,0.5)] overflow-hidden"
                 style={{ height }}
             >
-                {/* BACKGROUND */}
-                <div className="absolute inset-0 bg-neutral-900/80" />
+                {/* BACKGROUND - Dark distinct background */}
+                <div className="absolute inset-0 bg-[#151515]" />
 
-                {/* TRACK */}
-                <div className="absolute inset-0 bg-white/5" />
-
-                {/* FILL */}
+                {/* FILL BAR - Standard WoW Yellow/Gold Texture */}
                 <motion.div
-                    className="absolute left-0 top-0 h-full flex items-center justify-end overflow-hidden rounded-full"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-b from-[#fcd34d] to-[#d97706]"
                     style={{
-                        width: pct,
-                        background: `linear-gradient(90deg, ${color} 0%, white 100%)`,
-                        boxShadow: `0 0 15px ${color}`
+                        borderRight: "1px solid rgba(255,255,255,0.4)"
                     }}
-                    initial={false}
-                    animate={progress === 100 ? {
-                        opacity: [1, 0],
-                        transition: { duration: 0.3 }
-                    } : { opacity: 1 }}
+                    initial={{ width: "0%" }}
+                    animate={{ width: pct }}
+                    transition={{
+                        duration: duration / 1000, // Convert ms to s
+                        ease: "linear"
+                    }}
                 >
-                    <div className="h-full w-4 bg-white/80 blur-xs" />
+                    {/* GLOSS EFFECT (Top Half) */}
+                    <div className="absolute inset-x-0 top-0 h-1/2 bg-white/20" />
+
+                    {/* SPARK/LEADING EDGE */}
+                    <div className="absolute right-0 top-0 bottom-0 w-[4px] bg-white opacity-80 blur-[2px] translate-x-1/2" />
                 </motion.div>
 
-                {/* INNER HIGHLIGHT */}
-                <div className="absolute inset-x-0 top-0 h-px bg-white/20 pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 h-px bg-black/40 pointer-events-none" />
+                {/* TEXT LABEL - Centered, White with Shadow */}
+                {label && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                        <span className="text-[11px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,1)] tracking-wide uppercase">
+                            {label}
+                        </span>
+                    </div>
+                )}
             </div>
+
+            {/* CASTING TIME / DETAILS (Optional subtle decoration) */}
+            <div className="absolute -bottom-1 w-[98%] h-[2px] bg-black/50 rounded-b-sm" />
         </div>
     );
 }

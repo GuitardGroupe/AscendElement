@@ -57,6 +57,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const [playerCurrentCastSkill, setPlayerCurrentCastSkill] =
         useState<Skill | null>(null);
     const [playerCastProgress, setPlayerCastProgress] = useState(0);
+    const [playerCastDuration, setPlayerCastDuration] = useState(0);
     const [playerCooldowns, setPlayerCooldowns] = useState<Record<number, number>>({});
     const skills = selectedCharacter
         ? skillSets[selectedCharacter?.symbol as ElementKey]
@@ -89,6 +90,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const [opponentCurrentCastSkill, setOpponentCurrentCastSkill] =
         useState<MonsterSkill | null>(null);
     const [opponentCastProgress, setOpponentCastProgress] = useState(0);
+    const [opponentCastDuration, setOpponentCastDuration] = useState(0);
     const [opponentCooldowns, setOpponentCooldowns] = useState<Record<number, number>>({});
     const monsterDecisionRef = useRef<{ skill: MonsterSkill; executeAt: number } | null>(null);
     const opponentIsCastingRef = useRef(false);
@@ -232,7 +234,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     }, [endCombat, pushDamageEvent, selectedCharacter?.stat_critical]);
 
     const interruptCast = useCallback(() => {
-        if (playerCastRef.current) clearInterval(playerCastRef.current);
+        if (playerCastRef.current) clearTimeout(playerCastRef.current);
         if (playerFinishTimeoutRef.current) clearTimeout(playerFinishTimeoutRef.current);
 
         if (playerCurrentCastSkill) {
@@ -249,6 +251,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         setPlayerIsCasting(false);
         setPlayerCurrentCastSkill(null);
         setPlayerCastProgress(0);
+        setPlayerCastDuration(0);
+        console.log("Player cast interrupted!");
     }, [playerCurrentCastSkill, stopSound]);
 
     // COMBO LOGIC
@@ -336,13 +340,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         }
         // Interrupt logic: if skill has interrupt, stop opponent cast
         if (skill.interrupt > 0 && opponentIsCastingRef.current) {
-            if (opponentCastRef.current) clearInterval(opponentCastRef.current);
+            if (opponentCastRef.current) clearTimeout(opponentCastRef.current);
             if (opponentFinishTimeoutRef.current) clearTimeout(opponentFinishTimeoutRef.current);
 
             setOpponentIsCasting(false);
             opponentIsCastingRef.current = false;
             setOpponentCurrentCastSkill(null);
             setOpponentCastProgress(0);
+            setOpponentCastDuration(0);
         }
         return wasCrit;
     }, [applyDamage, selectedCharacter?.stat_hp, pushDamageEvent]);
@@ -371,7 +376,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // START CAST
     const startCast = useCallback((skill: Skill) => {
-        if (playerCastRef.current) clearInterval(playerCastRef.current);
+        if (playerCastRef.current) clearTimeout(playerCastRef.current);
 
         setPlayerIsCasting(true);
         setPlayerCurrentCastSkill(skill);
@@ -380,35 +385,38 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         playSound(skill.castSound);
 
         const duration = skill.castTime;
-        const startTime = Date.now();
-        const step = 16;
 
-        playerCastRef.current = setInterval(() => {
-            const elapsed = Date.now() - startTime;
-            const pct = Math.min(100, (elapsed / duration) * 100);
-            setPlayerCastProgress(pct);
+        // Reset state for new cast
+        setPlayerCastProgress(0);
+        setPlayerCastDuration(0);
 
-            if (pct >= 100) {
-                clearInterval(playerCastRef.current!);
-                playerCastRef.current = null;
-                playerFinishTimeoutRef.current = setTimeout(() => {
-                    if (skill.cooldown > 0) {
-                        setPlayerCooldowns((prev) => ({
-                            ...prev,
-                            [skill.id]: skill.cooldown,
-                        }));
-                    }
+        // Trigger animation in next tick to ensure 0 -> 100 transition
+        setTimeout(() => {
+            setPlayerCastDuration(duration);
+            setPlayerCastProgress(100);
+        }, 10);
 
-                    setPlayerEnergy((e) => Math.max(0, e - skill.energyCost));
-                    setPlayerIsCasting(false);
-                    playSound(skill.impactSound);
-                    const wasCrit = applySkillEffects(skill);
-                    if (wasCrit) startComboTrigger();
-                    setPlayerCastProgress(0);
-                    playerFinishTimeoutRef.current = null;
-                }, 200);
+        // Set Timeout for Completion
+        playerFinishTimeoutRef.current = setTimeout(() => {
+            playerFinishTimeoutRef.current = null;
+
+            if (skill.cooldown > 0) {
+                setPlayerCooldowns((prev) => ({
+                    ...prev,
+                    [skill.id]: skill.cooldown,
+                }));
             }
-        }, step);
+
+            setPlayerEnergy((e) => Math.max(0, e - skill.energyCost));
+            setPlayerIsCasting(false);
+            playSound(skill.impactSound);
+            const wasCrit = applySkillEffects(skill);
+            if (wasCrit) startComboTrigger();
+
+            setPlayerCastProgress(0);
+            setPlayerCastDuration(0);
+        }, duration);
+
     }, [playSound, applySkillEffects, startComboTrigger]);
 
     // START OPPONENT CAST
@@ -429,44 +437,46 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (skill.castSound) playSound(skill.castSound);
 
         const duration = skill.castTime;
-        const startTime = Date.now();
-        const step = 16;
 
-        opponentCastRef.current = setInterval(() => {
-            const elapsed = Date.now() - startTime;
-            const pct = Math.min(100, (elapsed / duration) * 100);
-            setOpponentCastProgress(pct);
+        // Reset state
+        setOpponentCastProgress(0);
+        setOpponentCastDuration(0);
 
-            if (pct >= 100) {
-                clearInterval(opponentCastRef.current!);
-                opponentCastRef.current = null;
-                opponentFinishTimeoutRef.current = setTimeout(() => {
-                    if (skill.cooldown > 0) {
-                        setOpponentCooldowns((prev) => ({
-                            ...prev,
-                            [skill.id]: skill.cooldown,
-                        }));
-                    }
+        // Trigger animation
+        setTimeout(() => {
+            setOpponentCastDuration(duration);
+            setOpponentCastProgress(100);
+        }, 10);
 
-                    setOpponentEnergy((e) => Math.max(0, e - skill.energyCost));
-                    setOpponentIsCasting(false);
-                    opponentIsCastingRef.current = false;
+        // Set Timeout for Completion
+        opponentFinishTimeoutRef.current = setTimeout(() => {
+            opponentFinishTimeoutRef.current = null;
 
-                    // DODGE CHECK
-                    const currentDefense = activeDefenseRef.current;
-                    const isDodging = currentDefense?.defense && currentDefense.defense.dodge > 0;
-                    if (!isDodging) {
-                        if (skill.impactSound) playSound(skill.impactSound);
-                        applyOpponentSkillEffects(skill);
-                    } else {
-                        console.log("Dodged!");
-                    }
-
-                    setOpponentCastProgress(0);
-                    opponentFinishTimeoutRef.current = null;
-                }, 200);
+            if (skill.cooldown > 0) {
+                setOpponentCooldowns((prev) => ({
+                    ...prev,
+                    [skill.id]: skill.cooldown,
+                }));
             }
-        }, step);
+
+            setOpponentEnergy((e) => Math.max(0, e - skill.energyCost));
+            setOpponentIsCasting(false);
+            opponentIsCastingRef.current = false;
+
+            // DODGE CHECK
+            const currentDefense = activeDefenseRef.current;
+            const isDodging = currentDefense?.defense && currentDefense.defense.dodge > 0;
+            if (!isDodging) {
+                if (skill.impactSound) playSound(skill.impactSound);
+                applyOpponentSkillEffects(skill);
+            } else {
+                console.log("Dodged!");
+            }
+
+            setOpponentCastProgress(0);
+            setOpponentCastDuration(0);
+        }, duration);
+
     }, [playSound, applyOpponentSkillEffects, opponentEnergy]);
 
     // --- EFFECTS ---
@@ -716,7 +726,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     <BattleZoneBackground
                         src={playerBackground}
                         scale={1.5}
-                        origin="origin-top"
+                        origin="origin-top-left"
                         objectPosition="object-top"
                         blur={0}
                     />
@@ -731,16 +741,62 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             <div className="absolute inset-0 z-40 flex flex-col pointer-events-none">
 
                 {/* --- TOP SECTION: OPPONENT (40% H) --- */}
-                <div className="relative w-full h-[40%] flex items-center justify-end pr-8 pl-4">
+                <div className="relative w-full h-[40%] flex items-start justify-end p-4">
+                    {/* CENTERED CAST BAR (OPPONENT) */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] z-30 pointer-events-none">
+                        <AnimatePresence>
+                            {opponentIsCasting && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="w-full"
+                                >
+                                    <CastBar
+                                        progress={opponentCastProgress}
+                                        duration={opponentCastDuration}
+                                        label={opponentCurrentCastSkill?.name}
+                                        height={24}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* FLEE BUTTON - Bottom Right of Opponent Zone */}
+                    <div className="absolute bottom-4 right-4 pointer-events-auto z-40">
+                        <button
+                            onClick={handleFlee}
+                            className="py-3 px-6 bg-gradient-to-br from-black/30 to-black/20 backdrop-blur-md border border-white/10 active:scale-95 transition-transform rounded-sm flex items-center justify-center gap-3 shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
+                        >
+                            <span className="font-bold italic tracking-wide text-xs text-gray-300">S&apos;ENFUIR</span>
+                        </button>
+                    </div>
                     <div className="flex items-center gap-6 pointer-events-auto">
 
-                        {/* OPPONENT HUD FRAME (RIGHT ALIGNED) */}
-                        <div className="relative w-full max-w-[400px] flex flex-col items-end">
-                            <div className="flex items-center gap-3 mb-1 flex-row-reverse">
-                                <span className="text-2xl font-black italic text-white tracking-tighter uppercase drop-shadow-md">{opponentName}</span>
+                        {/* OPPONENT CRYSTAL */}
+                        <div className="absolute top-[-10px] right-[-30px] scale-100 origin-center">
+                            <CombatCrystal
+                                hp={opponentHealth}
+                                maxHp={100}
+                                damageEvents={opponentDamageEvents}
+                                onDamageDone={(id) => handleDamageDone("opponent", id)}
+                                lastHitTimestamp={opponentHitTime}
+                                color={"#F54927"}
+                            />
+                        </div>
 
+                        {/* OPPONENT HUD FRAME (RIGHT ALIGNED) */}
+                        <div className="relative w-[160px] flex flex-col items-end mr-[90px]">
+                            <div className="flex items-center gap-3 mb-1 flex-row-reverse">
+
+                                <span className="text-2xl font-black italic text-white tracking-tighter uppercase drop-shadow-md">{opponentName}</span>
+                                <span className="px-1.5 py-0.5 rounded-sm bg-red-500/20 text-[9px] font-black text-red-300 border border-red-500/30 tracking-widest">
+                                    #MangeTmorts
+                                </span>
                             </div>
                             <div className="space-y-2 w-full flex flex-col items-end">
+
                                 <HealthBar
                                     current={opponentHealth}
                                     max={opponent.stat_hp}
@@ -753,52 +809,44 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                         height={24}
                                     />
                                 </div>
+
                             </div>
-                            {/* OPPONENT CAST BAR */}
-                            <div className="h-6 mt-2 w-[80%] flex justify-end">
-                                <AnimatePresence>
-                                    {opponentIsCasting && (
-                                        <motion.div
-                                            initial={{ opacity: 0, x: 10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0 }}
-                                            className="w-full"
-                                        >
-                                            <CastBar
-                                                progress={opponentCastProgress}
-                                                label={opponentCurrentCastSkill?.name}
-                                                height={18}
-                                                color="#ef4444"
-                                            />
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+
+
                         </div>
 
-                        {/* OPPONENT CRYSTAL 
-                        <div className="relative scale-100 origin-center">
-                            <CombatCrystal
-                                hp={opponentHealth}
-                                maxHp={100}
-                                damageEvents={opponentDamageEvents}
-                                onDamageDone={(id) => handleDamageDone("opponent", id)}
-                                lastHitTimestamp={opponentHitTime}
-                                color={"#F54927"}
-                            />
-                        </div>
-                        */}
+
                     </div>
                 </div>
 
                 {/* --- BOTTOM SECTION: PLAYER (60% H) --- */}
-                <div className="relative w-full h-[60%] flex items-center pl-8">
+                <div className="relative w-full h-[60%] flex items-start p-4">
+                    {/* CENTERED CAST BAR (PLAYER) */}
+                    <div className="absolute top-[150px] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] z-30 pointer-events-none">
+                        <AnimatePresence>
+                            {playerIsCasting && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="w-full"
+                                >
+                                    <CastBar
+                                        progress={playerCastProgress}
+                                        duration={playerCastDuration}
+                                        label={playerCurrentCastSkill?.name}
+                                        height={24}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                     <div className="flex flex-col gap-6 pointer-events-auto">
 
                         {/* ROW 1: MAIN PLAYER */}
                         <div className="flex items-center gap-6">
                             {/* PLAYER CRYSTAL */}
-                            <div className="relative scale-100 origin-center">
+                            <div className="absolute top-[-10px] left-[-30px] scale-100 origin-center">
                                 <CombatCrystal
                                     hp={playerHealth}
                                     maxHp={100}
@@ -808,7 +856,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                     color={playerColor}
                                     opponent={true}
                                 />
-                                {/* SHIELD OVERLAY */}
+
                                 <AnimatePresence>
                                     {activeDefense && (
                                         <motion.div
@@ -824,11 +872,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                             </div>
 
                             {/* PLAYER HUD FRAME (LEFT ALIGNED) */}
-                            <div className="relative w-full max-w-[400px]">
+                            <div className="relative w-[160px] ml-[90px]">
+
+
                                 <div className="flex items-center gap-3 mb-1">
-                                    <span className="text-2xl font-black italic text-white tracking-tighter uppercase drop-shadow-md">{playerName}</span>
-                                    <span className="px-1.5 py-0.5 rounded-sm bg-cyan-500/20 text-[9px] font-black text-cyan-300 border border-cyan-500/30 uppercase tracking-widest">
-                                        INITIÉ
+                                    <span className="text-2xl font-black italic text-white tracking-tighter uppercase drop-shadow-md">
+                                        {playerName}</span>
+                                    <span className="px-1.5 py-0.5 rounded-sm bg-cyan-500/20 text-[9px] font-black text-cyan-300 border border-cyan-500/30 tracking-widest">
+                                        #LeroyJenkins
                                     </span>
                                 </div>
                                 <div className="space-y-2">
@@ -845,48 +896,24 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                         />
                                     </div>
                                 </div>
-                                {/* CAST BAR */}
-                                <div className="h-6 mt-2 w-[80%]">
-                                    <AnimatePresence>
-                                        {playerIsCasting && (
-                                            <motion.div
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                exit={{ opacity: 0 }}
-                                            >
-                                                <CastBar
-                                                    progress={playerCastProgress}
-                                                    label={playerCurrentCastSkill?.name}
-                                                    height={18}
-                                                />
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
+
+
+
                             </div>
                         </div>
 
-                        {/* ROW 2: COOP ALLY (85% Scale) */}
+                        {/* ROW 2: COOP ALLY  */}
                         {mode === 'coop' && (
-                            <div className="flex items-center gap-6 ml-4 scale-[0.85] origin-left opacity-90">
-                                {/* ALLY CRYSTAL (Goblin Mock) */}
-                                <div className="relative w-[100px] h-[100px] flex items-center justify-center"> {/* Mock Size of Crystal */}
-                                    <div className="relative w-20 h-20 rounded-full border-2 border-emerald-500/30 overflow-hidden shadow-[0_0_15px_rgba(16,185,129,0.2)] bg-black/40">
-                                        <Image
-                                            src={CONST_ASSETS.IMAGES.MONSTER_GOBLIN}
-                                            fill
-                                            className="object-cover grayscale-[0.3]"
-                                            alt="Ally"
-                                        />
-                                    </div>
-                                </div>
+                            <div className="absolute top-[180px] left-4 flex items-center gap-6">
+
 
                                 {/* ALLY HUD */}
-                                <div className="relative w-full max-w-[350px]">
+                                <div className="relative w-[140px]">
                                     <div className="flex items-center gap-3 mb-1">
-                                        <span className="text-xl font-black italic text-emerald-100 tracking-tighter uppercase drop-shadow-md">DOCILE</span>
-                                        <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-[9px] font-black text-emerald-300 border border-emerald-500/30 uppercase tracking-widest">
-                                            ALLIÉ
+                                        <span className="text-xl font-black italic text-emerald-100 tracking-tighter uppercase drop-shadow-md">
+                                            KNIGHT</span>
+                                        <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-[9px] font-black text-emerald-300 border border-emerald-500/30 tracking-widest">
+                                            #SauceAlOignon
                                         </span>
                                     </div>
                                     <div className="space-y-1.5">
@@ -894,13 +921,13 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                         <HealthBar
                                             current={playerHealth} // Mock
                                             max={100}
-                                            height={24}
+                                            height={28}
                                         />
                                         <div className="w-[85%]">
                                             <EnergyBar
                                                 current={playerEnergy} // Mock
                                                 max={50}
-                                                height={16}
+                                                height={21}
                                             />
                                         </div>
                                     </div>
@@ -942,37 +969,8 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 </AnimatePresence>
             </div>
 
-            {/* BOTTOM LAYER: SKILLS & FLEE */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between gap-3 z-50 pointer-events-none">
-                <div className="pointer-events-auto">
-                    {/* FLEE BUTTON - RECTANGULAR & DYNAMIC */}
-                    <button
-                        onClick={handleFlee}
-                        className="
-                            group relative overflow-hidden
-                            px-6 py-3
-                            bg-red-950/80 border border-red-500/50 
-                            skew-x-[-15deg]
-                            shadow-[0_0_15px_rgba(239,68,68,0.2)]
-                            active:scale-95 transition-transform duration-100
-                        "
-                    >
-                        {/* Dynamic Sweep Background */}
-                        <div className="absolute inset-0 bg-linear-to-r from-transparent via-red-500/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-out" />
-
-                        <div className="flex items-center gap-2 skew-x-[15deg]">
-                            <span className="text-red-200 font-black italic uppercase tracking-wider text-sm drop-shadow-md group-hover:text-white transition-colors">
-                                FUITE
-                            </span>
-                            <div className="w-4 h-4 text-red-400 group-hover:text-white transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M13 5H19V11" />
-                                    <path d="M19 5L5 19" />
-                                </svg>
-                            </div>
-                        </div>
-                    </button>
-                </div>
+            {/* BOTTOM LAYER: SKILLS */}
+            <div className="absolute bottom-0 left-0 right-0 flex items-end justify-end gap-3 z-50 pointer-events-none">
 
                 <div className="pointer-events-auto pb-4 pr-4">
                     <SkillGrid

@@ -27,7 +27,7 @@ export const characters = [
         img: CONST_ASSETS.IMAGES.CHAR_KNIGHT_FULL,
         img_h: CONST_ASSETS.IMAGES.CHAR_KNIGHT_FULL,
         color: "#00ffff",
-        stat_hp: 100, // nombre d epoints de vie max
+        stat_hp: 10000, // nombre d epoints de vie max
         stat_energy: 100, // nombre de points d'énergie max
         stat_hp_regen: 0, // coef de regen par seconde
         stat_energy_regen: 2, // coef de regen par seconde

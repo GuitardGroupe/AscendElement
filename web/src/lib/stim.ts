@@ -19,7 +19,7 @@ export const stims = [
         img: CONST_ASSETS.IMAGES.ITEM_01,
         sound: CONST_ASSETS.SOUNDS.HEAL,
         color: "#00ffff",
-        heal: 40,
+        heal: 2000,
         cooldown: 2000,
         usages: 3,
         description: "Un module de soin portable pour restaurer vos points de vie en combat."
