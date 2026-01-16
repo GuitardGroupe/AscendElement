@@ -71,8 +71,8 @@ export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacte
                         <ArrowLeft size={20} className="text-gray-400" />
                     </div>
                 </button>
-                <div className="text-right">
-                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500">PERSONNAGE</h1>
+                <div className="text-right pr-1">
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500">{"PERSONNAGE ."}</h1>
                     <p className="text-[10px] font-black text-cyan-500/60 tracking-[0.3em] uppercase">STATISTIQUES & PROGRESSION</p>
                 </div>
             </header>

@@ -1210,6 +1210,11 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         onClick={combatResult === 'defeat' ? handleGameOver : undefined}
                         className={`absolute inset-0 z-150 flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl ${combatResult === 'defeat' ? 'cursor-pointer' : ''}`}
                     >
+                        {/* Safe Static Background Glow for Victory */}
+                        {combatResult === 'victory' && (
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none" />
+                        )}
+
                         {combatResult === 'victory' ? (
                             <ResultVictory playerName={playerName} onBack={handleGameOver} />
                         ) : (
@@ -1275,16 +1280,13 @@ function ResultVictory({ playerName, onBack }: { playerName: string, onBack: () 
             <div className="w-full max-w-sm flex flex-col items-center gap-6">
                 {/* VICTORY TITLE */}
                 <div className="text-center relative">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 2 }}
-                        animate={{ opacity: 0.5, scale: 1 }}
-                        transition={{ duration: 1 }}
-                        className="absolute inset-0 bg-amber-500 blur-3xl opacity-20"
-                    />
+                    {/* Removed animated blurred background to prevent square artifacts */}
+                    <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-xl" />
+
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-6xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-amber-300 via-orange-400 to-amber-600 uppercase drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                        className="text-6xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-amber-300 via-orange-400 to-amber-600 uppercase"
                     >
                         VICTOIRE
                     </motion.h2>
@@ -1297,12 +1299,12 @@ function ResultVictory({ playerName, onBack }: { playerName: string, onBack: () 
                         <p className="text-[9px] font-black text-amber-500/60 uppercase tracking-widest">PROGRESSION</p>
                         <p className="text-xs font-mono font-bold text-amber-400">+125 XP</p>
                     </div>
-                    <div className="h-2 w-full bg-black/60 rounded-full border border-white/5 overflow-hidden shadow-inner">
+                    <div className="h-2 w-full bg-black/60 rounded-full border border-white/5 overflow-hidden">
                         <motion.div
                             initial={{ width: "45%" }}
                             animate={{ width: "68%" }}
-                            transition={{ duration: 2, delay: 0.5, ease: "circOut" }}
-                            className="h-full bg-linear-to-r from-amber-600 via-yellow-400 to-amber-200 shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                            transition={{ duration: 1, delay: 0.2, ease: "circOut" }}
+                            className="h-full bg-amber-500"
                         />
                     </div>
                 </div>
@@ -1318,7 +1320,7 @@ function ResultVictory({ playerName, onBack }: { playerName: string, onBack: () 
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setRevealLoot(true)}
-                                className="bg-linear-to-r from-amber-600 to-amber-400 text-black font-black italic uppercase tracking-widest py-3 px-12 rounded-sm shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.5)] transition-all flex items-center gap-2"
+                                className="bg-linear-to-r from-amber-600 to-amber-400 text-black font-black italic uppercase tracking-widest py-3 px-12 rounded-sm shadow-lg hover:brightness-110 transition-all flex items-center gap-2"
                             >
                                 <span className="drop-shadow-sm">BUTIN</span>
                             </motion.button>

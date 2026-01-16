@@ -90,7 +90,7 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                     <span className="text-[10px] font-black text-cyan-500 uppercase tracking-[0.3em]">SÉLECTION DU CHAMPION</span>
                     <h1 className="text-3xl font-black italic text-white uppercase tracking-tighter shadow-black drop-shadow-lg">{character.name}</h1>
                 </div>
-                <div className="px-3 py-1 bg-white/10 border border-white/10 rounded-full backdrop-blur-md">
+                <div className="flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/10 rounded-full backdrop-blur-md">
                     <span className="text-[9px] font-bold text-white uppercase tracking-widest">{currentIndex + 1} / {characters.length}</span>
                 </div>
             </header>

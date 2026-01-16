@@ -124,9 +124,9 @@ export default function MapScreen({ onSwitchScreen }: MapScreenProps) {
                     </div>
                     <span className="font-black italic tracking-tighter text-sm text-gray-400 group-active:text-cyan-400 uppercase">RETOUR</span>
                 </button>
-                <div className="text-right">
-                    <h1 className="text-xl font-black italic tracking-tighter uppercase text-cyan-400">CARTE D&apos;AVENTURE</h1>
-                    <p className="text-[9px] font-black text-white/40 tracking-[0.3em] uppercase">RÉGION: INFRA-SYSTEME</p>
+                <div className="text-right pr-1">
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500">{"CARTE ."}</h1>
+                    <p className="text-[10px] font-black text-cyan-500/60 tracking-[0.3em] uppercase">EXPLORATION DE SECTEURS</p>
                 </div>
             </header>
 

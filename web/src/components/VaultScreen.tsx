@@ -51,8 +51,8 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                         <ArrowLeft size={20} className="text-gray-400" />
                     </div>
                 </button>
-                <div className="text-right">
-                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-amber-200 to-amber-600">BANQUE</h1>
+                <div className="text-right pr-1">
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-amber-200 to-amber-600">{"BANQUE ."}</h1>
                     <p className="text-[10px] font-black text-amber-500/60 tracking-[0.3em] uppercase">STOCKAGE SÉCURISÉ</p>
                 </div>
             </header>
@@ -60,11 +60,8 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
             <main className="relative z-10 flex-1 flex flex-col px-4 gap-2 overflow-hidden pb-4">
 
                 {/* VAULT SECTION - 3x3 MATCHING STUFF SCREEN STYLE */}
-                <section className="flex flex-col gap-2 flex-1 items-center justify-start min-h-0 shrink-0 mt-4">
-                    <div className="flex items-center justify-between px-2 w-full max-w-[280px]">
-                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">COFFRE PERSONNEL</span>
-                        <span className="text-[10px] font-mono text-amber-500/80">5 / 9</span>
-                    </div>
+                <section className="flex flex-col gap-2 flex-1 items-center justify-start min-h-0 shrink-0 mt-8">
+
 
                     <div className="bg-linear-to-b from-white/5 to-transparent border border-white/5 rounded-xl p-4 shadow-[0_0_30px_rgba(245,158,11,0.2)] relative overflow-hidden">
                         {/* Background Golden Glow */}
