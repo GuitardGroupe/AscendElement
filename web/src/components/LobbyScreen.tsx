@@ -1,19 +1,17 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Flame, Package, Hexagon, Zap, Shield, Plus } from 'lucide-react';
+import { Swords, Package, Hexagon, Zap, Shield, Plus, Landmark } from 'lucide-react';
 import Image from 'next/image';
-import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
-import { useAdventureStore } from "@/store/useAdventureStore";
 import { CONST_ASSETS } from '@/lib/preloader';
+import { useSoundStore } from '@/store/useSoundStore';
 import { skillSets, Skill, Defense, defenses } from '@/lib/skills';
 import { stims, Stim } from '@/lib/stim';
 import { useState } from 'react';
 import ElementCrystal from './ElementCrystal';
 
 const CONST_SOUND_CLICK = CONST_ASSETS.SOUNDS.CLICK;
-const CONST_SOUND_DESACTIVATION = CONST_ASSETS.SOUNDS.ACCEPTATION;
 
 interface LobbyScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -27,8 +25,7 @@ type SkillItem = {
 
 export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     const { playSound } = useSoundStore();
-    const { selectedCharacter, clearSelectedCharacter } = useSelectedCharacter();
-    const { resetAdventure } = useAdventureStore();
+    const { selectedCharacter } = useSelectedCharacter();
     const [selectedInfo, setSelectedInfo] = useState<SkillItem | null>(null);
 
     const isCrystalActive = !!selectedCharacter;
@@ -51,19 +48,17 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     const menuItems = [
         { id: 'adventure', show: isCrystalActive, label: 'AVENTURE', icon: Swords, bg: 'bg-cyan-500', glow: 'shadow-cyan-500/50', onClick: () => onSwitchScreen('adventure') },
         { id: 'inventory', show: isCrystalActive, label: 'STUFF', icon: Package, bg: 'bg-blue-600', glow: 'shadow-blue-600/50', onClick: () => onSwitchScreen('inventory') },
-        { id: 'sacrifice', show: isCrystalActive, label: 'SACRIFICE', icon: Flame, bg: 'bg-red-500', glow: 'shadow-red-500/50', onClick: () => handleActionClick() },
+        { id: 'vault', show: isCrystalActive, label: 'COFFRE', icon: Landmark, bg: 'bg-amber-600', glow: 'shadow-amber-600/50', onClick: () => onSwitchScreen('vault') },
     ];
 
     const handleCrystalClick = () => {
         playSound(CONST_SOUND_CLICK, 0.6);
-        onSwitchScreen('characters');
+        if (selectedCharacter) {
+            onSwitchScreen('active-character');
+        } else {
+            onSwitchScreen('characters');
+        }
     };
-
-    const handleActionClick = () => {
-        resetAdventure();
-        clearSelectedCharacter();
-        playSound(CONST_SOUND_DESACTIVATION, 0.6);
-    }
 
     return (
         <div className="flex flex-col h-full bg-neutral-950 text-white font-sans relative overflow-hidden">

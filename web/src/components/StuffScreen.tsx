@@ -40,73 +40,78 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
     return (
         <div className="flex flex-col h-full bg-neutral-950 text-white font-sans relative overflow-hidden">
             {/* AMBIENT BACKGROUND */}
-            <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,var(--tw-gradient-stops))] from-blue-900/30 via-neutral-950/80 to-neutral-950" />
-            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.1),transparent_70%)] pointer-events-none" />
 
             {/* HEADER */}
-            <header className="relative z-20 mx-4 mt-6 p-1">
-                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-3 shadow-lg relative overflow-hidden">
-                    <button onClick={handleBack} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 active:scale-90 transition-transform">
-                        <ArrowLeft size={16} className="text-gray-300" />
-                    </button>
-                    <div className="flex flex-col items-end">
-                        <span className="text-[8px] font-black text-cyan-500 uppercase tracking-widest">LOGISTIQUE</span>
-                        <span className="text-sm font-black italic text-white uppercase tracking-tighter">ÉQUIPEMENT</span>
+            <header className="relative z-10 flex items-center justify-between mb-2 p-4">
+                <button
+                    onClick={handleBack}
+                    className="flex items-center gap-2 group active:scale-95 transition-transform"
+                >
+                    <div className="w-10 h-10 rounded-sm border border-white/10 flex items-center justify-center bg-white/5">
+                        <ArrowLeft size={20} className="text-gray-400" />
                     </div>
+                </button>
+                <div className="text-right">
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500">ÉQUIPEMENT</h1>
+                    <p className="text-[10px] font-black text-cyan-500/60 tracking-[0.3em] uppercase">GESTION DE L&apos;ARSENAL</p>
                 </div>
             </header>
 
-            <main className="relative z-10 flex-1 flex flex-col p-4 gap-6 overflow-y-auto pb-20">
+            <main className="relative z-10 flex-1 flex flex-col px-4 gap-2 overflow-hidden">
 
-                {/* CHARACTER MANNEQUIN / EQUIPMENT */}
-                <section className="relative h-[280px] w-full bg-linear-to-b from-white/5 to-transparent border border-white/5 rounded-xl overflow-hidden shadow-lg flex items-center justify-center">
-                    {/* Character Silhouette */}
-                    {selectedCharacter && (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-30 grayscale mix-blend-overlay">
-                            <Image src={selectedCharacter.img} fill className="object-cover" alt="silhouette" />
-                        </div>
-                    )}
+                {/* ACTIVE EQUIPMENT - 2x2 GRID */}
+                <section className="relative w-full py-2 flex items-center justify-center shrink-0">
+                    <div className="bg-linear-to-b from-white/5 to-transparent border border-white/5 rounded-3xl p-3 shadow-lg relative overflow-hidden">
+                        {/* Background Effect */}
+                        <div className="absolute inset-0 bg-radial-gradient from-cyan-500/10 to-transparent opacity-50" />
 
-                    <div className="absolute inset-0 bg-linear-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
+                        {/* 2x2 Grid */}
+                        <div className="relative z-10 grid grid-cols-2 gap-2">
+                            {equipmentSlots.map((slot) => (
+                                <motion.button
+                                    key={slot.id}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setSelectedItem(slot)}
+                                    className="relative group"
+                                >
+                                    <div className="w-20 h-20 relative">
+                                        {/* Frame */}
+                                        <div className={`absolute inset-0 rounded-xl border-2 ${slot.img ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'border-white/10 bg-black/40'} transition-all`} />
 
-                    {/* Equipment Hex Grid */}
-                    <div className="relative z-10 grid grid-cols-2 gap-x-12 gap-y-6">
-                        {equipmentSlots.map((slot) => (
-                            <motion.button
-                                key={slot.id}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setSelectedItem(slot)}
-                                className="relative group flex flex-col items-center gap-2"
-                            >
-                                <div className="w-16 h-16 relative">
-                                    {/* Square Border */}
-                                    <div className={`absolute inset-0 rounded-xl border-2 ${slot.img ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'border-white/10 bg-black/40'} transition-all`} />
+                                        {/* Image/Icon */}
+                                        <div className="absolute inset-0 flex items-center justify-center rounded-xl overflow-hidden">
+                                            {slot.img ? (
+                                                <div className="w-full h-full relative">
+                                                    <Image src={slot.img} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="equip" />
+                                                    <div className="absolute inset-0 bg-black/20" /> {/* Darken image slightly for text */}
+                                                </div>
+                                            ) : (
+                                                <slot.icon size={28} className={`${slot.color} opacity-30`} />
+                                            )}
+                                        </div>
 
-                                    {/* Inner Content */}
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        {slot.img ? (
-                                            <div className="w-full h-full relative overflow-hidden rounded-xl">
-                                                <Image src={slot.img} fill className="object-cover" alt="equip" />
-                                            </div>
-                                        ) : (
-                                            <slot.icon size={20} className={`${slot.color} opacity-40`} />
-                                        )}
+                                        {/* Centered Label */}
+                                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                            <span className="text-[9px] font-black text-white/90 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.9)] bg-black/30 px-2 py-0.5 rounded-xs backdrop-blur-[1px] border border-white/5">
+                                                {slot.label}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/5">{slot.label}</span>
-                            </motion.button>
-                        ))}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 </section>
 
                 {/* INVENTORY GRID */}
-                <section className="flex-1">
-                    <div className="flex items-center justify-between mb-3 px-2">
+                <section className="flex-1 min-h-0 overflow-y-auto">
+                    <div className="flex items-center justify-between mb-2 px-2">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">INVENTAIRE</span>
                         <span className="text-[10px] font-mono text-cyan-500">1 / 20</span>
                     </div>
 
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-5 gap-2 pr-1">
                         {backpackItems.map((item) => (
                             <motion.button
                                 key={item.id}

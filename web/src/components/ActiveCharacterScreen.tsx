@@ -1,0 +1,189 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { ArrowLeft, Shield, Zap, Flame, Sword, Gem } from 'lucide-react';
+import Image from 'next/image';
+import { useSoundStore } from '@/store/useSoundStore';
+import { useSelectedCharacter } from "@/store/useSelectedCharacter";
+import { CONST_ASSETS } from '@/lib/preloader';
+
+interface ActiveCharacterScreenProps {
+    onSwitchScreen: (screen: string) => void;
+}
+
+export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacterScreenProps) {
+    const { playSound } = useSoundStore();
+    const { selectedCharacter, clearSelectedCharacter } = useSelectedCharacter();
+
+    const handleBack = () => {
+        playSound(CONST_ASSETS.SOUNDS.CLICK);
+        onSwitchScreen('lobby');
+    };
+
+    const handleSacrifice = () => {
+        playSound(CONST_ASSETS.SOUNDS.ACCEPTATION); // Or a specific sacrifice sound
+        clearSelectedCharacter();
+        onSwitchScreen('lobby');
+    };
+
+    // Calculate stats (Mock logic consistent with CharactersScreen)
+    // In a real app, these would come from the character object or a stats util
+    const getStats = (charId: string) => {
+        const seed = charId.charCodeAt(0);
+        return {
+            damage: 60 + (seed % 40),
+            defense: 40 + (seed % 50),
+            difficulty: 30 + (seed % 60)
+        };
+    };
+
+    const stats = selectedCharacter ? getStats(String(selectedCharacter.id)) : { damage: 0, defense: 0, difficulty: 0 };
+
+    // Mock progression data
+    const currentLevel = 12;
+    const currentXP = 1250;
+    const maxXP = 3000;
+    const completeness = 45; // %
+
+    // Mock active equipment for display row
+    const activeEquipment = [
+        { id: 'weapon', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02 },
+        { id: 'stim', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01 },
+        { id: 'outfit', icon: Shield, color: 'text-purple-400', img: null },
+        { id: 'relic', icon: Gem, color: 'text-emerald-400', img: null },
+    ];
+
+    if (!selectedCharacter) return null;
+
+    return (
+        <div className="flex flex-col h-full bg-neutral-950 text-white font-sans relative overflow-hidden">
+            {/* AMBIENT BACKGROUND */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.1),transparent_70%)] pointer-events-none" />
+            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+            {/* HEADER */}
+            <header className="relative z-10 flex items-center justify-between mb-2 p-6">
+                <button
+                    onClick={handleBack}
+                    className="flex items-center gap-2 group active:scale-95 transition-transform"
+                >
+                    <div className="w-10 h-10 rounded-sm border border-white/10 flex items-center justify-center bg-white/5">
+                        <ArrowLeft size={20} className="text-gray-400" />
+                    </div>
+                </button>
+                <div className="text-right">
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500">PERSONNAGE</h1>
+                    <p className="text-[10px] font-black text-cyan-500/60 tracking-[0.3em] uppercase">STATISTIQUES & PROGRESSION</p>
+                </div>
+            </header>
+
+            <main className="relative z-10 flex-1 flex flex-col px-6 gap-6 overflow-y-auto pb-6">
+
+                {/* PORTRAIT & CORE INFO */}
+                <div className="flex flex-col items-center">
+
+                    <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter">{selectedCharacter.name}</h2>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="bg-cyan-900/40 border border-cyan-500/30 text-cyan-200 text-[9px] font-black px-2 py-0.5 rounded-xs tracking-widest uppercase">INITIÉ</span>
+                        <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">NIVEAU {currentLevel}</span>
+                    </div>
+                </div>
+
+                {/* PROGRESS BARS */}
+                <div className="space-y-4 bg-white/5 p-4 rounded-sm border border-white/5">
+                    {/* XP */}
+                    <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-black uppercase tracking-wider text-gray-400">
+                            <span>Expérience</span>
+                            <span>{currentXP} / {maxXP} XP</span>
+                        </div>
+                        <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${(currentXP / maxXP) * 100}%` }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                                className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                            />
+                        </div>
+                    </div>
+                    {/* COMPLETENESS */}
+                    <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-black uppercase tracking-wider text-gray-400">
+                            <span>Complétude</span>
+                            <span>{completeness}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${completeness}%` }}
+                                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                                className="h-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* STATS GRID */}
+                <div className="grid grid-cols-2 gap-4">
+                    {/* STAT ITEM */}
+                    <div className="p-3 bg-white/5 border border-white/5 rounded-sm flex flex-col gap-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Zap size={14} className="text-white/40" />
+                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">DÉGÂTS</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-bold text-white">{stats.damage}</span>
+                            <span className="text-xs font-bold text-green-400">+12</span>
+                            <span className="text-xs font-bold text-cyan-400">+5</span>
+                        </div>
+                    </div>
+
+                    <div className="p-3 bg-white/5 border border-white/5 rounded-sm flex flex-col gap-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Shield size={14} className="text-white/40" />
+                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">DÉFENSE</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-bold text-white">{stats.defense}</span>
+                            <span className="text-xs font-bold text-green-400">+8</span>
+                            <span className="text-xs font-bold text-cyan-400">+15</span>
+                        </div>
+                    </div>
+                    {/* More props can go here */}
+                </div>
+
+                {/* ACTIVE EQUIPMENT ROW */}
+                <div className="flex flex-col gap-2">
+                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">ÉQUIPEMENT ACTIF</span>
+                    <div className="flex items-center justify-between gap-2">
+                        {activeEquipment.map((slot) => (
+                            <div key={slot.id} className="w-14 h-14 relative rounded-lg border border-white/10 bg-black/40 flex items-center justify-center overflow-hidden">
+                                {slot.img ? (
+                                    <Image src={slot.img} fill className="object-cover" alt="eq" />
+                                ) : (
+                                    <slot.icon size={18} className={`${slot.color} opacity-30`} />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+            </main>
+
+            {/* FOOTER ACTION */}
+            <div className="p-6 pt-0 relative z-20">
+                <button
+                    onClick={handleSacrifice}
+                    className="w-full py-4 group bg-linear-to-r from-red-900 to-red-700 hover:from-red-800 hover:to-red-600 active:scale-95 transition-all rounded-sm flex items-center justify-center gap-3 shadow-[0_4px_20px_rgba(220,38,38,0.3)] relative overflow-hidden"
+                >
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                    <Flame size={20} className="text-red-200 drop-shadow-md" />
+                    <span className="relative z-10 font-black italic tracking-widest text-sm text-white uppercase drop-shadow-md">
+                        SACRIFIER
+                    </span>
+                </button>
+                <p className="text-center text-[9px] text-red-500/50 uppercase mt-3 font-bold tracking-wider">Cette action est irréversible</p>
+            </div>
+        </div>
+    );
+}

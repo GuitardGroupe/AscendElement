@@ -8,9 +8,11 @@ import FightScreen from '@/components/FightScreen';
 import StuffScreen from '@/components/StuffScreen';
 import AdventureScreen from '@/components/AdventureScreen';
 import MapScreen from '@/components/MapScreen';
+import ActiveCharacterScreen from '@/components/ActiveCharacterScreen';
+import VaultScreen from '@/components/VaultScreen';
 import { AnimatePresence } from 'framer-motion';
 
-type GameState = 'loading' | 'lobby' | 'characters' | 'fight' | 'inventory' | 'adventure' | 'map';
+type GameState = 'loading' | 'lobby' | 'characters' | 'fight' | 'inventory' | 'adventure' | 'map' | 'active-character' | 'vault';
 
 function useIsMobile() {
 
@@ -54,6 +56,12 @@ export default function Home() {
       case 'map':
         setGameState('map');
         break;
+      case 'active-character':
+        setGameState('active-character');
+        break;
+      case 'vault':
+        setGameState('vault');
+        break;
       default:
         setGameState('lobby');
         break;
@@ -82,6 +90,12 @@ export default function Home() {
       )}
       {gameState === 'map' && (
         <MapScreen key="map" onSwitchScreen={(screen: string) => handleGameState(screen)} />
+      )}
+      {gameState === 'active-character' && (
+        <ActiveCharacterScreen key="active-character" onSwitchScreen={(screen: string) => handleGameState(screen)} />
+      )}
+      {gameState === 'vault' && (
+        <VaultScreen key="vault" onSwitchScreen={(screen: string) => handleGameState(screen)} />
       )}
     </AnimatePresence>
   );

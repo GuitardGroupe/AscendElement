@@ -7,6 +7,7 @@ interface SoundStore {
     playSound: (path: string, volume?: number) => void;
     playMusic: (path: string, volume?: number) => void;
     stopSound: (path: string) => void;
+    stopAllSounds: (except?: string) => void;
 }
 
 export const useSoundStore = create<SoundStore>((set, get) => ({
@@ -64,5 +65,15 @@ export const useSoundStore = create<SoundStore>((set, get) => ({
         if (sound) {
             sound.stop();
         }
+    },
+
+    stopAllSounds: (except?: string) => {
+        const { sounds } = get();
+        Object.entries(sounds).forEach(([path, sound]) => {
+            if (path === except) return;
+            if (sound.playing()) {
+                sound.stop();
+            }
+        });
     },
 }));

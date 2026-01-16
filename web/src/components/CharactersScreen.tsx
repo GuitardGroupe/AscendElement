@@ -164,13 +164,14 @@ export default function CharactersScreen({ onSwitchScreen }: CharactersScreenPro
                                 </div>
 
                                 {/* IN CARNER BUTTON */}
+                                {/* INCARNER BUTTON */}
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleActivate(); }}
-                                    className="w-full py-3 mt-2 relative group overflow-hidden bg-cyan-600 active:bg-cyan-500 active:scale-95 transition-all rounded-sm shadow-[0_4px_20px_rgba(6,182,212,0.4)]"
+                                    className="w-full py-4 mt-2 group bg-linear-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 active:scale-95 transition-all rounded-sm flex items-center justify-center gap-3 shadow-[0_4px_20px_rgba(6,182,212,0.4)] relative overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-size-[250%_250%] animate-[shimmer_2s_infinite]" />
-                                    <span className="relative z-10 text-xs font-black italic tracking-[0.2em] text-white uppercase drop-shadow-md">
-                                        INCARNER
+                                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                                    <span className="relative z-10 font-black italic tracking-widest text-sm text-white uppercase drop-shadow-md">
+                                        INVOQUER
                                     </span>
                                 </button>
                             </div>
