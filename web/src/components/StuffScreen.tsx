@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sword, Zap, Shield, Gem, Hexagon } from 'lucide-react';
+import { ArrowLeft, Sword, Zap, Shield, Gem, Hexagon, Footprints, Hand } from 'lucide-react';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
@@ -16,8 +16,9 @@ interface StuffScreenProps {
 
 export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
     const { playSound } = useSoundStore();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { selectedCharacter } = useSelectedCharacter();
-    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null, rarity?: string } | null>(null);
+    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null, rarity?: string, source?: string } | null>(null);
 
     const handleBack = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
@@ -26,9 +27,14 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
 
     // Mock active equipment
     const equipmentSlots = [
+        // TOP ROW (2 ITEMS)
         { id: 'weapon', label: 'ARME', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02, type: 'OFFENSIVE', rarity: 'legendary' },
         { id: 'stim', label: 'STIM', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01, type: 'UTILITAIRE', rarity: 'epic' },
+
+        // BOTTOM ROW (4 ITEMS)
         { id: 'outfit', label: 'TENUE', icon: Shield, color: 'text-purple-400', img: null, type: 'DÉFENSIF', rarity: 'common' }, // Empty
+        { id: 'gloves', label: 'GANTS', icon: Hand, color: 'text-blue-400', img: null, type: 'DÉFENSIF', rarity: 'common' },
+        { id: 'boots', label: 'BOTTES', icon: Footprints, color: 'text-orange-400', img: null, type: 'DÉFENSIF', rarity: 'common' },
         { id: 'relic', label: 'RELIQUE', icon: Gem, color: 'text-emerald-400', img: null, type: 'PASSIF', rarity: 'common' },
     ];
 
@@ -56,63 +62,72 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                     </div>
                 </button>
                 <div className="text-right pr-1">
-                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500">{"ÉQUIPEMENT ."}</h1>
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500 pr-2">{"ÉQUIPEMENT"}</h1>
                     <p className="text-[10px] font-black text-cyan-500/60 tracking-[0.3em] uppercase">GESTION DE L&apos;ARSENAL</p>
                 </div>
             </header>
 
+            {/* DEATH PENALTY HINT */}
+            <div className="w-full flex flex-col items-center justify-center pb-4 relative z-10">
+                <div className="w-full bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.6)_0%,transparent_70%)] py-2 flex justify-center">
+                    <p className="text-[10px] font-bold italic text-amber-200 tracking-[0.15em] drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] text-center px-4">
+                        {"ATTENTION : l'équipement actif et le contenu de l'inventaire seront détruits à la mort du personnage"}
+                    </p>
+                </div>
+                <div className="w-1/3 h-px bg-linear-to-r from-transparent via-amber-200/30 to-transparent" />
+            </div>
+
             <main className="relative z-10 flex-1 flex flex-col px-4 gap-2 overflow-hidden">
 
-                {/* ACTIVE EQUIPMENT - 2x2 GRID */}
+                {/* ACTIVE EQUIPMENT - CUSTOM LAYOUT */}
                 <section className="relative w-full py-2 flex items-center justify-center shrink-0">
-                    <div className="bg-linear-to-b from-white/5 to-transparent border border-white/5 rounded-3xl p-3 shadow-lg relative overflow-hidden">
-                        {/* Background Effect */}
-                        <div className="absolute inset-0 bg-radial-gradient from-cyan-500/10 to-transparent opacity-50" />
+                    {/* Flex Column Layout - No Container */}
+                    <div className="flex flex-col gap-2 items-center">
 
-                        {/* 2x2 Grid */}
-                        <div className="relative z-10 grid grid-cols-2 gap-2">
-                            {equipmentSlots.map((slot) => (
-                                <motion.button
-                                    key={slot.id}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setSelectedItem(slot)}
-                                    className="relative group"
-                                >
-                                    <div className="w-20 h-20 relative flex items-center justify-center">
-
-                                        <div className="relative z-10">
-                                            <ItemPic
-                                                src={slot.img}
-                                                rarity={slot.rarity}
-                                                size={80} // Larger size for equipment slots
-                                                className={!slot.img ? "opacity-30 border-white/10" : ""}
-                                            />
-                                        </div>
-
-                                        {/* Fallback Icon if no image */}
-                                        {!slot.img && (
-                                            <div className="absolute inset-0 flex items-center justify-center opacity-30 z-0">
-                                                <slot.icon size={28} className={`${slot.color}`} />
-                                            </div>
-                                        )}
-
-                                        {/* Centered Label */}
-                                        <div className="absolute inset-x-0 bottom-1 flex items-center justify-center z-20 pointer-events-none">
-                                            <span className="text-[9px] font-black text-white/90 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.9)] bg-black/30 px-2 py-0.5 rounded-xs backdrop-blur-[1px] border border-white/5">
-                                                {slot.label}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </motion.button>
+                        {/* TOP ROW: 2 Items */}
+                        <div className="flex gap-2">
+                            {equipmentSlots.slice(0, 2).map((slot) => (
+                                <div key={slot.id} className="flex flex-col gap-2 items-center">
+                                    <span className="text-[9px] font-black text-white/70 uppercase tracking-widest drop-shadow-md z-20">{slot.label}</span>
+                                    <EquipmentSlot slot={slot} onClick={(item) => setSelectedItem({ ...item, source: 'equipment' })} />
+                                </div>
                             ))}
                         </div>
+
+                        {/* BOTTOM ROW: 4 Items */}
+                        <div className="flex gap-2">
+                            {equipmentSlots.slice(2, 6).map((slot) => (
+                                <div key={slot.id} className="flex flex-col gap-2 items-center">
+                                    <EquipmentSlot slot={slot} onClick={(item) => setSelectedItem({ ...item, source: 'equipment' })} />
+                                    <span className="text-[9px] font-black text-white/70 uppercase tracking-widest drop-shadow-md z-20">{slot.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
                     </div>
                 </section>
+
+                {/* LoL Wild Rift Style Separator */}
+                <div className="flex items-center justify-center gap-4 py-2 w-full opacity-80 px-8">
+                    {/* Left Tapering Line */}
+                    <div className="h-[1px] flex-1 bg-linear-to-r from-transparent via-amber-400/50 to-amber-200/80" />
+
+                    {/* Central Hextech/Gold Element */}
+                    <div className="relative flex items-center justify-center">
+                        <div className="w-2 h-2 rotate-45 bg-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.8)] z-10" />
+                        <div className="absolute w-6 h-[1px] bg-amber-200/60" /> {/* Horizontal cross line */}
+                        <div className="absolute w-[1px] h-6 bg-amber-200/60" /> {/* Vertical cross line */}
+                        <div className="absolute w-8 h-8 bg-amber-500/10 blur-xl rounded-full" /> {/* Glow */}
+                    </div>
+
+                    {/* Right Tapering Line */}
+                    <div className="h-[1px] flex-1 bg-linear-to-l from-transparent via-amber-400/50 to-amber-200/80" />
+                </div>
 
                 {/* INVENTORY GRID */}
                 <Inventory
                     items={backpackItems}
-                    onItemClick={setSelectedItem}
+                    onItemClick={(item) => setSelectedItem({ ...item, source: 'inventory' })}
                 />
             </main>
 
@@ -124,22 +139,22 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSelectedItem(null)}
-                        className="absolute inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer"
+                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer"
                     >
                         <motion.div
                             initial={{ y: 200 }}
                             animate={{ y: 0 }}
                             exit={{ y: 200 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-t-xl sm:rounded-xl overflow-hidden shadow-2xl pb-8 sm:pb-0"
+                            className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl"
                         >
                             <div className="p-1 h-1 bg-linear-to-r from-cyan-500 via-blue-500 to-cyan-500" />
                             <div className="p-6 flex gap-4">
                                 <div className="shrink-0">
                                     <ItemPic
                                         src={selectedItem.img}
-                                        rarity={selectedItem.rarity} // rarity added to selectedItem in previous steps
-                                        size={80} // 20 * 4 = 80px
+                                        rarity={selectedItem.rarity}
+                                        size={80}
                                         className={!selectedItem.img ? "opacity-30 border-white/10" : ""}
                                     />
                                     {!selectedItem.img && (
@@ -165,5 +180,40 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                 )}
             </AnimatePresence>
         </div>
+    );
+}
+
+// --- HELPER COMPONENT ---
+
+interface EquipmentSlotProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    slot: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onClick: (slot: any) => void;
+}
+
+function EquipmentSlot({ slot, onClick }: EquipmentSlotProps) {
+    return (
+        <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onClick(slot)}
+            className="relative group"
+        >
+            <div className="relative flex items-center justify-center">
+                <ItemPic
+                    src={slot.img}
+                    rarity={slot.rarity}
+                    size={56}
+                    className={!slot.img ? "opacity-30 bg-white/5 border-white/5 shadow-none" : ""}
+                />
+
+                {/* Fallback Icon */}
+                {!slot.img && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                        <slot.icon size={20} className={`${slot.color}`} />
+                    </div>
+                )}
+            </div>
+        </motion.button>
     );
 }

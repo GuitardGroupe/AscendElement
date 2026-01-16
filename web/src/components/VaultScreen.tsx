@@ -57,20 +57,31 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                     </div>
                 </button>
                 <div className="text-right pr-1">
-                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-amber-200 to-amber-600">{"BANQUE ."}</h1>
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-amber-200 to-amber-600 pr-2">{"BANQUE"}</h1>
                     <p className="text-[10px] font-black text-amber-500/60 tracking-[0.3em] uppercase">STOCKAGE SÉCURISÉ</p>
                 </div>
             </header>
 
+            {/* VAULT SAFETY HINT */}
+            <div className="w-full flex flex-col items-center justify-center pb-4 relative z-10">
+                <div className="w-full bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.6)_0%,transparent_70%)] py-2 flex justify-center">
+                    <p className="text-[10px] font-bold italic text-amber-200  tracking-[0.15em] drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] text-center px-4">
+                        {"CONSEIL : les objets stockés dans la banque seront sécurisés même après la mort du personnage"}
+                    </p>
+                </div>
+                <div className="w-1/3 h-px bg-linear-to-r from-transparent via-amber-200/30 to-transparent" />
+            </div>
+
             <main className="relative z-10 flex-1 flex flex-col px-4 gap-2 overflow-hidden pb-4">
 
                 {/* VAULT SECTION - 3x3 MATCHING STUFF SCREEN STYLE */}
-                <section className="flex flex-col gap-2 flex-1 items-center justify-start min-h-0 shrink-0 mt-8">
+                <section className="flex flex-col gap-2 items-center justify-start shrink-0 py-4">
                     <div className="relative inline-block">
                         {/* Chest Container */}
                         {/* Reduced border opacity to /60 */}
                         <div className="bg-neutral-900/80 border-4 border-double border-amber-300/60 rounded-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.9)] relative overflow-hidden transition-colors group z-10">
                             {/* Inner Light / Shadow Simulation - Paladin Style */}
+                            {/* Ref: Particle effect removed per user request */}
                             <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(251,191,36,0.6)] pointer-events-none z-0 mix-blend-screen" />
                             <div className="absolute inset-0 bg-radial-gradient from-amber-200/20 to-transparent opacity-100 pointer-events-none z-0" />
 
@@ -113,6 +124,23 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                     </div>
                 </section>
 
+                {/* LoL Wild Rift Style Separator - Consistent with StuffScreen */}
+                <div className="flex items-center justify-center gap-4 py-2 w-full opacity-80 px-8">
+                    {/* Left Tapering Line */}
+                    <div className="h-px flex-1 bg-linear-to-r from-transparent via-amber-400/50 to-amber-200/80" />
+
+                    {/* Central Hextech/Gold Element */}
+                    <div className="relative flex items-center justify-center">
+                        <div className="w-2 h-2 rotate-45 bg-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.8)] z-10" />
+                        <div className="absolute w-6 h-px bg-amber-200/60" /> {/* Horizontal cross line */}
+                        <div className="absolute w-px h-6 bg-amber-200/60" /> {/* Vertical cross line */}
+                        <div className="absolute w-8 h-8 bg-amber-500/10 blur-xl rounded-full" /> {/* Glow */}
+                    </div>
+
+                    {/* Right Tapering Line */}
+                    <div className="h-px flex-1 bg-linear-to-l from-transparent via-amber-400/50 to-amber-200/80" />
+                </div>
+
                 {/* INVENTORY SECTION */}
                 <Inventory
                     items={inventoryItems}
@@ -130,14 +158,14 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSelectedItem(null)}
-                        className="absolute inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer"
+                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer"
                     >
                         <motion.div
                             initial={{ y: 200 }}
                             animate={{ y: 0 }}
                             exit={{ y: 200 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-t-xl sm:rounded-xl overflow-hidden shadow-2xl pb-8 sm:pb-0"
+                            className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl"
                         >
                             <div className={`p-1 h-1 bg-linear-to-r ${selectedItem.source === 'vault' ? 'from-amber-500 via-yellow-500 to-amber-500' : 'from-cyan-500 via-blue-500 to-cyan-500'}`} />
                             <div className="p-6 flex gap-4">
