@@ -37,7 +37,7 @@ export const characters = [
         stat_def: 0.1, // coefficient de défense qui détermine le % de dégats réduits
     },
     {
-        id: 0,
+        id: 1,
         symbol: "Li",
         name: "Light",
         img: CONST_ASSETS.IMAGES.CHAR_LI,

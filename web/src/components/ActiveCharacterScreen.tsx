@@ -2,10 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { ArrowLeft, Shield, Zap, Flame, Sword, Gem } from 'lucide-react';
-import Image from 'next/image';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
+
+import ItemPic from '@/components/ItemPic';
 
 interface ActiveCharacterScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -47,10 +48,10 @@ export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacte
 
     // Mock active equipment for display row
     const activeEquipment = [
-        { id: 'weapon', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02 },
-        { id: 'stim', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01 },
-        { id: 'outfit', icon: Shield, color: 'text-purple-400', img: null },
-        { id: 'relic', icon: Gem, color: 'text-emerald-400', img: null },
+        { id: 'weapon', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02, rarity: 'legendary' },
+        { id: 'stim', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01, rarity: 'rare' },
+        { id: 'outfit', icon: Shield, color: 'text-purple-400', img: null, rarity: 'common' }, // Empty but has type
+        { id: 'relic', icon: Gem, color: 'text-emerald-400', img: null, rarity: 'common' },
     ];
 
     if (!selectedCharacter) return null;
@@ -157,11 +158,17 @@ export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacte
                     <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">ÉQUIPEMENT ACTIF</span>
                     <div className="flex items-center justify-between gap-2">
                         {activeEquipment.map((slot) => (
-                            <div key={slot.id} className="w-14 h-14 relative rounded-lg border border-white/10 bg-black/40 flex items-center justify-center overflow-hidden">
-                                {slot.img ? (
-                                    <Image src={slot.img} fill className="object-cover" alt="eq" />
-                                ) : (
-                                    <slot.icon size={18} className={`${slot.color} opacity-30`} />
+                            <div key={slot.id} className="relative group">
+                                <ItemPic
+                                    src={slot.img}
+                                    rarity={slot.rarity}
+                                    size={56} // Matching standard size
+                                    className={!slot.img ? "opacity-30" : ""}
+                                />
+                                {!slot.img && (
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
+                                        <slot.icon size={18} className={`${slot.color}`} />
+                                    </div>
                                 )}
                             </div>
                         ))}

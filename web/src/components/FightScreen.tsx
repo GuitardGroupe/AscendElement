@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import CombatCrystal from "@/components/CombatCrystal";
+import LootAccordion from "@/components/LootAccordion";
 import BattleZoneBackground from "@/components/BattleZoneBackground";
 import HealthBar from "@/components/HealthBar";
 import EnergyBar from "@/components/EnergyBar";
@@ -789,6 +790,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         <AnimatePresence>
                             {opponentIsCasting && (
                                 <motion.div
+                                    key="opponent-cast"
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
@@ -866,6 +868,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 <AnimatePresence>
                     {healEffectActive && (
                         <motion.div
+                            key="heal-effect"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -877,6 +880,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     )}
                     {comboGlowActive && (
                         <motion.div
+                            key="combo-glow"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -893,6 +897,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         <AnimatePresence>
                             {playerIsCasting && (
                                 <motion.div
+                                    key="player-cast"
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
@@ -927,6 +932,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                 <AnimatePresence>
                                     {activeDefense && (
                                         <motion.div
+                                            key="defense-shield"
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1.1 }}
                                             exit={{ opacity: 0, scale: 1.5 }}
@@ -1011,6 +1017,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 <AnimatePresence>
                     {comboTriggerActive && (
                         <motion.div
+                            key="combo-trigger"
                             initial={{ opacity: 0, scale: 0.5 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 1.5, filter: "blur(10px)" }}
@@ -1089,6 +1096,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             <AnimatePresence>
                 {isComboMode && (
                     <motion.div
+                        key="combo-overlay"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -1155,6 +1163,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                                     <AnimatePresence>
                                         {i < comboHitsCount && (
                                             <motion.div
+                                                key={`pip-${i}`}
                                                 initial={{ opacity: 0, scale: 0.5 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 1.5, filter: "blur(4px)" }}
@@ -1180,6 +1189,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             <AnimatePresence>
                 {shockwaveActive && (
                     <motion.div
+                        key="shockwave"
                         className="absolute inset-0 z-200 pointer-events-none flex items-center justify-center overflow-hidden"
                         initial={{ opacity: 1 }}
                         animate={{ opacity: 0 }}
@@ -1203,18 +1213,14 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             <AnimatePresence>
                 {combatResult && (
                     <motion.div
+                        key="result-overlay"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         // Only handle click for defeat to close, victory handles it internally
                         onClick={combatResult === 'defeat' ? handleGameOver : undefined}
-                        className={`absolute inset-0 z-150 flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl ${combatResult === 'defeat' ? 'cursor-pointer' : ''}`}
+                        className={`absolute inset-0 z-150 flex items-center justify-center bg-black/90 backdrop-blur-xl ${combatResult === 'defeat' ? 'cursor-pointer' : ''}`}
                     >
-                        {/* Safe Static Background Glow for Victory */}
-                        {combatResult === 'victory' && (
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none" />
-                        )}
-
                         {combatResult === 'victory' ? (
                             <ResultVictory playerName={playerName} onBack={handleGameOver} />
                         ) : (
@@ -1243,124 +1249,52 @@ function Title({ label = "label" }: { label?: string }) {
 }
 
 // Subcomponents for Results to keep main render clean
+// Subcomponents for Results to keep main render clean
 function ResultVictory({ playerName, onBack }: { playerName: string, onBack: () => void }) {
-    const [revealLoot, setRevealLoot] = useState(false);
-
     // Mock Loot Data
     const lootItems = [
-        { id: 1, name: "Essence de Foudre", rarity: "rare", color: "text-blue-400", border: "border-blue-500", icon: CONST_ASSETS.IMAGES.SKILL_02 },
-        { id: 2, name: "Cristal Brisé", rarity: "common", color: "text-gray-400", border: "border-gray-600", icon: CONST_ASSETS.IMAGES.ITEM_01 },
-        { id: 3, name: "Fragment d'Ame", rarity: "epic", color: "text-purple-400", border: "border-purple-500", icon: CONST_ASSETS.IMAGES.SKILL_04 },
+        { id: 1, name: "Essence", rarity: "rare", color: "text-blue-400", border: "border-blue-500", icon: CONST_ASSETS.IMAGES.SKILL_02 },
+        { id: 2, name: "Cristal", rarity: "common", color: "text-gray-400", border: "border-gray-600", icon: CONST_ASSETS.IMAGES.ITEM_01 },
+        { id: 3, name: "Ame", rarity: "epic", color: "text-purple-400", border: "border-purple-500", icon: CONST_ASSETS.IMAGES.SKILL_04 },
+        { id: 4, name: "Gemme", rarity: "common", color: "text-white", border: "border-gray-500", icon: CONST_ASSETS.IMAGES.ITEM_01 },
     ];
 
     return (
-        <motion.div
-            initial={{ scale: 0.8, y: 50 }}
-            animate={{ scale: 1, y: 0 }}
-            className="w-full h-full flex flex-col items-center justify-center relative"
-            onClick={(e) => e.stopPropagation()} // Prevent click through to background
-        >
-            {/* BACK BUTTON (Appears after Loot) */}
-            <AnimatePresence>
-                {revealLoot && (
-                    <motion.button
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onBack}
-                        className="absolute top-4 left-4 z-50 group active:scale-95 transition-transform"
-                    >
-                        <div className="w-10 h-10 rounded-sm border border-white/10 flex items-center justify-center bg-white/5 shadow-lg group-hover:bg-white/10 transition-colors">
-                            <ArrowLeft size={20} className="text-gray-400 group-hover:text-white transition-colors" />
-                        </div>
-                    </motion.button>
-                )}
-            </AnimatePresence>
+        <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden">
+            {/* STATIC BACKGROUND & GLOW */}
+            <div className="absolute inset-0 bg-neutral-900/90 z-0" />
+            <div className="absolute top-0 inset-x-0 h-[60%] bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.2),transparent_70%)] z-0 pointer-events-none" />
 
-            <div className="w-full max-w-sm flex flex-col items-center gap-6">
-                {/* VICTORY TITLE */}
-                <div className="text-center relative">
-                    {/* Removed animated blurred background to prevent square artifacts */}
-                    <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-xl" />
+            {/* CONTENT CONTAINER */}
+            <div className="relative z-10 flex flex-col w-full items-center">
 
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-6xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-amber-300 via-orange-400 to-amber-600 uppercase"
-                    >
+                {/* TITLE AREA - Fixed Top */}
+                <div className="text-center mb-10 scale-125 origin-center">
+                    <h2 className="text-6xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-amber-300 via-orange-400 to-amber-600 uppercase drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">
                         VICTOIRE
-                    </motion.h2>
-                    <div className="h-px w-32 bg-linear-to-r from-transparent via-amber-500 to-transparent mx-auto mt-4 opacity-50" />
+                    </h2>
+                    <div className="h-px w-48 bg-linear-to-r from-transparent via-amber-500 to-transparent mx-auto mt-4 opacity-50" />
                 </div>
 
-                {/* XP PROGRESS */}
-                <div className="w-full max-w-xs space-y-1">
+                {/* XP BAR - Fixed Position */}
+                <div className="w-full max-w-xs space-y-1 mb-8">
                     <div className="flex justify-between items-end px-1">
                         <p className="text-[9px] font-black text-amber-500/60 uppercase tracking-widest">PROGRESSION</p>
                         <p className="text-xs font-mono font-bold text-amber-400">+125 XP</p>
                     </div>
-                    <div className="h-2 w-full bg-black/60 rounded-full border border-white/5 overflow-hidden">
-                        <motion.div
-                            initial={{ width: "45%" }}
-                            animate={{ width: "68%" }}
-                            transition={{ duration: 1, delay: 0.2, ease: "circOut" }}
-                            className="h-full bg-amber-500"
+                    <div className="h-2 w-full bg-black/60 rounded-full border border-white/5 overflow-hidden shadow-inner">
+                        <div
+                            style={{ width: "68%" }}
+                            className="h-full bg-linear-to-r from-amber-600 via-yellow-400 to-amber-200 shadow-[0_0_10px_rgba(251,191,36,0.5)]"
                         />
                     </div>
                 </div>
 
-                {/* LOOT INTERACTION */}
-                <div className="w-full mt-4 flex flex-col items-center">
-                    <AnimatePresence mode="wait">
-                        {!revealLoot ? (
-                            <motion.button
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, height: 0 }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setRevealLoot(true)}
-                                className="bg-linear-to-r from-amber-600 to-amber-400 text-black font-black italic uppercase tracking-widest py-3 px-12 rounded-sm shadow-lg hover:brightness-110 transition-all flex items-center gap-2"
-                            >
-                                <span className="drop-shadow-sm">BUTIN</span>
-                            </motion.button>
-                        ) : (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="w-full bg-neutral-900/90 border border-white/10 rounded-lg overflow-hidden backdrop-blur-md"
-                            >
-                                <div className="p-3 bg-white/5 border-b border-white/5 flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">RÉCOMPENSES DE QUÊTE</span>
-                                    <span className="text-[10px] font-mono text-amber-500">3 ITEMS</span>
-                                </div>
-                                <div className="p-2 space-y-1">
-                                    {lootItems.map((item, i) => (
-                                        <motion.div
-                                            key={item.id}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: i * 0.2 }}
-                                            className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-sm transition-colors group cursor-pointer"
-                                        >
-                                            {/* Icon */}
-                                            <div className={`w-10 h-10 rounded-md bg-black/50 border ${item.border} relative overflow-hidden shrink-0`}>
-                                                <Image src={item.icon} fill className="object-cover" alt={item.name} />
-                                            </div>
-                                            {/* Name */}
-                                            <div className="flex flex-col">
-                                                <span className={`text-sm font-bold ${item.color} group-hover:brightness-125 transition-all`}>{item.name}</span>
-                                                <span className="text-[9px] text-gray-600 uppercase tracking-wider font-bold">{item.rarity}</span>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                {/* ACCORDION LOOT COMPONENT */}
+                <LootAccordion items={lootItems} onContinue={onBack} />
+
             </div>
-        </motion.div>
+        </div>
     );
 }
 

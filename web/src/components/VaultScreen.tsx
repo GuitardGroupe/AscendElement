@@ -7,13 +7,16 @@ import { useSoundStore } from '@/store/useSoundStore';
 import { CONST_ASSETS } from '@/lib/preloader';
 import { useState } from 'react';
 
+import ItemPic from '@/components/ItemPic';
+import Inventory from '@/components/Inventory';
+
 interface VaultScreenProps {
     onSwitchScreen: (screen: string) => void;
 }
 
 export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
     const { playSound } = useSoundStore();
-    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null, source: 'vault' | 'inventory' } | null>(null);
+    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null, source: 'vault' | 'inventory', rarity?: string } | null>(null);
 
     const handleBack = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
@@ -25,6 +28,7 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
         id: `vault-${i}`,
         img: i < 5 ? (i % 2 === 0 ? CONST_ASSETS.IMAGES.SKILL_02 : CONST_ASSETS.IMAGES.ITEM_01) : null,
         label: i < 5 ? 'PRÉCIEUX' : 'VIDE',
+        rarity: i % 2 === 0 ? 'epic' : 'rare',
         locked: false // No visible locks for now in the 9 slots to keep it clean, or could lock last row
     }));
 
@@ -32,7 +36,8 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
     const inventoryItems = Array.from({ length: 20 }, (_, i) => ({
         id: `inven-${i}`,
         img: i === 0 ? CONST_ASSETS.IMAGES.SKILL_04 : null,
-        label: i === 0 ? 'CRISTAL' : 'VIDE'
+        label: i === 0 ? 'CRISTAL' : 'VIDE',
+        rarity: i === 0 ? 'legendary' : 'common'
     }));
 
     return (
@@ -61,57 +66,59 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
 
                 {/* VAULT SECTION - 3x3 MATCHING STUFF SCREEN STYLE */}
                 <section className="flex flex-col gap-2 flex-1 items-center justify-start min-h-0 shrink-0 mt-8">
+                    <div className="relative inline-block">
+                        {/* Chest Container */}
+                        {/* Reduced border opacity to /60 */}
+                        <div className="bg-neutral-900/80 border-4 border-double border-amber-300/60 rounded-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.9)] relative overflow-hidden transition-colors group z-10">
+                            {/* Inner Light / Shadow Simulation - Paladin Style */}
+                            <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(251,191,36,0.6)] pointer-events-none z-0 mix-blend-screen" />
+                            <div className="absolute inset-0 bg-radial-gradient from-amber-200/20 to-transparent opacity-100 pointer-events-none z-0" />
 
+                            {/* Grid */}
+                            <div className="grid grid-cols-3 gap-2 relative z-10 place-content-center"> {/* 3x3 Grid with perfect spacing */}
+                                {vaultItems.map((item) => (
+                                    <motion.button
+                                        key={item.id}
+                                        whileTap={!item.locked ? { scale: 0.95 } : {}}
+                                        onClick={() => !item.locked && item.img && setSelectedItem({ ...item, source: 'vault' })}
+                                        className={`
+                                            relative rounded-sm overflow-hidden transition-all flex items-center justify-center group
+                                            ${item.locked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
+                                        `}
+                                    >
+                                        <ItemPic
+                                            src={item.img}
+                                            rarity={item.rarity}
+                                            size={56} // Matching standard size
+                                            className={!item.img && !item.locked ? "opacity-30 bg-white/5 border-white/5 shadow-none" : ""}
+                                        />
 
-                    <div className="bg-linear-to-b from-white/5 to-transparent border border-white/5 rounded-xl p-4 shadow-[0_0_30px_rgba(245,158,11,0.2)] relative overflow-hidden">
-                        {/* Background Golden Glow */}
-                        <div className="absolute inset-0 bg-radial-gradient from-amber-500/10 to-transparent opacity-60" />
+                                        {/* Lock Icon for empty/locked slots in Vault context */}
+                                        {item.label === 'VIDE' && !item.img && (
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+                                                <Lock size={16} className="text-white" />
+                                            </div>
+                                        )}
 
-                        <div className="grid grid-cols-3 gap-2 relative z-10">
-                            {vaultItems.map((item) => (
-                                <motion.button
-                                    key={item.id}
-                                    whileTap={!item.locked ? { scale: 0.95 } : {}}
-                                    onClick={() => !item.locked && item.img && setSelectedItem({ ...item, source: 'vault' })}
-                                    className={`
-                                        aspect-square w-16 rounded-sm border relative overflow-hidden transition-all flex items-center justify-center group
-                                        ${item.locked
-                                            ? 'bg-black/60 border-white/5 opacity-30 cursor-not-allowed'
-                                            : item.img
-                                                ? 'bg-neutral-800 border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-                                                : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-amber-500/30'
-                                        }
-                                    `}
-                                >
-                                    {item.img && <Image src={item.img} fill className="object-cover" alt="item" />}
-                                    {item.locked && <Lock size={12} className="text-gray-600" />}
-                                </motion.button>
-                            ))}
+                                        {/* Explicit Locked State Override */}
+                                        {item.locked && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20">
+                                                <Lock size={16} className="text-gray-400" />
+                                            </div>
+                                        )}
+                                    </motion.button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 {/* INVENTORY SECTION */}
-                <section className="flex flex-col gap-2 h-[140px] shrink-0">
-                    <div className="flex items-center justify-between px-2">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">INVENTAIRE</span>
-                        <span className="text-[10px] font-mono text-cyan-500">1 / 20</span>
-                    </div>
-                    <div className="bg-black/20 border border-white/5 rounded-sm p-3 overflow-y-auto">
-                        <div className="grid grid-cols-5 gap-2 pr-1">
-                            {inventoryItems.map((item) => (
-                                <motion.button
-                                    key={item.id}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => item.img && setSelectedItem({ ...item, source: 'inventory' })}
-                                    className={`aspect-square rounded-sm border ${item.img ? 'bg-neutral-800 border-white/20' : 'bg-white/5 border-white/5'} relative overflow-hidden transition-colors`}
-                                >
-                                    {item.img && <Image src={item.img} fill className="object-cover" alt="item" />}
-                                </motion.button>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+                <Inventory
+                    items={inventoryItems}
+                    onItemClick={(item) => setSelectedItem({ ...item, source: 'inventory' })}
+                    className="mb-4"
+                />
 
             </main>
 
@@ -134,11 +141,17 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                         >
                             <div className={`p-1 h-1 bg-linear-to-r ${selectedItem.source === 'vault' ? 'from-amber-500 via-yellow-500 to-amber-500' : 'from-cyan-500 via-blue-500 to-cyan-500'}`} />
                             <div className="p-6 flex gap-4">
-                                <div className="w-20 h-20 bg-neutral-800 rounded-lg border border-white/10 shrink-0 relative overflow-hidden">
-                                    {selectedItem.img ? (
-                                        <Image src={selectedItem.img} fill className="object-cover" alt="detail" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center"><Hexagon className="text-white/20" /></div>
+                                <div className="shrink-0">
+                                    <ItemPic
+                                        src={selectedItem.img}
+                                        rarity={selectedItem.rarity}
+                                        size={80}
+                                        className={!selectedItem.img ? "opacity-30 border-white/10" : ""}
+                                    />
+                                    {!selectedItem.img && (
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                                            <Hexagon className="text-white/20" size={32} />
+                                        </div>
                                     )}
                                 </div>
                                 <div className="flex-1">

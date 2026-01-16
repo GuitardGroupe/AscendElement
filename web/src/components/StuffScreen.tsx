@@ -2,11 +2,13 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Sword, Zap, Shield, Gem, Hexagon } from 'lucide-react';
-import Image from 'next/image';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
 import { useState } from 'react';
+
+import ItemPic from '@/components/ItemPic';
+import Inventory from '@/components/Inventory';
 
 interface StuffScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -15,7 +17,7 @@ interface StuffScreenProps {
 export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
     const { playSound } = useSoundStore();
     const { selectedCharacter } = useSelectedCharacter();
-    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null } | null>(null);
+    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null, rarity?: string } | null>(null);
 
     const handleBack = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
@@ -24,17 +26,18 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
 
     // Mock active equipment
     const equipmentSlots = [
-        { id: 'weapon', label: 'ARME', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02, type: 'OFFENSIVE' },
-        { id: 'stim', label: 'STIM', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01, type: 'UTILITAIRE' },
-        { id: 'outfit', label: 'TENUE', icon: Shield, color: 'text-purple-400', img: null, type: 'DÉFENSIF' },
-        { id: 'relic', label: 'RELIQUE', icon: Gem, color: 'text-emerald-400', img: null, type: 'PASSIF' },
+        { id: 'weapon', label: 'ARME', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02, type: 'OFFENSIVE', rarity: 'legendary' },
+        { id: 'stim', label: 'STIM', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01, type: 'UTILITAIRE', rarity: 'epic' },
+        { id: 'outfit', label: 'TENUE', icon: Shield, color: 'text-purple-400', img: null, type: 'DÉFENSIF', rarity: 'common' }, // Empty
+        { id: 'relic', label: 'RELIQUE', icon: Gem, color: 'text-emerald-400', img: null, type: 'PASSIF', rarity: 'common' },
     ];
 
     // Mock backpack
     const backpackItems = Array.from({ length: 20 }, (_, i) => ({
         id: i,
         img: i === 0 ? CONST_ASSETS.IMAGES.SKILL_04 : null,
-        label: i === 0 ? 'CRISTAL DE PUISSANCE' : 'EMP PLACEMENT'
+        label: i === 0 ? 'CRISTAL DE PUISSANCE' : 'EMP PLACEMENT',
+        rarity: i === 0 ? 'rare' : 'common'
     }));
 
     return (
@@ -75,24 +78,26 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                                     onClick={() => setSelectedItem(slot)}
                                     className="relative group"
                                 >
-                                    <div className="w-20 h-20 relative">
-                                        {/* Frame */}
-                                        <div className={`absolute inset-0 rounded-xl border-2 ${slot.img ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'border-white/10 bg-black/40'} transition-all`} />
+                                    <div className="w-20 h-20 relative flex items-center justify-center">
 
-                                        {/* Image/Icon */}
-                                        <div className="absolute inset-0 flex items-center justify-center rounded-xl overflow-hidden">
-                                            {slot.img ? (
-                                                <div className="w-full h-full relative">
-                                                    <Image src={slot.img} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="equip" />
-                                                    <div className="absolute inset-0 bg-black/20" /> {/* Darken image slightly for text */}
-                                                </div>
-                                            ) : (
-                                                <slot.icon size={28} className={`${slot.color} opacity-30`} />
-                                            )}
+                                        <div className="relative z-10">
+                                            <ItemPic
+                                                src={slot.img}
+                                                rarity={slot.rarity}
+                                                size={80} // Larger size for equipment slots
+                                                className={!slot.img ? "opacity-30 border-white/10" : ""}
+                                            />
                                         </div>
 
+                                        {/* Fallback Icon if no image */}
+                                        {!slot.img && (
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-30 z-0">
+                                                <slot.icon size={28} className={`${slot.color}`} />
+                                            </div>
+                                        )}
+
                                         {/* Centered Label */}
-                                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                        <div className="absolute inset-x-0 bottom-1 flex items-center justify-center z-20 pointer-events-none">
                                             <span className="text-[9px] font-black text-white/90 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.9)] bg-black/30 px-2 py-0.5 rounded-xs backdrop-blur-[1px] border border-white/5">
                                                 {slot.label}
                                             </span>
@@ -105,25 +110,10 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                 </section>
 
                 {/* INVENTORY GRID */}
-                <section className="flex-1 min-h-0 overflow-y-auto">
-                    <div className="flex items-center justify-between mb-2 px-2">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">INVENTAIRE</span>
-                        <span className="text-[10px] font-mono text-cyan-500">1 / 20</span>
-                    </div>
-
-                    <div className="grid grid-cols-5 gap-2 pr-1">
-                        {backpackItems.map((item) => (
-                            <motion.button
-                                key={item.id}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => item.img && setSelectedItem(item)}
-                                className={`aspect-square rounded-sm border ${item.img ? 'bg-neutral-800 border-white/20' : 'bg-white/5 border-white/5'} relative overflow-hidden transition-colors`}
-                            >
-                                {item.img && <Image src={item.img} fill className="object-cover" alt="item" />}
-                            </motion.button>
-                        ))}
-                    </div>
-                </section>
+                <Inventory
+                    items={backpackItems}
+                    onItemClick={setSelectedItem}
+                />
             </main>
 
             {/* ITEM DETAILS POPUP */}
@@ -145,11 +135,17 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                         >
                             <div className="p-1 h-1 bg-linear-to-r from-cyan-500 via-blue-500 to-cyan-500" />
                             <div className="p-6 flex gap-4">
-                                <div className="w-20 h-20 bg-neutral-800 rounded-lg border border-white/10 shrink-0 relative overflow-hidden">
-                                    {selectedItem.img ? (
-                                        <Image src={selectedItem.img} fill className="object-cover" alt="detail" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center"><Hexagon className="text-white/20" /></div>
+                                <div className="shrink-0">
+                                    <ItemPic
+                                        src={selectedItem.img}
+                                        rarity={selectedItem.rarity} // rarity added to selectedItem in previous steps
+                                        size={80} // 20 * 4 = 80px
+                                        className={!selectedItem.img ? "opacity-30 border-white/10" : ""}
+                                    />
+                                    {!selectedItem.img && (
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                                            <Hexagon className="text-white/20" size={32} />
+                                        </div>
                                     )}
                                 </div>
                                 <div className="flex-1">
