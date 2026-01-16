@@ -149,7 +149,6 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                 />
 
             </main>
-
             {/* ITEM DETAILS POPUP */}
             <AnimatePresence>
                 {selectedItem && (
