@@ -147,12 +147,13 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative w-auto h-full aspect-[3/4] z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]" style={{ maskImage: 'radial-gradient(ellipse at 50% 35%, black 40%, transparent 80%)', WebkitMaskImage: 'radial-gradient(ellipse at 50% 35%, black 40%, transparent 80%)' }}>
+                            <div className="relative w-auto h-full aspect-[3/4] z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]" style={{ maskImage: 'radial-gradient(ellipse at 50% 40%, black 50%, transparent 80%)', WebkitMaskImage: 'radial-gradient(ellipse at 50% 40%, black 50%, transparent 80%)' }}>
                                 <Image
                                     src={selectedCharacter.img}
                                     fill
                                     className="object-contain drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                                     alt={selectedCharacter.name}
+                                    style={{ maskImage: 'linear-gradient(to bottom, transparent 2%, black 20%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 2%, black 20%)' }}
                                     priority
                                 />
                             </div>
