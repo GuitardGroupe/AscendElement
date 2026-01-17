@@ -147,7 +147,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative w-auto h-full aspect-[3/4] z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]" style={{ maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)', WebkitMaskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)' }}>
+                            <div className="relative w-auto h-full aspect-[3/4] z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]" style={{ maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 70%)', WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 70%)' }}>
                                 <Image
                                     src={selectedCharacter.img}
                                     fill
@@ -312,66 +312,84 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                 }
             </AnimatePresence >
 
-            {/* DETAIL POPUP (PRESERVED) */}
+            {/* DETAIL POPUP (PREMIUM CARD) */}
             <AnimatePresence>
                 {
                     selectedInfo && (
                         <motion.div
                             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-                            animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+                            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
                             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
                             onClick={() => setSelectedInfo(null)}
-                            className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/60 cursor-pointer"
+                            className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/40 cursor-pointer"
                         >
                             <motion.div
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.9, opacity: 0 }}
-                                className="w-full max-w-sm bg-[#08080a] border border-gray-700 rounded-sm shadow-2xl relative overflow-hidden"
-                                onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(null); }}
+                                initial={{ scale: 0.95, y: 10, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                exit={{ scale: 0.95, y: 10, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                className="relative w-full max-w-sm bg-[#0a0a0a]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-visible shadow-2xl mt-12"
+                                onClick={(e) => { e.stopPropagation(); playSound(CONST_SOUND_CLICK); }}
                             >
-                                {/* Header Image Background */}
-                                <div className="absolute top-0 left-0 right-0 h-40 bg-neutral-800">
-                                    <Image src={'img' in selectedInfo.data ? selectedInfo.data.img : selectedInfo.data.icon} fill className="object-cover opacity-60 mask-image-gradient-b" alt="bg" />
-                                    <div className="absolute inset-0 bg-linear-to-t from-[#08080a] to-transparent" />
+                                {/* Floating Icon Container */}
+                                <div className="absolute -top-10 left-6 w-20 h-20 rounded-2xl border border-white/20 bg-[#121214] shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden z-20">
+                                    <Image
+                                        src={'img' in selectedInfo.data ? selectedInfo.data.img : selectedInfo.data.icon}
+                                        fill
+                                        className="object-cover"
+                                        alt="skill icon"
+                                    />
+                                    {/* Gloss effect */}
+                                    <div className="absolute inset-0 bg-linear-to-tr from-white/5 to-transparent" />
                                 </div>
 
-                                <div className="p-5 pt-32 relative z-10 flex flex-col items-start">
-                                    <h3 className="text-2xl font-black italic text-white uppercase tracking-tight mb-0.5">{selectedInfo.data.name}</h3>
-                                    <p className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest mb-4">COMPÉTENCE ACTIVE</p>
+                                {/* Main Content */}
+                                <div className="p-6 pt-14">
+                                    <div className="flex flex-col items-start mb-6">
+                                        <h3 className="text-2xl font-black italic text-white uppercase tracking-tight leading-none mb-1">
+                                            {selectedInfo.data.name}
+                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`h-px w-8 ${selectedInfo.type === 'defense' ? 'bg-yellow-500' : 'bg-cyan-500'}`} />
+                                            <span className={`text-[10px] font-bold uppercase tracking-widest ${selectedInfo.type === 'defense' ? 'text-yellow-500' : 'text-cyan-500'}`}>
+                                                {selectedInfo.type === 'defense' ? 'DÉFENSE' : 'COMPÉTENCE'}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                    <div className="w-full h-px bg-gray-800 mb-4" />
-
-                                    <p className="text-sm text-gray-400 leading-relaxed mb-6 italic">
+                                    <p className="text-sm text-gray-400 leading-relaxed mb-8 italic border-l-2 border-white/10 pl-4">
                                         &quot;{selectedInfo.data.description}&quot;
                                     </p>
 
                                     {/* Stats Grid */}
-                                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 w-full mb-6">
+                                    <div className="grid grid-cols-2 gap-4 w-full bg-white/5 rounded-lg p-4 border border-white/5">
                                         {'damage' in selectedInfo.data && (
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] text-gray-500 uppercase font-black">Dégâts</span>
-                                                <span className="text-xl font-black text-white">{selectedInfo.data.damage}</span>
+                                                <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Dégâts</span>
+                                                <span className="text-lg font-mono font-bold text-white tracking-tight">{selectedInfo.data.damage}</span>
                                             </div>
                                         )}
                                         {'energyCost' in selectedInfo.data && (
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] text-gray-500 uppercase font-black">Coût</span>
-                                                <span className="text-xl font-black text-blue-400">{selectedInfo.data.energyCost}</span>
+                                                <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Coût</span>
+                                                <span className="text-lg font-mono font-bold text-cyan-400 tracking-tight">{selectedInfo.data.energyCost}</span>
                                             </div>
                                         )}
                                         {'cooldown' in selectedInfo.data && (
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] text-gray-500 uppercase font-black">Récup.</span>
-                                                <span className="text-xl font-black text-yellow-500">{(selectedInfo.data.cooldown / 1000).toFixed(1)}s</span>
+                                                <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Récupération</span>
+                                                <span className="text-lg font-mono font-bold text-amber-400 tracking-tight">{(selectedInfo.data.cooldown / 1000).toFixed(1)}s</span>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Close X */}
-                                <button onClick={() => setSelectedInfo(null)} className="absolute top-3 right-3 p-2 text-white/50 hover:text-white">
-                                    <div className="text-xl font-bold">✕</div>
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setSelectedInfo(null)}
+                                    className="absolute top-4 right-4 p-2 text-white/30 hover:text-white transition-colors"
+                                >
+                                    <div className="text-lg">✕</div>
                                 </button>
                             </motion.div>
                         </motion.div>
