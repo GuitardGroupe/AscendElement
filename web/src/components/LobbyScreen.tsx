@@ -153,17 +153,10 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     fill
                                     className="object-contain"
                                     alt={selectedCharacter.name}
-                                    // Progressive inner shadow logic:
-                                    // Replaced complex composite mask with a single robust radial vignette.
-                                    // This ensures center is visible (black) and edges fade to transparent.
-                                    style={{
-                                        maskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
-                                        WebkitMaskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
-                                    }}
                                     priority
                                 />
-                                {/* Manual Inner Shadow Overlay for extra darkening/blending if mask isn't enough - simulates "progressive inner shadow" on top */}
-                                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_20px_10px_#050505]" />
+                                {/* Manual Inner Shadow Overlay - robust edge fading */}
+                                <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_20px_10px_#050505]" />
                             </div>
                         ) : (
                             /* EMPTY STATE: SHADOW KNIGHT */
@@ -249,7 +242,8 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 className="absolute bottom-24 left-1/2 -translate-x-1/2 w-48 h-48 flex items-center justify-center group pointer-events-auto transform-gpu will-change-transform"
                             >
                                 {/* Static Gradient Glow behind Crystal (Replaces drop-shadow) */}
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.4)_0%,transparent_60%)] pointer-events-none" />
+                                {/* Enlarged (-inset-6) and softer (0.2 -> 70%) */}
+                                <div className="absolute -inset-6 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.2)_0%,transparent_70%)] pointer-events-none" />
 
                                 {/* Crystal Image Main (Static) */}
                                 <div className="absolute inset-0 flex items-center justify-center">
