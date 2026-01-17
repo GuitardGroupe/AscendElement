@@ -125,7 +125,7 @@ export default function MapScreen({ onSwitchScreen }: MapScreenProps) {
                     <span className="font-black italic tracking-tighter text-sm text-gray-400 group-active:text-cyan-400 uppercase">RETOUR</span>
                 </button>
                 <div className="text-right pr-1">
-                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500">{"CARTE ."}</h1>
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-gray-500 pr-2">{"CARTE"}</h1>
                     <p className="text-[10px] font-black text-cyan-500/60 tracking-[0.3em] uppercase">EXPLORATION DE SECTEURS</p>
                 </div>
             </header>
@@ -154,6 +154,7 @@ export default function MapScreen({ onSwitchScreen }: MapScreenProps) {
                                 stroke="rgba(6, 182, 212, 0.5)"
                                 strokeWidth="3"
                                 strokeDasharray="4 4"
+                                strokeLinecap="round"
                             />
                         );
                     })}
@@ -180,10 +181,10 @@ export default function MapScreen({ onSwitchScreen }: MapScreenProps) {
                             onClick={() => handleNodeClick(id, isCandidate)}
                         >
                             <div className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${isActive
-                                ? isDefeated ? 'bg-emerald-500/20 border-2 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]' : 'bg-cyan-500 shadow-[0_0_35px_rgba(6,182,212,1)] scale-110 border-2 border-white'
+                                ? isDefeated ? 'bg-emerald-950 border-2 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]' : 'bg-cyan-500 shadow-[0_0_35px_rgba(6,182,212,1)] scale-110 border-2 border-white'
                                 : isVisited
-                                    ? isDefeated ? 'bg-emerald-900/40 border border-emerald-500/30' : 'bg-cyan-900/40 border border-cyan-500/30'
-                                    : 'bg-white/5 border border-white/20 hover:border-cyan-400/50 hover:bg-white/10'
+                                    ? isDefeated ? 'bg-emerald-950 border border-emerald-500/30' : 'bg-cyan-950 border border-cyan-500/30'
+                                    : 'bg-neutral-900 border border-white/20 hover:border-cyan-400/50 hover:bg-neutral-800'
                                 }`}>
                                 {isActive ? (
                                     isDefeated ? (

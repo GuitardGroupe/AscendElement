@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Package, Hexagon, Zap, Shield, Plus, Landmark } from 'lucide-react';
+import { Hexagon, Zap, Shield, Plus, User, Coins } from 'lucide-react';
 import Image from 'next/image';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
@@ -9,7 +9,6 @@ import { useSoundStore } from '@/store/useSoundStore';
 import { skillSets, Skill, Defense, defenses } from '@/lib/skills';
 import { stims, Stim } from '@/lib/stim';
 import { useState } from 'react';
-import ElementCrystal from './ElementCrystal';
 
 const CONST_SOUND_CLICK = CONST_ASSETS.SOUNDS.CLICK;
 
@@ -45,11 +44,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
         if (stims[0]) interactionItems.push({ type: 'stim', data: stims[0], side: 'right' });
     }
 
-    const menuItems = [
-        { id: 'adventure', show: isCrystalActive, label: 'AVENTURE', icon: Swords, bg: 'bg-cyan-500', glow: 'shadow-cyan-500/50', onClick: () => onSwitchScreen('adventure') },
-        { id: 'inventory', show: isCrystalActive, label: 'STUFF', icon: Package, bg: 'bg-blue-600', glow: 'shadow-blue-600/50', onClick: () => onSwitchScreen('inventory') },
-        { id: 'vault', show: isCrystalActive, label: 'COFFRE', icon: Landmark, bg: 'bg-amber-600', glow: 'shadow-amber-600/50', onClick: () => onSwitchScreen('vault') },
-    ];
+
 
     const handleCrystalClick = () => {
         playSound(CONST_SOUND_CLICK, 0.6);
@@ -61,45 +56,57 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-neutral-950 text-white font-sans relative overflow-hidden">
-            {/* AMBIENT BACKGROUND */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-blue-900/20 via-neutral-950/80 to-neutral-950" />
-                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-            </div>
+        <div className="flex flex-col h-full bg-[#050505] text-white font-sans relative overflow-hidden">
 
-            {/* HEADER - HEXTECH GLASS */}
-            <header className="relative z-20 mx-4 mt-6 p-1">
-                <div className="flex justify-between items-center bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 shadow-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-linear-to-r from-cyan-500/10 to-transparent pointer-events-none" />
+            {/* --- HEADER (SPLIT LAYOUT) --- */}
+            <header className="relative z-20 flex justify-between items-start p-6 pt-8 pointer-events-none">
 
-                    <div className="flex items-center gap-3">
-                        <div className="relative w-10 h-10 flex items-center justify-center">
-                            <div className="absolute inset-0 bg-cyan-500 blur-md opacity-20 animate-pulse" />
-                            <Hexagon size={28} className="text-cyan-400 fill-cyan-950/50 stroke-1" />
-                            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-cyan-100">12</span>
+                {/* LEFT: PROFILE INFO */}
+                <div className="pointer-events-auto flex items-center gap-3 pl-2">
+                    {/* Avatar Ring */}
+                    <motion.div
+                        initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
+                        className="relative w-12 h-12 rounded-full border border-white/10 bg-white/5 backdrop-blur-md flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                    >
+                        <User size={20} className="text-gray-400" />
+                        <div className="absolute -bottom-1 -right-1 bg-cyan-950 border border-cyan-500/30 text-[9px] font-black text-cyan-400 px-1.5 py-0.5 rounded-full">
+                            12
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black text-cyan-500 uppercase tracking-widest">Niveau</span>
-                            <span className="text-sm font-bold text-white leading-none">INITIÉ</span>
-                        </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="flex items-center gap-4 px-2">
-                        <div className="text-right">
-                            <div className="text-[8px] font-black text-yellow-600 uppercase tracking-widest">Crédits</div>
-                            <div className="font-mono font-bold text-yellow-400 text-sm">1,250 ◈</div>
+                    {/* Name & Rank */}
+                    <motion.div
+                        initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }}
+                        className="flex flex-col"
+                    >
+                        <span className="text-lg font-black italic tracking-tighter text-white leading-none uppercase">
+                            {selectedCharacter ? selectedCharacter.name : 'VAGABOND'}
+                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.8)] animate-pulse" />
+                            <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">EN LIGNE</span>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
+
+                {/* RIGHT: CURRENCY */}
+                <motion.div
+                    initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}
+                    className="pointer-events-auto pr-2"
+                >
+                    <div className="bg-neutral-900/60 border border-amber-500/20 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-3 shadow-lg">
+                        <span className="font-mono font-bold text-amber-100 text-sm tracking-wide">1,250</span>
+                        <Coins size={14} className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+                    </div>
+                </motion.div>
             </header>
 
-            {/* MAIN CONTENT AREA */}
-            <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full">
+            {/* --- MAIN CONTENT (CRYSTAL & SKILLS) --- */}
+            <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full -mt-10">
                 <div className="relative w-full max-w-md h-[400px] flex items-center justify-center">
 
-                    {/* LEFT SKILL PANEL */}
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30">
+                    {/* --- LEFT SKILL PANEL (PRESERVED) --- */}
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30">
                         <AnimatePresence>
                             {interactionItems.filter(i => i.side === 'left').map((item, idx) => (
                                 <motion.button
@@ -111,11 +118,11 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(item); }}
                                     className="group relative w-16 h-16"
                                 >
-                                    <div className="absolute inset-0 bg-neutral-900 border border-white/10 rounded-2xl transition-colors shadow-lg" />
+                                    <div className="absolute inset-0 bg-neutral-900 border border-white/10 rounded-2xl transition-colors shadow-lg group-hover:border-cyan-500/50" />
                                     <div className="absolute inset-1 bg-neutral-800 rounded-xl overflow-hidden">
-                                        <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover" alt="skill" />
+                                        <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="skill" />
                                     </div>
-                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-neutral-950 border border-white/20 rounded-full flex items-center justify-center z-10">
+                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-neutral-950 border border-white/20 rounded-full flex items-center justify-center z-10 shadow-md">
                                         <Zap size={10} className="text-cyan-400" />
                                     </div>
                                 </motion.button>
@@ -123,120 +130,198 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         </AnimatePresence>
                     </div>
 
-                    {/* CENTER CORE / CHARACTER */}
-                    <div className="relative z-20 scale-110">
-                        <div className="absolute inset-0 bg-blue-500/20 blur-[60px] rounded-full" />
-                        <ElementCrystal
-                            img={selectedCharacter?.img ?? ""}
-                            isActive={isCrystalActive}
-                            onClick={() => handleCrystalClick()}
+                    {/* Character Stage */}
+                    <div
+                        className="relative w-full h-[500px] flex items-center justify-center cursor-pointer group"
+                        onClick={() => handleCrystalClick()}
+                    >
+                        {/* Custom blended vignette (Always active to ground the scene) */}
+                        <div
+                            className="absolute inset-0 z-20 pointer-events-none"
+                            style={{
+                                background: `
+                                linear-gradient(to bottom, #050505 0%, transparent 20%),
+                                linear-gradient(to right, #050505 5%, transparent 30%, transparent 70%, #050505 95%),
+                                linear-gradient(to top, #050505 0%, transparent 10%)
+                            `
+                            }}
                         />
-                        {!isCrystalActive && (
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                className="absolute inset-0 pointer-events-none border border-dashed border-white/10 rounded-full"
-                            />
+
+                        {selectedCharacter ? (
+                            /* ACTIVE CHARACTER */
+                            <div className="relative w-auto h-full aspect-[3/4] mask-image-b-fade z-10">
+                                <Image
+                                    src={selectedCharacter.img}
+                                    fill
+                                    className="object-contain drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                    alt={selectedCharacter.name}
+                                    priority
+                                />
+                            </div>
+                        ) : (
+                            /* EMPTY STATE: SHADOW KNIGHT */
+                            <div className="relative w-auto h-full aspect-[3/4] z-0 opacity-40 grayscale flex items-center justify-center">
+                                {/* The Ghostly Knight */}
+                                <Image
+                                    src="/v1/images/webp/knight.webp"
+                                    fill
+                                    className="object-contain mask-image-b-fade"
+                                    alt="Select Character"
+                                    priority
+                                />
+
+                                {/* Heavy Inner Shadow Overlay to make it look like a silhouette/hole */}
+                                <div className="absolute inset-0 bg-black/50 mix-blend-multiply" />
+                                <div className="absolute inset-0 shadow-[inset_0_0_100px_#050505]" />
+
+                                {/* Pulse Prompt */}
+                                <div className="absolute inset-0 flex items-center justify-center z-30">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="w-16 h-16 rounded-full border-2 border-white/10 flex items-center justify-center bg-black/50 backdrop-blur-sm shadow-[0_0_30px_rgba(6,182,212,0.2)] animate-pulse">
+                                            <Plus className="text-white/50 w-8 h-8" />
+                                        </div>
+                                        <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-black">INCARNER</span>
+                                    </div>
+                                </div>
+                            </div>
                         )}
+
+                        {/* Bottom Fade for feet */}
+                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-[#050505] via-[#050505]/80 to-transparent z-20" />
                     </div>
 
-                    {/* RIGHT SKILL PANEL */}
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30">
-                        <AnimatePresence>
-                            {interactionItems.filter(i => i.side === 'right').map((item, idx) => (
-                                <motion.button
-                                    key={`right-${idx}`}
-                                    initial={{ x: 50, opacity: 0 }}
-                                    animate={{ x: 0, opacity: 1 }}
-                                    transition={{ delay: 0.1 + idx * 0.1, type: 'spring' }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => { playSound(CONST_SOUND_CLICK); setSelectedInfo(item); }}
-                                    className="group relative w-16 h-16"
-                                >
-                                    <div className="absolute inset-0 bg-neutral-900 border border-white/10 rounded-2xl transition-colors shadow-lg" />
-                                    <div className="absolute inset-1 bg-neutral-800 rounded-xl overflow-hidden">
-                                        <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover" alt="skill" />
-                                    </div>
-                                    <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-neutral-950 border border-white/20 rounded-full flex items-center justify-center z-10">
-                                        {item.type === 'defense' ? <Shield size={10} className="text-yellow-400" /> : <Plus size={10} className="text-green-400" />}
-                                    </div>
-                                </motion.button>
-                            ))}
-                        </AnimatePresence>
-                    </div>
+                    {/* --- RIGHT SKILL PANEL (PRESERVED) --- */}
+                    {selectedCharacter && (
+                        <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30">
+                            <AnimatePresence>
+                                {interactionItems.filter(i => i.side === 'right').map((item, idx) => (
+                                    <motion.button
+                                        key={`right-${idx}`}
+                                        initial={{ x: 50, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        transition={{ delay: 0.1 + idx * 0.1, type: 'spring' }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={(e) => { e.stopPropagation(); playSound(CONST_SOUND_CLICK); setSelectedInfo(item); }}
+                                        className="group relative w-16 h-16"
+                                    >
+                                        <div className="absolute inset-0 bg-neutral-900 border border-white/10 rounded-2xl transition-colors shadow-lg group-hover:border-cyan-500/50" />
+                                        <div className="absolute inset-1 bg-neutral-800 rounded-xl overflow-hidden">
+                                            <Image src={'img' in item.data ? item.data.img : item.data.icon} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="skill" />
+                                        </div>
+                                        <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-neutral-950 border border-white/20 rounded-full flex items-center justify-center z-10 shadow-md">
+                                            {item.type === 'defense' ? <Shield size={10} className="text-yellow-400" /> : <Plus size={10} className="text-green-400" />}
+                                        </div>
+                                    </motion.button>
+                                ))}
+                            </AnimatePresence>
+                        </div>
+                    )}
                 </div>
             </main>
 
-            {/* BOTTOM DOCK NAVIGATION */}
-            {/* BOTTOM DOCK NAVIGATION (Wild Rift Arc Style) */}
-            <nav className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
-                <div className="flex items-end justify-center gap-6 pb-2">
-                    <AnimatePresence>
-                        {menuItems.filter(item => item.show).map((item, index) => {
-                            // Arc positioning logic can be purely visual via relative translation or flex alignment
-                            // For simplicity and mobile-first, we use a flex row with translateY for the center button to create an arc effect
-                            // Outer buttons (index 0 and 2) stay lower, Center (index 1) can be slightly raised OR
-                            // In Wild Rift, the "Play" button is usually the biggest and most prominent at the bottom right.
-                            // Here we want a localized menu.
-                            // Let's make them round buttons.
+            {/* --- NAVIGATION DOCK (CRYSTAL CORE - VISIBLE ONLY IF CHAR SELECTED) --- */}
+            <AnimatePresence>
+                {selectedCharacter && (
+                    <motion.nav
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ duration: 0.5, type: "spring", bounce: 0.2 }}
+                        className="relative z-30 pb-4 pt-10 w-full flex justify-center items-end px-4"
+                    >
+                        {/* THE CRYSTAL CORE BACKGROUND */}
+                        <div className="absolute bottom-[-50px] left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none z-0">
+                            {/* Crystal Image */}
+                            <div className="absolute inset-0 flex items-end justify-center opacity-80 mix-blend-screen">
+                                <div className="relative w-64 h-64">
+                                    <Image
+                                        src="/v1/images/webp/fightcrystalintact.webp"
+                                        fill
+                                        className="object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.6)]"
+                                        alt="Crystal Core"
+                                    />
+                                </div>
+                            </div>
 
-                            const isCenter = index === 1;
+                            {/* Blue Magic Ash Particles */}
+                            <div className="absolute inset-0 overflow-hidden">
+                                {[...Array(6)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="absolute bottom-1/3 left-1/2 w-1 h-1 bg-cyan-400 rounded-full blur-[1px] animate-[floatUp_3s_ease-in-out_infinite]"
+                                        style={{
+                                            left: `calc(50% + ${(i - 3) * 20}px)`,
+                                            animationDelay: `${i * 0.5}s`,
+                                            opacity: 0.6
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
 
-                            return (
-                                <motion.button
-                                    key={item.id}
-                                    initial={{ y: 50, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    exit={{ y: 50, opacity: 0 }}
-                                    transition={{ delay: index * 0.05, type: 'spring', stiffness: 200 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => { playSound(CONST_SOUND_CLICK); item.onClick(); }}
-                                    className={`
-                                        relative group flex flex-col items-center justify-center
-                                        ${isCenter ? '-mb-2' : ''} 
-                                    `}
-                                >
-                                    <div className={`
-                                        w-16 h-16 rounded-full border border-opacity-50
-                                        flex items-center justify-center shadow-lg relative overflow-hidden transition-all backdrop-blur-md
-                                        ${item.id === 'adventure'
-                                            ? 'bg-yellow-900/40 border-yellow-500/50 shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:bg-yellow-900/60'
-                                            : item.id === 'sacrifice'
-                                                ? 'bg-red-900/40 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:bg-red-900/60'
-                                                : 'bg-blue-900/40 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:bg-blue-900/60'
-                                        }
-                                    `}>
-                                        {/* Glass Glare */}
-                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.4),transparent_60%)] pointer-events-none" />
+                        {/* BUTTONS LAYOUT */}
+                        <div className="flex items-end justify-center w-full max-w-lg gap-6 relative z-10">
 
-                                        {/* Icon */}
-                                        <item.icon size={24} className={`relative z-10 drop-shadow-md ${item.id === 'adventure' ? 'text-yellow-100' : 'text-white'}`} />
-                                    </div>
+                            {/* LEFT SATELLITE: STUFF */}
+                            <motion.button
+                                initial={{ x: -20, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('inventory'); }}
+                                className="relative flex-1 h-12 bg-[#0a0a0a]/90 rounded-l-xl rounded-tr-md border border-cyan-500/20 border-b-2 border-b-cyan-500/50 flex items-center justify-center overflow-hidden group shadow-[0_4px_15px_rgba(6,182,212,0.1)] backdrop-blur-md mb-2"
+                                style={{ skewX: '8deg' }}
+                            >
+                                <div className="absolute inset-0 bg-linear-to-b from-cyan-900/10 to-transparent" />
+                                <span className="text-xs font-black italic text-cyan-200 uppercase tracking-widest drop-shadow-md transform -skew-x-[8deg] group-hover:text-white transition-colors">
+                                    STUFF
+                                </span>
+                            </motion.button>
 
-                                    {/* Label underneath */}
-                                    <span className={`
-                                        absolute -bottom-6 text-[10px] font-black uppercase tracking-wider
-                                        ${item.id === 'adventure' ? 'text-yellow-500 scale-110' : 'text-gray-400 group-hover:text-white transition-colors'}
-                                    `}>
-                                        {item.label}
+                            {/* CENTER CORE: AVENTURE */}
+                            <motion.button
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('adventure'); }}
+                                className="relative w-40 h-16 mb-8 bg-linear-to-t from-[#1a0505] to-[#2a0a0a] rounded-lg border border-red-500/30 border-b-4 border-b-red-900 flex items-center justify-center overflow-hidden shadow-[0_0_40px_rgba(220,38,38,0.3)] group"
+                            >
+                                {/* Inner Fire Gradient */}
+                                <div className="absolute inset-0 bg-linear-to-t from-red-900/20 via-transparent to-orange-500/10" />
+
+                                {/* Text */}
+                                <div className="flex flex-col items-center gap-0.5 z-10">
+                                    <span className="text-xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-white to-red-100 uppercase tracking-tighter drop-shadow-sm group-hover:scale-105 transition-transform">
+                                        AVENTURE
                                     </span>
-                                </motion.button>
-                            );
-                        })}
-                    </AnimatePresence>
-                </div>
-            </nav>
+                                </div>
 
-            {/* PRESENCE LIGHTING */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-blue-900/20 to-transparent pointer-events-none z-0" />
+                                {/* Bottom Glow */}
+                                <div className="absolute bottom-0 w-full h-1 bg-red-500 box-shadow-[0_0_10px_#ef4444]" />
+                            </motion.button>
 
-            {/* PRELOADER */}
-            <div className="absolute opacity-0 pointer-events-none w-0 h-0">
-                <Image src={CONST_ASSETS.IMAGES.CARD_FRAME} alt="" width={1} height={1} priority />
-                <Image src={CONST_ASSETS.IMAGES.CHAR_AS} alt="" width={1} height={1} priority />
-            </div>
+                            {/* RIGHT SATELLITE: BANQUE */}
+                            <motion.button
+                                initial={{ x: 20, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('vault'); }}
+                                className="relative flex-1 h-12 bg-[#0a0a0a]/90 rounded-r-xl rounded-tl-md border border-amber-500/20 border-b-2 border-b-amber-500/50 flex items-center justify-center overflow-hidden group shadow-[0_4px_15px_rgba(245,158,11,0.1)] backdrop-blur-md mb-2"
+                                style={{ skewX: '-8deg' }}
+                            >
+                                <div className="absolute inset-0 bg-linear-to-b from-amber-900/10 to-transparent" />
+                                <span className="text-xs font-black italic text-amber-200 uppercase tracking-widest drop-shadow-md transform -skew-x-[-8deg] group-hover:text-white transition-colors">
+                                    BANQUE
+                                </span>
+                            </motion.button>
 
-            {/* DETAIL POPUP */}
+                        </div>
+                    </motion.nav>
+                )}
+            </AnimatePresence>
+
+            {/* DETAIL POPUP (PRESERVED) */}
             <AnimatePresence>
                 {selectedInfo && (
                     <motion.div
