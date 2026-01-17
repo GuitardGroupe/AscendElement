@@ -147,19 +147,21 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative w-auto h-full aspect-3/4 z-10">
+                            <div className="relative h-full z-10 flex text-center justify-center">
                                 <Image
                                     src={selectedCharacter.img}
-                                    fill
-                                    className="object-contain"
+                                    width={0}
+                                    height={0}
+                                    sizes="100vh"
+                                    className="h-full w-auto object-contain"
+                                    style={{ width: 'auto', height: '100%' }}
                                     alt={selectedCharacter.name}
                                     priority
                                 />
                                 {/* Manual Inner Shadow Overlay - robust edge fading */}
-                                {/* Replaced side gradients causing bugs with a single radial overlay that forces edges to black */}
                                 <div
                                     className="absolute inset-0 z-20 pointer-events-none"
-                                    style={{ background: 'radial-gradient(ellipse at center, transparent 60%, #050505 100%)' }}
+                                    style={{ boxShadow: 'inset 0 0 10px 2px #050505' }}
                                 />
                             </div>
                         ) : (
@@ -248,8 +250,8 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 className="absolute bottom-24 left-1/2 -translate-x-1/2 w-48 h-48 flex items-center justify-center group pointer-events-auto transform-gpu will-change-transform"
                             >
                                 {/* Static Gradient Glow behind Crystal (Replaces drop-shadow) */}
-                                {/* Reduced glow size (-inset-2 for ~10% less) */}
-                                <div className="absolute -inset-2 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.2)_0%,transparent_70%)] pointer-events-none" />
+                                {/* Reduced glow size (removed negative inset) */}
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.2)_0%,transparent_70%)] pointer-events-none" />
 
                                 {/* Crystal Image Main (Static) */}
                                 <div className="absolute inset-0 flex items-center justify-center">
