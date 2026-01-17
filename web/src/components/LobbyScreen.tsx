@@ -148,17 +148,19 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
                             <div className="relative h-full w-fit z-10 flex text-center justify-center">
-                                {/* Using standard img tag to ensure the container shrinks to fit the image width properly without Next.js layout issues on first load */}
+                                {/* Using standard img tag with CSS MASK for perfect edge fading. */}
+                                {/* The mask fades the opacity to 0 on the outer 15px, guaranteeing no sharp borders are visible. */}
                                 <img
                                     src={selectedCharacter.img}
                                     className="block h-full w-auto object-contain relative z-10"
+                                    style={{
+                                        maskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)',
+                                        maskComposite: 'intersect',
+                                        WebkitMaskComposite: 'source-in'
+                                    }}
                                     alt={selectedCharacter.name}
                                     draggable={false}
-                                />
-                                {/* Manual Inner Shadow Overlay - robust edge fading (15px) */}
-                                <div
-                                    className="absolute inset-0 z-20 pointer-events-none"
-                                    style={{ boxShadow: 'inset 0 0 15px 5px #050505' }}
                                 />
                             </div>
                         ) : (
