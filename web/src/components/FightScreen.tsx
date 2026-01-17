@@ -1260,39 +1260,23 @@ function ResultVictory({ playerName, onBack }: { playerName: string, onBack: () 
     ];
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden">
-            {/* STATIC BACKGROUND & GLOW */}
-            <div className="absolute inset-0 bg-neutral-900/90 z-0" />
-            <div className="absolute top-0 inset-x-0 h-[60%] bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.2),transparent_70%)] z-0 pointer-events-none" />
+        <div className="w-full h-full flex flex-col items-center relative overflow-hidden bg-[#050505]">
+            {/* AMBIENT GLOW - CENTERED SUBTLE ORANGE */}
+            <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[40%] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none z-0" />
 
-            {/* CONTENT CONTAINER */}
-            <div className="relative z-10 flex flex-col w-full items-center">
+            {/* CONTENT CONTAINER - 1/3 TOP Positioning */}
+            <div className="relative z-10 w-full flex flex-col items-center top-[33%] -translate-y-[33%]">
 
-                {/* TITLE AREA - Fixed Top */}
-                <div className="text-center mb-10 scale-125 origin-center">
-                    <h2 className="text-6xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-amber-300 via-orange-400 to-amber-600 uppercase drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]">
+                {/* TITLE - 50% WIDTH */}
+                <div className="w-[50%] text-center mb-8">
+                    <h2 className="text-xl md:text-3xl lg:text-4xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-amber-300 via-orange-400 to-amber-600 uppercase drop-shadow-[0_0_15px_rgba(251,191,36,0.3)] w-full break-words">
                         VICTOIRE
                     </h2>
-                    <div className="h-px w-48 bg-linear-to-r from-transparent via-amber-500 to-transparent mx-auto mt-4 opacity-50" />
+                    <div className="h-px w-full bg-linear-to-r from-transparent via-amber-500/50 to-transparent mt-2" />
                 </div>
 
-                {/* XP BAR - Fixed Position */}
-                <div className="w-full max-w-xs space-y-1 mb-8">
-                    <div className="flex justify-between items-end px-1">
-                        <p className="text-[9px] font-black text-amber-500/60 uppercase tracking-widest">PROGRESSION</p>
-                        <p className="text-xs font-mono font-bold text-amber-400">+125 XP</p>
-                    </div>
-                    <div className="h-2 w-full bg-black/60 rounded-full border border-white/5 overflow-hidden shadow-inner">
-                        <div
-                            style={{ width: "68%" }}
-                            className="h-full bg-linear-to-r from-amber-600 via-yellow-400 to-amber-200 shadow-[0_0_10px_rgba(251,191,36,0.5)]"
-                        />
-                    </div>
-                </div>
-
-                {/* ACCORDION LOOT COMPONENT */}
+                {/* ACCORDION LOOT COMPONENT - Directly Below */}
                 <LootAccordion items={lootItems} onContinue={onBack} />
-
             </div>
         </div>
     );
