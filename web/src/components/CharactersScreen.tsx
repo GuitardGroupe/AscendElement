@@ -19,7 +19,9 @@ interface CharactersScreenProps {
 
 const descriptions: Record<string, string> = {
     0: "Un guerrier implacable maniant l'épée lourde. Spécialiste du combat rapproché et de la défense physique.",
-    1: "Maîtresse des énergies lumineuses. Elle manipule les flux pour soigner ses alliés et désintégrer ses ennemis."
+    1: "Maîtresse des énergies lumineuses. Elle manipule les flux pour soigner ses alliés et désintégrer ses ennemis.",
+    2: "Experte en poisons, elle peut paralyser ses ennemis et les soigner.",
+    3: "Fanatique au service de la sainte lumière, il est le dernier rempart du royaume de Lourdes."
 };
 
 export default function CharactersScreen({ onSwitchScreen }: CharactersScreenProps) {

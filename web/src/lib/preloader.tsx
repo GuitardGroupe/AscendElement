@@ -35,6 +35,7 @@ export const CONST_ASSETS = {
         FIGHT_CRYSTAL_DAMAGED_OP: `/${V}/images/webp/fightcrystaldamagedop.webp`,
         FIGHT_CRYSTAL_INTACT_OP: `/${V}/images/webp/fightcrystalintactop.webp`,
         MONSTER_GOBLIN: `/${V}/images/webp/goblin.webp`,
+        CHAR_GD: `/${V}/images/webp/gd.webp`,
     },
     SOUNDS: {
         CLICK: `/${V}/sounds/ui/click.mp3`,
