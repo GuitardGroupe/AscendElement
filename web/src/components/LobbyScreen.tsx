@@ -103,7 +103,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
             {/* --- MAIN CONTENT (CRYSTAL & SKILLS) --- */}
             <main className="relative z-10 flex-1 flex flex-col items-center justify-center w-full -mt-10">
-                <div className="relative w-full max-w-md h-[400px] flex items-center justify-center">
+                <div className="relative w-full max-w-md h-[400px] flex items-center justify-center -translate-y-[80px]">
 
                     {/* --- LEFT SKILL PANEL (PRESERVED) --- */}
                     <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-30">
@@ -136,20 +136,18 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         onClick={() => handleCrystalClick()}
                     >
                         {/* Custom blended vignette (Always active to ground the scene) */}
+                        {/* Custom blended vignette (Stronger oval mask) */}
                         <div
                             className="absolute inset-0 z-20 pointer-events-none"
                             style={{
-                                background: `
-                                linear-gradient(to bottom, #050505 0%, transparent 20%),
-                                linear-gradient(to right, #050505 5%, transparent 30%, transparent 70%, #050505 95%),
-                                linear-gradient(to top, #050505 0%, transparent 10%)
-                            `
+                                background: 'radial-gradient(ellipse at center, transparent 50%, #050505 85%)',
+                                boxShadow: 'inset 0 0 60px 40px #050505'
                             }}
                         />
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative w-auto h-full aspect-[3/4] mask-image-b-fade z-10">
+                            <div className="relative w-auto h-full aspect-[3/4] mask-image-b-fade z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]">
                                 <Image
                                     src={selectedCharacter.img}
                                     fill
@@ -219,46 +217,16 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                 </div>
             </main>
 
-            {/* --- NAVIGATION DOCK (CRYSTAL CORE - VISIBLE ONLY IF CHAR SELECTED) --- */}
+            {/* --- NAVIGATION DOCK (CRYSTAL SEAL - VISIBLE ONLY IF CHAR SELECTED) --- */}
             <AnimatePresence>
                 {selectedCharacter && (
                     <motion.nav
-                        initial={{ y: 100, opacity: 0 }}
+                        initial={{ y: 200, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 100, opacity: 0 }}
-                        transition={{ duration: 0.5, type: "spring", bounce: 0.2 }}
-                        className="relative z-30 pb-4 pt-10 w-full flex justify-center items-end px-4"
+                        exit={{ y: 200, opacity: 0 }}
+                        transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
+                        className="absolute bottom-24 w-full flex justify-center items-end px-4 z-40"
                     >
-                        {/* THE CRYSTAL CORE BACKGROUND */}
-                        <div className="absolute bottom-[-50px] left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none z-0">
-                            {/* Crystal Image */}
-                            <div className="absolute inset-0 flex items-end justify-center opacity-80 mix-blend-screen">
-                                <div className="relative w-64 h-64">
-                                    <Image
-                                        src="/v1/images/webp/fightcrystalintact.webp"
-                                        fill
-                                        className="object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.6)]"
-                                        alt="Crystal Core"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Blue Magic Ash Particles */}
-                            <div className="absolute inset-0 overflow-hidden">
-                                {[...Array(6)].map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="absolute bottom-1/3 left-1/2 w-1 h-1 bg-cyan-400 rounded-full blur-[1px] animate-[floatUp_3s_ease-in-out_infinite]"
-                                        style={{
-                                            left: `calc(50% + ${(i - 3) * 20}px)`,
-                                            animationDelay: `${i * 0.5}s`,
-                                            opacity: 0.6
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
                         {/* BUTTONS LAYOUT */}
                         <div className="flex items-end justify-center w-full max-w-lg gap-6 relative z-10">
 
@@ -269,35 +237,45 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 transition={{ delay: 0.2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('inventory'); }}
-                                className="relative flex-1 h-12 bg-[#0a0a0a]/90 rounded-l-xl rounded-tr-md border border-cyan-500/20 border-b-2 border-b-cyan-500/50 flex items-center justify-center overflow-hidden group shadow-[0_4px_15px_rgba(6,182,212,0.1)] backdrop-blur-md mb-2"
+                                className="relative flex-1 h-14 bg-linear-to-b from-[#0f172a] to-[#020617] rounded-l-xl rounded-tr-md border-t border-l border-cyan-500/30 border-b-2 border-b-cyan-500 flex items-center justify-center overflow-hidden group shadow-[0_4px_20px_rgba(6,182,212,0.15)] mb-4"
                                 style={{ skewX: '8deg' }}
                             >
-                                <div className="absolute inset-0 bg-linear-to-b from-cyan-900/10 to-transparent" />
-                                <span className="text-xs font-black italic text-cyan-200 uppercase tracking-widest drop-shadow-md transform -skew-x-[8deg] group-hover:text-white transition-colors">
+                                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
+                                <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-cyan-400/50 to-transparent opacity-50" />
+                                <span className="text-sm font-black italic text-cyan-100 uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transform -skew-x-[8deg]">
                                     STUFF
                                 </span>
                             </motion.button>
 
-                            {/* CENTER CORE: AVENTURE */}
+                            {/* CENTER CORE: CRYSTAL SEAL (AVENTURE) */}
                             <motion.button
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                whileTap={{ scale: 0.98 }}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('adventure'); }}
-                                className="relative w-40 h-16 mb-8 bg-linear-to-t from-[#1a0505] to-[#2a0a0a] rounded-lg border border-red-500/30 border-b-4 border-b-red-900 flex items-center justify-center overflow-hidden shadow-[0_0_40px_rgba(220,38,38,0.3)] group"
+                                className="relative w-48 h-48 -mb-8 flex items-center justify-center group z-20 will-change-transform"
                             >
-                                {/* Inner Fire Gradient */}
-                                <div className="absolute inset-0 bg-linear-to-t from-red-900/20 via-transparent to-orange-500/10" />
+                                {/* Crystal Image Main (Static) */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="relative w-full h-full">
+                                        <Image
+                                            src="/v1/images/webp/fightcrystalintact.webp"
+                                            fill
+                                            className="object-contain drop-shadow-[0_0_30px_rgba(234,179,8,0.4)]"
+                                            alt="Play"
+                                            priority
+                                        />
+                                    </div>
+                                </div>
 
-                                {/* Text */}
-                                <div className="flex flex-col items-center gap-0.5 z-10">
-                                    <span className="text-xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-white to-red-100 uppercase tracking-tighter drop-shadow-sm group-hover:scale-105 transition-transform">
+                                {/* Dark Band Overlay (Static) */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-12 bg-black/60 backdrop-blur-sm border-y border-white/10 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                                    {/* Text (Static) */}
+                                    <span className="text-xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-yellow-100 via-amber-300 to-amber-600 uppercase tracking-widest drop-shadow-sm">
                                         AVENTURE
                                     </span>
                                 </div>
-
-                                {/* Bottom Glow */}
-                                <div className="absolute bottom-0 w-full h-1 bg-red-500 box-shadow-[0_0_10px_#ef4444]" />
                             </motion.button>
 
                             {/* RIGHT SATELLITE: BANQUE */}
@@ -307,11 +285,12 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 transition={{ delay: 0.2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('vault'); }}
-                                className="relative flex-1 h-12 bg-[#0a0a0a]/90 rounded-r-xl rounded-tl-md border border-amber-500/20 border-b-2 border-b-amber-500/50 flex items-center justify-center overflow-hidden group shadow-[0_4px_15px_rgba(245,158,11,0.1)] backdrop-blur-md mb-2"
+                                className="relative flex-1 h-14 bg-linear-to-b from-[#2a1b0a] to-[#1a0a00] rounded-r-xl rounded-tl-md border-t border-r border-amber-500/30 border-b-2 border-b-amber-500 flex items-center justify-center overflow-hidden group shadow-[0_4px_20px_rgba(245,158,11,0.15)] mb-4"
                                 style={{ skewX: '-8deg' }}
                             >
-                                <div className="absolute inset-0 bg-linear-to-b from-amber-900/10 to-transparent" />
-                                <span className="text-xs font-black italic text-amber-200 uppercase tracking-widest drop-shadow-md transform -skew-x-[-8deg] group-hover:text-white transition-colors">
+                                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent" />
+                                <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-amber-400/50 to-transparent opacity-50" />
+                                <span className="text-sm font-black italic text-amber-100 uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transform -skew-x-[-8deg]">
                                     BANQUE
                                 </span>
                             </motion.button>
