@@ -154,13 +154,11 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     className="object-contain"
                                     alt={selectedCharacter.name}
                                     // Progressive inner shadow logic:
-                                    // We mask the image edges so it fades into black.
-                                    // A uniform fade around the edges (inset) + a bottom fade.
+                                    // Replaced complex composite mask with a single robust radial vignette.
+                                    // This ensures center is visible (black) and edges fade to transparent.
                                     style={{
-                                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
-                                        maskComposite: 'intersect',
-                                        WebkitMaskComposite: 'source-in'
+                                        maskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
+                                        WebkitMaskImage: 'radial-gradient(ellipse at center, black 60%, transparent 100%)',
                                     }}
                                     priority
                                 />
@@ -170,7 +168,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         ) : (
                             /* EMPTY STATE: SHADOW KNIGHT */
                             /* EMPTY STATE: SHADOW KNIGHT */
-                            <div className="relative w-auto h-full aspect-[3/4] flex items-center justify-center z-0">
+                            <div className="relative w-auto h-full aspect-3/4 flex items-center justify-center z-0">
                                 {/* The Ghostly Knight Layer (Grayscale) */}
                                 <div className="absolute inset-0 opacity-40 grayscale flex items-center justify-center z-0">
                                     <Image
@@ -266,8 +264,8 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     </div>
                                 </div>
 
-                                {/* Dark Band Overlay (Static) - Removed blur, increased opacity */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-12 bg-neutral-900/95 border-y border-white/10 flex items-center justify-center shadow-lg">
+                                {/* Dark Band Overlay (Static) - Transparent Black */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-12 bg-black/80 border-y border-white/10 flex items-center justify-center shadow-lg">
                                     {/* Text (Static) */}
                                     <span className="text-xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-yellow-100 via-amber-300 to-amber-600 uppercase tracking-widest drop-shadow-sm">
                                         AVENTURE
