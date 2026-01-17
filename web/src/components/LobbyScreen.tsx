@@ -148,20 +148,17 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
                             <div className="relative h-full z-10 flex text-center justify-center">
-                                <Image
+                                {/* Using standard img tag to ensure the container shrinks to fit the image width properly without Next.js layout issues on first load */}
+                                <img
                                     src={selectedCharacter.img}
-                                    width={0}
-                                    height={0}
-                                    sizes="100vh"
-                                    className="h-full w-auto object-contain"
-                                    style={{ width: 'auto', height: '100%' }}
+                                    className="h-full w-auto object-contain relative z-10"
                                     alt={selectedCharacter.name}
-                                    priority
+                                    draggable={false}
                                 />
-                                {/* Manual Inner Shadow Overlay - robust edge fading */}
+                                {/* Manual Inner Shadow Overlay - robust edge fading (15px) */}
                                 <div
                                     className="absolute inset-0 z-20 pointer-events-none"
-                                    style={{ boxShadow: 'inset 0 0 10px 2px #050505' }}
+                                    style={{ boxShadow: 'inset 0 0 15px 5px #050505' }}
                                 />
                             </div>
                         ) : (
