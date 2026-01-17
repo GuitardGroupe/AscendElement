@@ -124,22 +124,7 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                     </div>
                 </section>
 
-                {/* LoL Wild Rift Style Separator - Consistent with StuffScreen */}
-                <div className="flex items-center justify-center gap-4 py-2 w-full opacity-80 px-8">
-                    {/* Left Tapering Line */}
-                    <div className="h-px flex-1 bg-linear-to-r from-transparent via-amber-400/50 to-amber-200/80" />
 
-                    {/* Central Hextech/Gold Element */}
-                    <div className="relative flex items-center justify-center">
-                        <div className="w-2 h-2 rotate-45 bg-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.8)] z-10" />
-                        <div className="absolute w-6 h-px bg-amber-200/60" /> {/* Horizontal cross line */}
-                        <div className="absolute w-px h-6 bg-amber-200/60" /> {/* Vertical cross line */}
-                        <div className="absolute w-8 h-8 bg-amber-500/10 blur-xl rounded-full" /> {/* Glow */}
-                    </div>
-
-                    {/* Right Tapering Line */}
-                    <div className="h-px flex-1 bg-linear-to-l from-transparent via-amber-400/50 to-amber-200/80" />
-                </div>
 
                 {/* INVENTORY SECTION */}
                 <Inventory
