@@ -157,6 +157,9 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 />
                                 {/* Manual Inner Shadow Overlay - robust edge fading */}
                                 <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_20px_10px_#050505]" />
+                                {/* SIDE GRADIENTS TO FORCE HIDE EDGES if container is wider than image */}
+                                <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-[#050505] to-transparent z-20 pointer-events-none" />
+                                <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-[#050505] to-transparent z-20 pointer-events-none" />
                             </div>
                         ) : (
                             /* EMPTY STATE: SHADOW KNIGHT */
@@ -242,8 +245,8 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 className="absolute bottom-24 left-1/2 -translate-x-1/2 w-48 h-48 flex items-center justify-center group pointer-events-auto transform-gpu will-change-transform"
                             >
                                 {/* Static Gradient Glow behind Crystal (Replaces drop-shadow) */}
-                                {/* Enlarged (-inset-6) and softer (0.2 -> 70%) */}
-                                <div className="absolute -inset-6 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.2)_0%,transparent_70%)] pointer-events-none" />
+                                {/* Reduced glow size (-inset-4 for ~15% less than -inset-6) */}
+                                <div className="absolute -inset-4 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.2)_0%,transparent_70%)] pointer-events-none" />
 
                                 {/* Crystal Image Main (Static) */}
                                 <div className="absolute inset-0 flex items-center justify-center">
