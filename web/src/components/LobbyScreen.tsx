@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Hexagon, Zap, Shield, Plus, User, Coins } from 'lucide-react';
+import { Hexagon, Zap, Shield, Plus, User, Coins, Backpack, Archive } from 'lucide-react';
 import Image from 'next/image';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
@@ -147,7 +147,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative w-auto h-full aspect-[3/4] mask-image-b-fade z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                            <div className="relative w-auto h-full aspect-[3/4] z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]" style={{ maskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)', WebkitMaskImage: 'radial-gradient(circle at center, black 60%, transparent 100%)' }}>
                                 <Image
                                     src={selectedCharacter.img}
                                     fill
@@ -237,7 +237,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('adventure'); }}
-                                className="absolute bottom-24 left-1/2 -translate-x-1/2 w-48 h-48 flex items-center justify-center group pointer-events-auto will-change-transform"
+                                className="absolute bottom-24 left-1/2 -translate-x-1/2 w-48 h-48 flex items-center justify-center group pointer-events-auto transform-gpu will-change-transform"
                             >
                                 {/* Crystal Image Main (Static) */}
                                 <div className="absolute inset-0 flex items-center justify-center">
@@ -261,43 +261,52 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 </div>
                             </motion.button>
 
-                            {/* LEFT CORNER: STUFF (TEXT ONLY) */}
-                            <motion.button
-                                initial={{ x: -20, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                transition={{ delay: 0.2 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('inventory'); }}
-                                className="absolute bottom-8 left-8 flex items-center justify-center group pointer-events-auto"
-                            >
-                                <div className="relative">
-                                    {/* Blue Glow Behind */}
-                                    <div className="absolute inset-0 bg-blue-500/40 blur-xl scale-150 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+                            {/* BOTTOM NAV BAR: SAC & COFFRE */}
+                            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-4 pointer-events-none">
+                                {/* SAC */}
+                                <motion.button
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('inventory'); }}
+                                    className="flex-1 group pointer-events-auto"
+                                >
+                                    <div className="relative flex items-center justify-center gap-3 bg-neutral-900/80 backdrop-blur-md border border-cyan-500/20 w-full py-3 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.15)] overflow-hidden">
+                                        {/* Inner Glow */}
+                                        <div className="absolute inset-0 bg-cyan-500/5 group-hover:bg-cyan-500/10 transition-colors duration-300" />
 
-                                    <span className="relative z-10 text-2xl font-black italic text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-cyan-200 transition-colors">
-                                        STUFF
-                                    </span>
-                                </div>
-                            </motion.button>
+                                        {/* Icon */}
+                                        <Backpack size={18} className="text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] relative z-10" />
 
-                            {/* RIGHT CORNER: BANQUE (TEXT ONLY) */}
-                            <motion.button
-                                initial={{ x: 20, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                transition={{ delay: 0.2 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('vault'); }}
-                                className="absolute bottom-8 right-8 flex items-center justify-center group pointer-events-auto"
-                            >
-                                <div className="relative">
-                                    {/* Gold Glow Behind */}
-                                    <div className="absolute inset-0 bg-amber-500/40 blur-xl scale-150 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <span className="relative z-10 text-sm font-black italic text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-cyan-200 transition-colors">
+                                            SAC
+                                        </span>
+                                    </div>
+                                </motion.button>
 
-                                    <span className="relative z-10 text-2xl font-black italic text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-amber-200 transition-colors">
-                                        BANQUE
-                                    </span>
-                                </div>
-                            </motion.button>
+                                {/* COFFRE */}
+                                <motion.button
+                                    initial={{ x: 20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('vault'); }}
+                                    className="flex-1 group pointer-events-auto"
+                                >
+                                    <div className="relative flex items-center justify-center gap-3 bg-neutral-900/80 backdrop-blur-md border border-amber-500/20 w-full py-3 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.15)] overflow-hidden">
+                                        {/* Inner Glow */}
+                                        <div className="absolute inset-0 bg-amber-500/5 group-hover:bg-amber-500/10 transition-colors duration-300" />
+
+                                        <span className="relative z-10 text-sm font-black italic text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-amber-200 transition-colors">
+                                            COFFRE
+                                        </span>
+
+                                        {/* Icon */}
+                                        <Archive size={18} className="text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)] relative z-10" />
+                                    </div>
+                                </motion.button>
+                            </div>
                         </motion.nav>
                     )
                 }
