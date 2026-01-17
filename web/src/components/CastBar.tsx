@@ -58,8 +58,7 @@ export default function CastBar({
                 )}
             </div>
 
-            {/* CASTING TIME / DETAILS (Optional subtle decoration) */}
-            <div className="absolute -bottom-1 w-[98%] h-[2px] bg-black/50 rounded-b-sm" />
+
         </div>
     );
 }
