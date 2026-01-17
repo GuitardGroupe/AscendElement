@@ -1261,8 +1261,7 @@ function ResultVictory({ playerName, onBack }: { playerName: string, onBack: () 
 
     return (
         <div className="w-full h-full flex flex-col items-center relative overflow-hidden bg-[#050505]">
-            {/* AMBIENT GLOW - CENTERED SUBTLE ORANGE */}
-            <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[40%] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none z-0" />
+            {/* AMBIENT GLOW REMOVED */}
 
             {/* CONTENT CONTAINER - 1/3 TOP Positioning */}
             <div className="relative z-10 w-full flex flex-col items-center top-[33%] -translate-y-[33%]">

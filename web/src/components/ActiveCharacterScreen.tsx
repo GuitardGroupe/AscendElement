@@ -1,10 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Shield, Zap, Flame, Sword, Gem } from 'lucide-react';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
+import { useState } from 'react';
 
 import ItemPic from '@/components/ItemPic';
 
@@ -15,16 +16,27 @@ interface ActiveCharacterScreenProps {
 export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacterScreenProps) {
     const { playSound } = useSoundStore();
     const { selectedCharacter, clearSelectedCharacter } = useSelectedCharacter();
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleBack = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
         onSwitchScreen('lobby');
     };
 
-    const handleSacrifice = () => {
-        playSound(CONST_ASSETS.SOUNDS.ACCEPTATION); // Or a specific sacrifice sound
+    const handleSacrificeClick = () => {
+        playSound(CONST_ASSETS.SOUNDS.CLICK);
+        setShowConfirmation(true);
+    };
+
+    const confirmSacrifice = () => {
+        playSound(CONST_ASSETS.SOUNDS.ACCEPTATION);
         clearSelectedCharacter();
         onSwitchScreen('lobby');
+    };
+
+    const cancelSacrifice = () => {
+        playSound(CONST_ASSETS.SOUNDS.CLICK);
+        setShowConfirmation(false);
     };
 
     // Calculate stats (Mock logic consistent with CharactersScreen)
@@ -61,6 +73,50 @@ export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacte
             {/* AMBIENT BACKGROUND */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.1),transparent_70%)] pointer-events-none" />
             <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
+
+            {/* CONFIRMATION OVERLAY */}
+            <AnimatePresence>
+                {showConfirmation && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="w-full max-w-[320px] bg-neutral-900 border border-red-500/50 rounded-sm shadow-[0_0_50px_rgba(220,38,38,0.2)] p-6 pt-8 flex flex-col items-center gap-6 relative overflow-hidden"
+                        >
+                            {/* DANGER STRIPES */}
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#ef4444_10px,#ef4444_20px)] opacity-50" />
+
+                            <div className="flex flex-col items-center text-center gap-2">
+                                <Flame size={32} className="text-red-500 mb-2 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+                                <h3 className="text-xl font-black italic text-white uppercase tracking-tighter">
+                                    CONFIRMER LE SACRIFICE ?
+                                </h3>
+                                <p className="text-xs text-red-200/60 font-medium">
+                                    Vous êtes sur le point de sacrifier <span className="text-white font-bold">{selectedCharacter.name}</span>.
+                                    <br />
+                                    Cette action est <span className="text-red-400 font-bold underline">IRRÉVERSIBLE</span>.
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col w-full gap-3">
+                                <button
+                                    onClick={confirmSacrifice}
+                                    className="w-full py-3 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black italic uppercase tracking-widest text-sm rounded-xs shadow-lg transition-all"
+                                >
+                                    OUI, SACRIFIER
+                                </button>
+                                <button
+                                    onClick={cancelSacrifice}
+                                    className="w-full py-3 bg-white/5 hover:bg-white/10 active:bg-white/20 text-white/60 hover:text-white font-black uppercase tracking-widest text-xs rounded-xs border border-white/10 transition-all"
+                                >
+                                    ANNULER
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* HEADER */}
             <header className="relative z-10 flex items-center justify-between mb-2 p-6">
@@ -178,10 +234,10 @@ export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacte
             </main>
 
             {/* FOOTER ACTION */}
-            <div className="p-6 pt-0 relative z-20">
+            <div className="p-6 pt-0 relative z-20 flex flex-col items-center">
                 <button
-                    onClick={handleSacrifice}
-                    className="w-full py-4 group bg-linear-to-r from-red-900 to-red-700 hover:from-red-800 hover:to-red-600 active:scale-95 transition-all rounded-sm flex items-center justify-center gap-3 shadow-[0_4px_20px_rgba(220,38,38,0.3)] relative overflow-hidden"
+                    onClick={handleSacrificeClick}
+                    className="w-[60%] py-4 group bg-linear-to-r from-red-900 to-red-700 hover:from-red-800 hover:to-red-600 active:scale-95 transition-all rounded-sm flex items-center justify-center gap-3 shadow-[0_4px_20px_rgba(220,38,38,0.3)] relative overflow-hidden"
                 >
                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     <Flame size={20} className="text-red-200 drop-shadow-md" />

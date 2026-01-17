@@ -23,6 +23,8 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
     const [visibleItems, setVisibleItems] = useState(initialItems);
     const { playSound } = useSoundStore();
 
+    const [showConfirmation, setShowConfirmation] = useState(false);
+
     // Reset items when initialItems changes
     useEffect(() => {
         setVisibleItems(initialItems);
@@ -34,13 +36,30 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
     };
 
     const handleToggle = () => {
+        if (isOpen) return;
         playSound(CONST_ASSETS.SOUNDS.SWITCH);
-        setIsOpen(!isOpen);
+        setIsOpen(true);
     };
 
     const handleContinue = () => {
+        if (visibleItems.length > 0) {
+            playSound(CONST_ASSETS.SOUNDS.SWITCH); // Alert sound
+            setShowConfirmation(true);
+            return;
+        }
         playSound(CONST_ASSETS.SOUNDS.ACCEPTATION);
         onContinue();
+    };
+
+    const confirmLeave = () => {
+        playSound(CONST_ASSETS.SOUNDS.ACCEPTATION);
+        setShowConfirmation(false);
+        onContinue();
+    };
+
+    const cancelLeave = () => {
+        playSound(CONST_ASSETS.SOUNDS.CLICK);
+        setShowConfirmation(false);
     };
 
     return (
@@ -49,17 +68,50 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
             <motion.button
                 layout={false}
                 onClick={handleToggle}
-                className="w-[250px] h-10 flex items-center justify-center gap-2 bg-linear-to-b from-amber-600 to-amber-500 rounded-t-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] z-20 relative overflow-hidden active:scale-95 transition-transform"
+                className={`w-[250px] h-10 flex items-center justify-center gap-2 bg-linear-to-b from-amber-600 to-amber-500 rounded-t-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] z-20 relative overflow-hidden transition-transform ${isOpen ? 'cursor-default' : 'active:scale-95'}`}
             >
                 <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300" />
                 <span className="text-black font-black italic uppercase tracking-widest text-xs drop-shadow-sm relative z-10">
-                    {isOpen ? "FERMER" : "BUTIN"}
+                    BUTIN
                 </span>
             </motion.button>
 
+            {/* CONFIRMATION POPUP */}
+            <AnimatePresence>
+                {showConfirmation && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="absolute top-12 w-[280px] bg-neutral-900 border border-red-500/50 rounded-md shadow-2xl z-50 p-4 flex flex-col items-center gap-4 text-center"
+                    >
+                        <div className="text-red-400 font-bold text-xs uppercase tracking-wider">
+                            Objets non ramassés !
+                        </div>
+                        <p className="text-white/80 text-[10px] italic">
+                            Certains objets seront perdus si vous partez maintenant.
+                        </p>
+                        <div className="flex gap-2 w-full">
+                            <button
+                                onClick={cancelLeave}
+                                className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-sm text-[10px] font-bold text-white uppercase"
+                            >
+                                Retour
+                            </button>
+                            <button
+                                onClick={confirmLeave}
+                                className="flex-1 py-2 bg-red-900/50 hover:bg-red-800/50 border border-red-500/30 rounded-sm text-[10px] font-bold text-red-200 uppercase"
+                            >
+                                Partir
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* DROPDOWN CONTENT - BLACK BG */}
             <AnimatePresence>
-                {isOpen && (
+                {isOpen && !showConfirmation && (
                     <motion.div
                         key="dropdown"
                         initial={{ height: 0, opacity: 0 }}

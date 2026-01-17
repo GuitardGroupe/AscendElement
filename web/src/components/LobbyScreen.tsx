@@ -147,15 +147,25 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative w-auto h-full aspect-[3/4] z-10 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]" style={{ maskImage: 'radial-gradient(ellipse at 50% 40%, black 30%, transparent 60%)', WebkitMaskImage: 'radial-gradient(ellipse at 50% 40%, black 30%, transparent 60%)' }}>
+                            <div className="relative w-auto h-full aspect-3/4 z-10">
                                 <Image
                                     src={selectedCharacter.img}
                                     fill
-                                    className="object-contain drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                    className="object-contain"
                                     alt={selectedCharacter.name}
-                                    style={{ maskImage: 'linear-gradient(to bottom, transparent 2%, black 20%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 2%, black 20%)' }}
+                                    // Progressive inner shadow logic:
+                                    // We mask the image edges so it fades into black.
+                                    // A uniform fade around the edges (inset) + a bottom fade.
+                                    style={{
+                                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)',
+                                        maskComposite: 'intersect',
+                                        WebkitMaskComposite: 'source-in'
+                                    }}
                                     priority
                                 />
+                                {/* Manual Inner Shadow Overlay for extra darkening/blending if mask isn't enough - simulates "progressive inner shadow" on top */}
+                                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_20px_10px_#050505]" />
                             </div>
                         ) : (
                             /* EMPTY STATE: SHADOW KNIGHT */
@@ -240,21 +250,24 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('adventure'); }}
                                 className="absolute bottom-24 left-1/2 -translate-x-1/2 w-48 h-48 flex items-center justify-center group pointer-events-auto transform-gpu will-change-transform"
                             >
+                                {/* Static Gradient Glow behind Crystal (Replaces drop-shadow) */}
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.4)_0%,transparent_60%)] pointer-events-none" />
+
                                 {/* Crystal Image Main (Static) */}
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="relative w-full h-full">
                                         <Image
                                             src="/v1/images/webp/fightcrystalintact.webp"
                                             fill
-                                            className="object-contain drop-shadow-[0_0_30px_rgba(234,179,8,0.4)]"
+                                            className="object-contain" // Removed drop-shadow
                                             alt="Play"
                                             priority
                                         />
                                     </div>
                                 </div>
 
-                                {/* Dark Band Overlay (Static) */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-12 bg-black/60 backdrop-blur-sm border-y border-white/10 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                                {/* Dark Band Overlay (Static) - Removed blur, increased opacity */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-12 bg-neutral-900/95 border-y border-white/10 flex items-center justify-center shadow-lg">
                                     {/* Text (Static) */}
                                     <span className="text-xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-yellow-100 via-amber-300 to-amber-600 uppercase tracking-widest drop-shadow-sm">
                                         AVENTURE
