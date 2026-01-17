@@ -262,7 +262,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                             </motion.button>
 
                             {/* BOTTOM NAV BAR: SAC & COFFRE */}
-                            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-4 pointer-events-none">
+                            <div className="absolute bottom-8 left-8 right-8 flex items-center justify-center gap-8 pointer-events-none">
                                 {/* SAC */}
                                 <motion.button
                                     initial={{ x: -20, opacity: 0 }}
