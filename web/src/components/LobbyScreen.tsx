@@ -147,11 +147,11 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative h-full z-10 flex text-center justify-center">
+                            <div className="relative h-full w-fit z-10 flex text-center justify-center">
                                 {/* Using standard img tag to ensure the container shrinks to fit the image width properly without Next.js layout issues on first load */}
                                 <img
                                     src={selectedCharacter.img}
-                                    className="h-full w-auto object-contain relative z-10"
+                                    className="block h-full w-auto object-contain relative z-10"
                                     alt={selectedCharacter.name}
                                     draggable={false}
                                 />
