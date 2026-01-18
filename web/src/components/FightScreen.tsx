@@ -8,7 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import CombatCrystal from "@/components/CombatCrystal";
-import LootAccordion from "@/components/LootAccordion";
+import LootAccordion, { LootItem } from "@/components/LootAccordion";
+import Inventory from "@/components/Inventory";
+import ItemPic from "@/components/ItemPic";
 import BattleZoneBackground from "@/components/BattleZoneBackground";
 import HealthBar from "@/components/HealthBar";
 import EnergyBar from "@/components/EnergyBar";
@@ -22,7 +24,7 @@ import { stims } from "@/lib/stim";
 import { useAdventureStore, InventoryItem } from "@/store/useAdventureStore";
 import { CONST_ASSETS } from '@/lib/preloader';
 import { items as gameItems } from "@/lib/items";
-import type { LootItem } from "@/components/LootAccordion";
+
 
 
 
@@ -1315,24 +1317,158 @@ function DarkOverlay() {
 
 // Subcomponents for Results to keep main render clean
 // Subcomponents for Results to keep main render clean
-// Subcomponents for Results to keep main render clean
-function ResultVictory({ playerName, onBack, lootItems }: { playerName: string, onBack: () => void, lootItems: LootItem[] }) {
-    return (
-        <div className="w-full h-full flex flex-col items-center relative overflow-hidden bg-[#050505]">
-            {/* CONTENT CONTAINER - 1/3 TOP Positioning */}
-            <div className="relative z-10 w-full flex flex-col items-center top-[33%] -translate-y-[33%]">
+// Reusing RARITY_COLORS for consistency
+const RARITY_COLORS: Record<string, { text: string, bg: string, border: string, gradient: string }> = {
+    Common: { text: "text-gray-400", bg: "bg-gray-400", border: "border-gray-400", gradient: "from-gray-400" },
+    Uncommon: { text: "text-green-400", bg: "bg-green-400", border: "border-green-400", gradient: "from-green-400" },
+    Rare: { text: "text-blue-400", bg: "bg-blue-400", border: "border-blue-400", gradient: "from-blue-400" },
+    Epic: { text: "text-purple-400", bg: "bg-purple-400", border: "border-purple-400", gradient: "from-purple-400" },
+    Legendary: { text: "text-orange-400", bg: "bg-orange-400", border: "border-orange-400", gradient: "from-orange-400" }
+};
 
-                {/* TITLE - 50% WIDTH */}
-                <div className="w-[50%] text-center mb-8">
+function ResultVictory({ playerName, onBack, lootItems }: { playerName: string, onBack: () => void, lootItems: LootItem[] }) {
+    const { inventory, inventoryCapacity, equipment, removeItemFromInventory, equipItem } = useAdventureStore();
+    const { playSound } = useSoundStore();
+
+    // Selection state for popup
+    const [selectedItem, setSelectedItem] = useState<{ item: any, instanceId: string } | null>(null);
+
+    // Create padded inventory grid (5x4 = 20 slots typically)
+    const paddedInventory = [
+        ...inventory,
+        ...Array.from({ length: Math.max(0, inventoryCapacity - inventory.length) }).map((_, i) => ({
+            instanceId: `empty-${i}`,
+            icon: null,
+            rarity: undefined,
+            name: "Empty"
+        }))
+    ];
+
+    // Mapping for inventory component (needs id, img, rarity)
+    const inventoryProps = paddedInventory.map(item => ({
+        id: item.instanceId,
+        img: item.icon || null,
+        rarity: item.rarity,
+        label: item.name !== "Empty" ? item.name : undefined
+    }));
+
+    // Helper for stats
+    const renderItemStats = (item: any) => {
+        const stats = [];
+        if (['Weapon', 'Ring', 'Book', 'Gem'].includes(item.type)) {
+            stats.push({ label: 'Dégâts', value: item.attack });
+            stats.push({ label: 'Critique', value: item.critical + "%" });
+        }
+        if (['Armor', 'Ring', 'Book', 'Gem'].includes(item.type)) {
+            stats.push({ label: 'Santé', value: item.health });
+            stats.push({ label: 'Énergie', value: item.energy });
+        }
+        if (item.type === 'Consumable') {
+            stats.push({ label: 'Soin', value: item.heal });
+            stats.push({ label: 'Usages', value: item.usages }); // Or charges
+        }
+
+        return (
+            <div className="grid grid-cols-2 gap-2 mt-4 bg-white/5 p-2 rounded-sm">
+                {stats.filter(s => s.value).map((stat, i) => (
+                    <div key={i} className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider">
+                        <span className="text-white/40">{stat.label}</span>
+                        <span className="text-white">{stat.value}</span>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    return (
+        <div className="w-full h-full flex flex-col justify-between items-center relative overflow-hidden bg-[#050505] p-6 pb-20">
+            {/* TOP Title */}
+            <div className="w-full flex flex-col items-center pt-8 z-10 flex-none gap-2">
+                <div className="w-[50%] text-center">
                     <h2 className="text-xl md:text-3xl lg:text-4xl font-black italic text-transparent bg-clip-text bg-linear-to-b from-amber-300 via-orange-400 to-amber-600 uppercase drop-shadow-[0_0_15px_rgba(251,191,36,0.3)] w-full break-words">
                         VICTOIRE
                     </h2>
                     <div className="h-px w-full bg-linear-to-r from-transparent via-amber-500/50 to-transparent mt-2" />
                 </div>
-
-                {/* ACCORDION LOOT COMPONENT - Directly Below */}
-                <LootAccordion items={lootItems} onContinue={onBack} />
             </div>
+
+            {/* LOOT ACCORDION - Positioned just below title, Overlays everything */}
+            <div className="flex-1 flex flex-col items-center w-full relative z-20 pointer-events-none mt-4">
+                {/* Pointer events auto on children only to allow clicking through empty space if needed */}
+                <div className="pointer-events-auto">
+                    <LootAccordion items={lootItems} onContinue={onBack} />
+                </div>
+            </div>
+
+            {/* BOTTOM Inventory */}
+            <div className="w-full max-w-md z-10 flex-none">
+                <Inventory
+                    items={inventoryProps}
+                    capacity={inventoryCapacity}
+                    onItemClick={(item: { id: string | number }) => {
+                        const original = inventory.find(i => i.instanceId === String(item.id));
+                        if (original) {
+                            playSound(CONST_ASSETS.SOUNDS.CLICK);
+                            setSelectedItem({ item: original, instanceId: original.instanceId });
+                        }
+                    }}
+                />
+            </div>
+
+            {/* ITEM DETAILS POPUP - COPIED FROM STUFFSCREEN Logic */}
+            <AnimatePresence>
+                {selectedItem && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
+                        onClick={() => setSelectedItem(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* POPUP HEADER */}
+                            <div className="relative p-6 pb-4">
+                                <div className={`absolute top-0 left-0 w-full h-1 bg-linear-to-r ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].gradient} to-transparent opacity-80`} />
+
+                                <div className="flex gap-4">
+                                    <div className={`w-16 h-16 shrink-0 rounded-md border ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].border} bg-white/5 relative shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
+                                        <ItemPic src={selectedItem.item.icon} rarity={selectedItem.item.rarity} size={64} className="rounded-md" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className={`text-lg font-black italic uppercase tracking-tight ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text}`}>{selectedItem.item.name}</h3>
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text} opacity-80`}>{selectedItem.item.type} • {selectedItem.item.rarity}</span>
+                                        <p className="text-xs text-gray-400 leading-relaxed italic border-l-2 border-white/10 pl-2">
+                                            &quot;{selectedItem.item.description || "Un objet mystérieux."}&quot;
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {renderItemStats(selectedItem.item)}
+                            </div>
+
+                            {/* ACTIONS */}
+                            <div className="grid grid-cols-1 bg-white/5 border-t border-white/5">
+                                <button
+                                    onClick={() => {
+                                        playSound(CONST_ASSETS.SOUNDS.CLICK); // Should be DELETE sound ideally
+                                        removeItemFromInventory(selectedItem.instanceId);
+                                        setSelectedItem(null);
+                                    }}
+                                    className="p-4 text-xs font-black text-red-400 uppercase active:bg-white/5 transition-colors hover:bg-red-500/10"
+                                >
+                                    JETER
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

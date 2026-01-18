@@ -4,7 +4,15 @@ import { CONST_ASSETS } from "@/lib/preloader";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useAdventureStore } from "@/store/useAdventureStore";
-import { Item } from "@/lib/items";
+import { Item, currencies } from "@/lib/items";
+
+const RARITY_COLORS: Record<string, string> = {
+    Common: 'text-gray-400',
+    Uncommon: 'text-green-400',
+    Rare: 'text-blue-400',
+    Epic: 'text-purple-400',
+    Legendary: 'text-orange-400'
+};
 
 export interface LootItem {
     id: number; // Unique ID for the list
@@ -38,6 +46,8 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
         setVisibleItems(initialItems);
     }, [initialItems]);
 
+    const [showFullInventoryAlert, setShowFullInventoryAlert] = useState(false);
+
     const handleCollect = (item: LootItem) => {
         let success = true;
 
@@ -58,14 +68,14 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
             setVisibleItems(prev => prev.filter(i => i.id !== item.id));
         } else {
             playSound(CONST_ASSETS.SOUNDS.DESACTIVATION); // Inventory full
-            // Maybe show a toast/hint?
+            setShowFullInventoryAlert(true);
+            setTimeout(() => setShowFullInventoryAlert(false), 2000); // Auto hide after 2s
         }
     };
 
     const handleToggle = () => {
-        if (isOpen) return;
         playSound(CONST_ASSETS.SOUNDS.SWITCH);
-        setIsOpen(true);
+        setIsOpen(!isOpen);
     };
 
     const handleContinue = () => {
@@ -102,6 +112,20 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
                     BUTIN
                 </span>
             </motion.button>
+
+            {/* INVENTORY FULL ALERT */}
+            <AnimatePresence>
+                {showFullInventoryAlert && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute -top-12 z-50 bg-red-900/90 text-red-100 px-3 py-1 rounded text-[10px] font-bold border border-red-500/50 shadow-lg pointer-events-none whitespace-nowrap"
+                    >
+                        INVENTAIRE PLEIN !
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* CONFIRMATION POPUP */}
             <AnimatePresence>
@@ -164,7 +188,7 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
                                         <div className="shrink-0">
                                             <ItemPic
                                                 src={item.icon}
-                                                rarity={item.rarity}
+                                                rarity={item.payload.type === 'item' ? item.payload.item?.rarity : 'common'}
                                                 size={56}
                                                 className="rounded-sm"
                                             />
@@ -172,8 +196,18 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
 
                                         {/* Right: Name */}
                                         <div className="flex-1 px-3 flex items-center justify-between">
-                                            <span className={`text-xs font-bold capitalize ${item.color}`}>
-                                                {item.name.toLowerCase()}
+                                            <span className={`text-xs font-bold capitalize ${item.payload.type === 'item'
+                                                ? (RARITY_COLORS[item.payload.item?.rarity || 'Common'] || 'text-gray-400')
+                                                : item.payload.type === 'currency_gold' ? 'text-amber-400'
+                                                    : item.payload.type === 'currency_soulshard' ? 'text-cyan-400'
+                                                        : 'text-purple-400' // XP
+                                                }`}>
+                                                {item.payload.type === 'item'
+                                                    ? item.payload.item?.name.toLowerCase()
+                                                    : item.payload.type === 'currency_gold' ? currencies[0].name.toLowerCase()
+                                                        : item.payload.type === 'currency_soulshard' ? currencies[1].name.toLowerCase()
+                                                            : currencies[2].name.toLowerCase()
+                                                }
                                             </span>
                                             {/* Quantity or Type hint? */}
                                             {(item.payload.amount || 0) > 1 && (
@@ -186,11 +220,7 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
                         </AnimatePresence>
 
                         {/* Continue Button only if items remain? Or always? User logic implies just collection. Keeping Continue for now. */}
-                        {visibleItems.length === 0 && (
-                            <div className="p-4 text-center text-[10px] text-white/40 italic">
-                                Inventaire vide
-                            </div>
-                        )}
+
 
                         <button
                             onClick={handleContinue}

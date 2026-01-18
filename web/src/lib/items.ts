@@ -8,7 +8,7 @@ export type Currency = {
 export const currencies = [
     {
         id: 0,
-        name: "Or",
+        name: "Pièces d'or",
         icon: CONST_ASSETS.IMAGES.CURRENCY_GOLDCOIN,
     },
     {
