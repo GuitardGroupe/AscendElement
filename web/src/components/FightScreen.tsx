@@ -59,16 +59,26 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         []
     );
     const [playerIsCasting, setPlayerIsCasting] = useState(false);
+    const [playerCastId, setPlayerCastId] = useState(0);
     const playerCastRef = useRef<NodeJS.Timeout | null>(null);
     const playerFinishTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [playerCurrentCastSkill, setPlayerCurrentCastSkill] =
         useState<Skill | null>(null);
     const [playerCastProgress, setPlayerCastProgress] = useState(0);
     const [playerCastDuration, setPlayerCastDuration] = useState(0);
-    const [playerCooldowns, setPlayerCooldowns] = useState<Record<number, number>>({});
     const skills = selectedCharacter
         ? skillSets[selectedCharacter?.symbol as ElementKey]
         : [];
+
+    const [playerCooldowns, setPlayerCooldowns] = useState<Record<number, number>>(() => {
+        const initial: Record<number, number> = {};
+        skills.forEach(skill => {
+            if (skill && skill.cooldown > 0) {
+                initial[skill.id] = skill.cooldown;
+            }
+        });
+        return initial;
+    });
 
     // STIMS
     const [stimUsages, setStimUsages] = useState<Record<number, number>>(() => {
@@ -261,7 +271,17 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         monsterDecisionRef.current = null;
         opponentIsCastingRef.current = false;
+        opponentIsCastingRef.current = false;
         playerIsCastingRef.current = false;
+
+        setPlayerIsCasting(false);
+        setOpponentIsCasting(false);
+        setPlayerCastProgress(0);
+        setOpponentCastProgress(0);
+        setPlayerCastDuration(0);
+        setOpponentCastDuration(0);
+        setPlayerCurrentCastSkill(null);
+        setOpponentCurrentCastSkill(null);
 
         // Stop any active combo visuals
         setIsComboMode(false);
@@ -369,8 +389,20 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
         comboTimeoutRef.current = setTimeout(() => {
             setComboTriggerActive(false);
+            setComboTriggerActive(false);
+            comboTimeoutRef.current = null;
         }, 1000);
     }, [isComboMode]);
+
+    const cancelComboTrigger = useCallback(() => {
+        if (comboTriggerActive) {
+            setComboTriggerActive(false);
+            if (comboTimeoutRef.current) {
+                clearTimeout(comboTimeoutRef.current);
+                comboTimeoutRef.current = null;
+            }
+        }
+    }, [comboTriggerActive]);
 
     const startComboMode = useCallback(() => {
         setComboTriggerActive(false);
@@ -380,13 +412,21 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
         comboTimeoutRef.current = setTimeout(() => {
+            comboTimeoutRef.current = null; // MARK AS FIRED
             setIsComboMode(false);
             setComboHitsCount(0);
         }, 1000);
     }, []);
 
     const handleComboHit = useCallback(() => {
+        // Critical: Check if timeout already fired (race condition fix)
+        // If comboTimeoutRef.current is null (and we are not just starting), it means timeout won
+        // But for the very first hit, we rely on isComboMode
         if (!isComboMode || comboHitsCount >= 3) return;
+
+        // If the timeout has already fired (ref is null), ignore this late click
+        if (comboHitsCount > 0 && !comboTimeoutRef.current) return;
+
         const combo = combos[0];
         const nextCount = comboHitsCount + 1;
 
@@ -401,7 +441,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
         setComboHitsCount(nextCount);
 
-        if (comboTimeoutRef.current) clearTimeout(comboTimeoutRef.current);
+        if (comboTimeoutRef.current) {
+            clearTimeout(comboTimeoutRef.current);
+            comboTimeoutRef.current = null; // Clear it so we don't re-use it
+        }
 
         if (nextCount >= 3) {
             // SUCCESS
@@ -420,6 +463,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         } else {
             setHitPosition({ x: 20 + Math.random() * 60, y: 20 + Math.random() * 60 });
             comboTimeoutRef.current = setTimeout(() => {
+                comboTimeoutRef.current = null; // MARK AS FIRED
                 // TIMEOUT
                 setIsComboMode(false); // Start exit animation
 
@@ -487,6 +531,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
         if (playerCastRef.current) clearTimeout(playerCastRef.current);
 
         setPlayerIsCasting(true);
+        setPlayerCastId(prev => prev + 1);
         setPlayerCurrentCastSkill(skill);
         setPlayerCastProgress(0);
 
@@ -720,7 +765,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE SKILL LAUNCH
     const handleSkill = (skill: number) => {
+        if (winner || combatResult) return;
         if (isComboMode) return; // Restriction
+        cancelComboTrigger(); // NEW: Stop trigger if ignoring it
+
         if (skill == 4 || skill == 5) {
             /*
             const item = skill === 4 ? weapon : stim;
@@ -768,7 +816,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE STIM USE
     const handleStim = (type: number, id?: number) => {
+        if (winner || combatResult) return;
         if (isComboMode) return; // Restriction
+        cancelComboTrigger(); // NEW: Stop trigger if ignoring it
+
         if (type !== 5 || id === undefined) return;
 
         const stim = stims.find(s => s.id === id);
@@ -799,7 +850,10 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
 
     // HANDLE DEFENSE USE
     const handleDefense = (id: number) => {
+        if (winner || combatResult) return;
         if (isComboMode) return; // Restriction
+        cancelComboTrigger(); // NEW: Stop trigger if ignoring it
+
         const defense = defenses.find(d => d.id === id);
         if (!defense) return;
 
@@ -968,15 +1022,15 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                 </AnimatePresence>
                 <div className="relative w-full h-[60%] flex items-start p-4">
                     {/* CENTERED CAST BAR (PLAYER) */}
-                    <div className="absolute top-[150px] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] z-30 pointer-events-none">
+                    <div className="absolute top-[150px] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-8 z-30 pointer-events-none">
                         <AnimatePresence>
                             {playerIsCasting && (
                                 <motion.div
-                                    key="player-cast"
+                                    key={`player-cast-${playerCastId}`}
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
-                                    className="w-full"
+                                    className="absolute top-0 left-0 w-full"
                                 >
                                     <CastBar
                                         progress={playerCastProgress}
