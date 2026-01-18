@@ -152,7 +152,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                 {/* The mask fades the opacity to 0 on the outer 15px, guaranteeing no sharp borders are visible. */}
                                 <img
                                     src={selectedCharacter.img}
-                                    className="block h-full w-auto object-contain relative z-10"
+                                    className="block h-full w-auto object-contain relative z-10 rounded-[32px]"
                                     style={{
                                         maskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 25px, black calc(100% - 25px), transparent)',
                                         WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 25px, black calc(100% - 25px), transparent)',
