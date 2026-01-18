@@ -59,6 +59,7 @@ import { CONST_ASSETS } from '@/lib/preloader';
 import { useState } from 'react';
 
 import ItemPic from '@/components/ItemPic';
+import ItemPopup from '@/components/ItemPopup';
 import Inventory from '@/components/Inventory';
 import { useAdventureStore, EquipmentSlotId, InventoryItem } from '@/store/useAdventureStore';
 
@@ -269,62 +270,23 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
             {/* ITEM DETAILS POPUP */}
             <AnimatePresence>
                 {selectedItem && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedItem(null)}
-                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer"
-                    >
-                        <motion.div
-                            initial={{ y: 200 }}
-                            animate={{ y: 0 }}
-                            exit={{ y: 200 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl"
-                        >
-                            <div className={`p-1 h-1 bg-linear-to-r ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].from} ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].via} ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].to}`} />
-                            <div className="p-6">
-                                <div className="flex gap-4">
-                                    <div className="shrink-0">
-                                        <ItemPic
-                                            src={selectedItem.item.icon}
-                                            rarity={selectedItem.item.rarity}
-                                            size={80}
-                                            className={!selectedItem.item.icon ? "opacity-30 border-white/10" : ""}
-                                        />
-                                        {!selectedItem.item.icon && (
-                                            <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-                                                <Circle className="text-white/20" size={32} />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className={`text-lg font-black italic uppercase tracking-tight ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text}`}>{selectedItem.item.name}</h3>
-                                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text} opacity-80`}>{selectedItem.item.type} • {selectedItem.item.rarity}</span>
-                                        <p className="text-xs text-gray-400 leading-relaxed italic border-l-2 border-white/10 pl-2">
-                                            &quot;{selectedItem.item.description || "Un objet mystérieux."}&quot;
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {renderItemStats(selectedItem.item)}
-                            </div>
-                            <div className="grid grid-cols-2 bg-white/5 border-t border-white/5">
-                                {selectedItem.source === 'inventory' ? (
-                                    <>
-                                        <button onClick={handleDiscard} className="p-4 text-xs font-black text-red-400 uppercase active:bg-white/5 transition-colors hover:bg-red-500/10">JETER</button>
-                                        <button onClick={handleEquip} className={`p-4 text-xs font-black uppercase border-l border-white/5 active:bg-white/5 transition-colors hover:bg-white/5 ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text}`}>ÉQUIPER</button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button className="p-4 text-xs font-black text-gray-600 uppercase cursor-not-allowed">JETER</button>
-                                        <button onClick={handleUnequip} className="p-4 text-xs font-black text-amber-400 uppercase border-l border-white/5 active:bg-white/5 transition-colors">DÉSÉQUIPER</button>
-                                    </>
-                                )}
-                            </div>
-                        </motion.div>
-                    </motion.div>
+                    <ItemPopup
+                        item={selectedItem.item}
+                        onClose={() => setSelectedItem(null)}
+                        actions={
+                            selectedItem.source === 'inventory' ? (
+                                <>
+                                    <button onClick={handleEquip} className="p-4 text-xs font-black uppercase w-2/3 active:bg-white/5 transition-colors hover:bg-white/5 text-amber-400">ÉQUIPER</button>
+                                    <button onClick={handleDiscard} className="p-4 text-xs font-black text-red-400 uppercase w-1/3 active:bg-white/5 transition-colors hover:bg-red-500/10">JETER</button>
+                                </>
+                            ) : (
+                                <>
+                                    <button onClick={handleUnequip} className="p-4 text-xs font-black text-amber-400 uppercase w-2/3 active:bg-white/5 transition-colors">DÉSÉQUIPER</button>
+                                    <button className="p-4 text-xs font-black text-gray-600 uppercase w-1/3 cursor-not-allowed">JETER</button>
+                                </>
+                            )
+                        }
+                    />
                 )}
             </AnimatePresence>
         </div>

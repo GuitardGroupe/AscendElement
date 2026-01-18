@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Hexagon, Zap, Shield, Plus, User, Coins, Backpack, Archive } from 'lucide-react';
+import { Hexagon, Zap, Shield, Plus, User, Coins, Backpack, Archive, Menu, HelpCircle, Bitcoin, Hammer, Settings, Trophy, Sword } from 'lucide-react';
 import Image from 'next/image';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
@@ -28,6 +28,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     const { selectedCharacter } = useSelectedCharacter();
     const { equipment, checkStarterKit } = useAdventureStore();
     const [selectedInfo, setSelectedInfo] = useState<SkillItem | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Initial Starter Kit Check
     useEffect(() => {
@@ -105,15 +106,46 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                     </motion.div>
                 </div>
 
-                {/* RIGHT: CURRENCY */}
+                {/* RIGHT: MENU DROPDOWN */}
                 <motion.div
                     initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}
-                    className="pointer-events-auto pr-2"
+                    className="pointer-events-auto pr-2 relative z-50"
                 >
-                    <div className="bg-neutral-900/60 border border-amber-500/20 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-3 shadow-lg">
-                        <span className="font-mono font-bold text-amber-100 text-sm tracking-wide">1,250</span>
-                        <Coins size={14} className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
-                    </div>
+                    <button
+                        onClick={() => { playSound(CONST_SOUND_CLICK); setIsMenuOpen(!isMenuOpen); }}
+                        className={`w-12 h-12 rounded-full border border-white/10 flex items-center justify-center transition-colors ${isMenuOpen ? 'bg-white text-black' : 'bg-neutral-900/60 text-white hover:bg-white/10'}`}
+                    >
+                        <Menu size={20} />
+                    </button>
+
+                    <AnimatePresence>
+                        {isMenuOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                className="absolute top-14 right-0 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-2"
+                            >
+                                {[
+                                    { label: 'Leaderboard', icon: Trophy, color: 'text-yellow-400' },
+                                    { label: 'Armurerie', icon: Sword, color: 'text-zinc-400' },
+                                    { label: 'Aide', icon: HelpCircle, color: 'text-cyan-400' },
+                                    { label: 'Crypto', icon: Bitcoin, color: 'text-amber-400' },
+                                    { label: 'Forge (Bientôt)', icon: Hammer, color: 'text-red-400' },
+                                    { label: 'Réglages', icon: Settings, color: 'text-gray-400' },
+                                ].map((item, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => { playSound(CONST_SOUND_CLICK); setIsMenuOpen(false); }}
+                                        className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-white/5 transition-colors group"
+                                    >
+                                        <item.icon size={16} className={`${item.color} group-hover:scale-110 transition-transform`} />
+                                        <span className="text-sm font-bold uppercase tracking-wide text-white/80 group-hover:text-white">{item.label}</span>
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </motion.div>
             </header>
 
@@ -288,7 +320,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                             </motion.button>
 
                             {/* BOTTOM NAV BAR: SAC & COFFRE */}
-                            <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-32 pointer-events-none">
+                            <div className="absolute bottom-[50px] left-0 right-0 flex items-center justify-center gap-32 pointer-events-none">
                                 {/* SAC */}
                                 <motion.button
                                     initial={{ x: -20, opacity: 0 }}

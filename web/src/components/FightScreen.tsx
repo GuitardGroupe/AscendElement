@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CombatCrystal from "@/components/CombatCrystal";
 import LootAccordion, { LootItem } from "@/components/LootAccordion";
 import Inventory from "@/components/Inventory";
-import ItemPic from "@/components/ItemPic";
+import ItemPopup from "@/components/ItemPopup";
 import BattleZoneBackground from "@/components/BattleZoneBackground";
 import HealthBar from "@/components/HealthBar";
 import EnergyBar from "@/components/EnergyBar";
@@ -1415,58 +1415,25 @@ function ResultVictory({ playerName, onBack, lootItems }: { playerName: string, 
                 />
             </div>
 
-            {/* ITEM DETAILS POPUP - COPIED FROM STUFFSCREEN Logic */}
+            {/* ITEM DETAILS POPUP */}
             <AnimatePresence>
                 {selectedItem && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
-                        onClick={() => setSelectedItem(null)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0.9, y: 20 }}
-                            className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-lg shadow-2xl overflow-hidden"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* POPUP HEADER */}
-                            <div className="relative p-6 pb-4">
-                                <div className={`absolute top-0 left-0 w-full h-1 bg-linear-to-r ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].gradient} to-transparent opacity-80`} />
-
-                                <div className="flex gap-4">
-                                    <div className={`w-16 h-16 shrink-0 rounded-md border ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].border} bg-white/5 relative shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
-                                        <ItemPic src={selectedItem.item.icon} rarity={selectedItem.item.rarity} size={64} className="rounded-md" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className={`text-lg font-black italic uppercase tracking-tight ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text}`}>{selectedItem.item.name}</h3>
-                                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text} opacity-80`}>{selectedItem.item.type} • {selectedItem.item.rarity}</span>
-                                        <p className="text-xs text-gray-400 leading-relaxed italic border-l-2 border-white/10 pl-2">
-                                            &quot;{selectedItem.item.description || "Un objet mystérieux."}&quot;
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {renderItemStats(selectedItem.item)}
-                            </div>
-
-                            {/* ACTIONS */}
-                            <div className="grid grid-cols-1 bg-white/5 border-t border-white/5">
-                                <button
-                                    onClick={() => {
-                                        playSound(CONST_ASSETS.SOUNDS.CLICK); // Should be DELETE sound ideally
-                                        removeItemFromInventory(selectedItem.instanceId);
-                                        setSelectedItem(null);
-                                    }}
-                                    className="p-4 text-xs font-black text-red-400 uppercase active:bg-white/5 transition-colors hover:bg-red-500/10"
-                                >
-                                    JETER
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
+                    <ItemPopup
+                        item={selectedItem.item}
+                        onClose={() => setSelectedItem(null)}
+                        actions={
+                            <button
+                                onClick={() => {
+                                    playSound(CONST_ASSETS.SOUNDS.CLICK);
+                                    removeItemFromInventory(selectedItem.instanceId);
+                                    setSelectedItem(null);
+                                }}
+                                className="p-4 text-xs font-black text-red-400 uppercase active:bg-white/5 transition-colors hover:bg-red-500/10 w-full"
+                            >
+                                JETER
+                            </button>
+                        }
+                    />
                 )}
             </AnimatePresence>
         </div>
