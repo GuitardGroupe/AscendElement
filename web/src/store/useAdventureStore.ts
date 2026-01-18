@@ -298,18 +298,28 @@ export const useAdventureStore = create<AdventureState>((set, get) => ({
 
     checkStarterKit: () => {
         const state = get();
-        const stimId = 0; // "Cartouche de soin"
+        // 0: Stim, 1: Sword, 3: Gem, 4: Book
+        const starterIds = [0, 1, 3, 4];
 
-        // Check ALL sources
-        const hasInInventory = state.inventory.some(i => i.id === stimId);
-        const hasInVault = state.vault.some(i => i.id === stimId);
-        const hasEquipped = state.equipment.consumable?.id === stimId;
+        starterIds.forEach(id => {
+            const hasInInventory = state.inventory.some(i => i.id === id);
+            const hasInVault = state.vault.some(i => i.id === id);
 
-        if (!hasInInventory && !hasInVault && !hasEquipped) {
-            const stimItem = itemDb.find(i => i.id === stimId);
-            if (stimItem) {
-                state.addItemToInventory(stimItem);
+            // Check equipment slots
+            let hasEquipped = false;
+            if (state.equipment.consumable?.id === id) hasEquipped = true;
+            if (state.equipment.weapon?.id === id) hasEquipped = true;
+            if (state.equipment.gem?.id === id) hasEquipped = true;
+            if (state.equipment.book?.id === id) hasEquipped = true;
+            if (state.equipment.armor?.id === id) hasEquipped = true;
+            if (state.equipment.ring?.id === id) hasEquipped = true;
+
+            if (!hasInInventory && !hasInVault && !hasEquipped) {
+                const item = itemDb.find(i => i.id === id);
+                if (item) {
+                    state.addItemToInventory(item);
+                }
             }
-        }
+        });
     }
 }));

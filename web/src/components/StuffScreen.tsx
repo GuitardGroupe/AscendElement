@@ -5,11 +5,11 @@ import { ArrowLeft, Sword, Zap, Shield, Gem, BookOpen, Circle, Heart, Crosshair,
 import { Item } from '@/lib/items';
 
 const RARITY_COLORS: Record<string, { text: string, bg: string, border: string, from: string, via: string, to: string }> = {
-    Common: { text: 'text-slate-400', bg: 'bg-slate-400', border: 'border-slate-400', from: 'from-slate-500', via: 'via-slate-400', to: 'to-slate-500' },
-    Uncommon: { text: 'text-emerald-400', bg: 'bg-emerald-400', border: 'border-emerald-400', from: 'from-emerald-500', via: 'via-emerald-400', to: 'to-emerald-500' },
-    Rare: { text: 'text-cyan-400', bg: 'bg-cyan-400', border: 'border-cyan-400', from: 'from-cyan-500', via: 'via-cyan-400', to: 'to-cyan-500' },
+    Common: { text: 'text-gray-400', bg: 'bg-gray-400', border: 'border-gray-400', from: 'from-gray-500', via: 'via-gray-400', to: 'to-gray-500' },
+    Uncommon: { text: 'text-green-400', bg: 'bg-green-400', border: 'border-green-400', from: 'from-green-500', via: 'via-green-400', to: 'to-green-500' },
+    Rare: { text: 'text-blue-400', bg: 'bg-blue-400', border: 'border-blue-400', from: 'from-blue-500', via: 'via-blue-400', to: 'to-blue-500' },
     Epic: { text: 'text-purple-400', bg: 'bg-purple-400', border: 'border-purple-400', from: 'from-purple-500', via: 'via-purple-400', to: 'to-purple-500' },
-    Legendary: { text: 'text-amber-400', bg: 'bg-amber-400', border: 'border-amber-400', from: 'from-amber-500', via: 'via-amber-400', to: 'to-amber-500' }
+    Legendary: { text: 'text-orange-400', bg: 'bg-orange-400', border: 'border-orange-400', from: 'from-orange-500', via: 'via-orange-400', to: 'to-orange-500' }
 };
 
 const renderItemStats = (item: Item) => {
