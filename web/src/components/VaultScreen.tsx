@@ -283,7 +283,7 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                                     </div>
                                     <div className="flex-1">
                                         <h3 className={`text-lg font-black italic uppercase tracking-tight ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text}`}>{selectedItem.item.name}</h3>
-                                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${selectedItem.source === 'vault' ? 'text-amber-500' : 'text-cyan-500'}`}>
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text} opacity-80`}>
                                             {selectedItem.source === 'vault' ? 'STOCKÉ' : 'DANS LE SAC'} • {selectedItem.item.rarity}
                                         </span>
                                         <p className="text-xs text-gray-400 leading-relaxed italic border-l-2 border-white/10 pl-2">
