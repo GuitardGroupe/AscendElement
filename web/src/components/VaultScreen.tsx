@@ -1,16 +1,70 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Hexagon, Lock } from 'lucide-react';
+import { ArrowLeft, Lock, Sword, Circle, Heart, Crosshair, Flame, Clock, Repeat } from 'lucide-react';
+import { Item } from '@/lib/items'; // Added Item type
 
 import { useSoundStore } from '@/store/useSoundStore';
 import { CONST_ASSETS } from '@/lib/preloader';
-import { useState } from 'react';
 
 import ItemPic from '@/components/ItemPic';
+
+
 import Inventory from '@/components/Inventory';
 
 import { useAdventureStore, InventoryItem } from '@/store/useAdventureStore';
+
+const RARITY_COLORS: Record<string, { text: string, bg: string, border: string, from: string, via: string, to: string }> = {
+    Common: { text: 'text-slate-400', bg: 'bg-slate-400', border: 'border-slate-400', from: 'from-slate-500', via: 'via-slate-400', to: 'to-slate-500' },
+    Uncommon: { text: 'text-emerald-400', bg: 'bg-emerald-400', border: 'border-emerald-400', from: 'from-emerald-500', via: 'via-emerald-400', to: 'to-emerald-500' },
+    Rare: { text: 'text-cyan-400', bg: 'bg-cyan-400', border: 'border-cyan-400', from: 'from-cyan-500', via: 'via-cyan-400', to: 'to-cyan-500' },
+    Epic: { text: 'text-purple-400', bg: 'bg-purple-400', border: 'border-purple-400', from: 'from-purple-500', via: 'via-purple-400', to: 'to-purple-500' },
+    Legendary: { text: 'text-amber-400', bg: 'bg-amber-400', border: 'border-amber-400', from: 'from-amber-500', via: 'via-amber-400', to: 'to-amber-500' }
+};
+
+const renderItemStats = (item: Item) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stats: any[] = [];
+
+    // Weapon: Dmg, Crit
+    if (item.type === 'Weapon') {
+        if (item.attack) stats.push({ label: 'Dégâts', value: `+${item.attack}`, icon: Sword });
+        if (item.critical) stats.push({ label: 'Critique', value: `+${item.critical}%`, icon: Crosshair });
+    }
+    // Armor: HP, Energy
+    if (item.type === 'Armor') {
+        if (item.health) stats.push({ label: 'Santé', value: `+${item.health}`, icon: Heart });
+        if (item.energy) stats.push({ label: 'Énergie', value: `+${item.energy}`, icon: Flame });
+    }
+    // Book/Ring/Gem: HP, Energy, Dmg, Crit
+    if (['Book', 'Ring', 'Gem'].includes(item.type)) {
+        if (item.health) stats.push({ label: 'Santé', value: `+${item.health}`, icon: Heart });
+        if (item.energy) stats.push({ label: 'Énergie', value: `+${item.energy}`, icon: Flame });
+        if (item.attack) stats.push({ label: 'Dégâts', value: `+${item.attack}`, icon: Sword });
+        if (item.critical) stats.push({ label: 'Critique', value: `+${item.critical}%`, icon: Crosshair });
+    }
+    // Consumable: Heal, CD, Usages
+    if (item.type === 'Consumable') {
+        if (item.heal) stats.push({ label: 'Soin', value: `${item.heal} HP`, icon: Heart });
+        if (item.cooldown) stats.push({ label: 'Recharge', value: `${item.cooldown / 1000}s`, icon: Clock });
+        if (item.usages) stats.push({ label: 'Charges', value: `${item.usages}`, icon: Repeat });
+    }
+
+    if (stats.length === 0) return null;
+
+    return (
+        <div className="grid grid-cols-2 gap-2 mt-4 bg-black/20 p-3 rounded-lg">
+            {stats.map((stat, i) => (
+                <div key={i} className="flex items-center gap-2">
+                    <stat.icon size={14} className="text-white/60" />
+                    <span className="text-sm font-medium text-white/90">{stat.value}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-white/50">{stat.label}</span>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 interface VaultScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -211,27 +265,33 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                             onClick={(e) => e.stopPropagation()}
                             className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl"
                         >
-                            <div className={`p-1 h-1 bg-linear-to-r ${selectedItem.source === 'vault' ? 'from-amber-500 via-yellow-500 to-amber-500' : 'from-cyan-500 via-blue-500 to-cyan-500'}`} />
-                            <div className="p-6 flex gap-4">
-                                <div className="shrink-0">
-                                    <ItemPic
-                                        src={selectedItem.item.icon}
-                                        rarity={selectedItem.item.rarity}
-                                        size={80}
-                                        className={!selectedItem.item.icon ? "opacity-30 border-white/10" : ""}
-                                    />
-                                    {!selectedItem.item.icon && (
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-                                            <Hexagon className="text-white/20" size={32} />
-                                        </div>
-                                    )}
+                            <div className={`p-1 h-1 bg-linear-to-r ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].from} ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].via} ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].to}`} />
+                            <div className="p-6">
+                                <div className="flex gap-4">
+                                    <div className="shrink-0">
+                                        <ItemPic
+                                            src={selectedItem.item.icon}
+                                            rarity={selectedItem.item.rarity}
+                                            size={80}
+                                            className={!selectedItem.item.icon ? "opacity-30 border-white/10" : ""}
+                                        />
+                                        {!selectedItem.item.icon && (
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                                                <Circle className="text-white/20" size={32} />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className={`text-lg font-black italic uppercase tracking-tight ${RARITY_COLORS[selectedItem.item.rarity || 'Common'].text}`}>{selectedItem.item.name}</h3>
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${selectedItem.source === 'vault' ? 'text-amber-500' : 'text-cyan-500'}`}>
+                                            {selectedItem.source === 'vault' ? 'STOCKÉ' : 'DANS LE SAC'} • {selectedItem.item.rarity}
+                                        </span>
+                                        <p className="text-xs text-gray-400 leading-relaxed italic border-l-2 border-white/10 pl-2">
+                                            &quot;{selectedItem.item.description || "Un objet mystérieux."}&quot;
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-black italic text-white uppercase tracking-tight">{selectedItem.item.name}</h3>
-                                    <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${selectedItem.source === 'vault' ? 'text-amber-500' : 'text-cyan-500'}`}>
-                                        {selectedItem.source === 'vault' ? 'STOCKÉ' : 'DANS LE SAC'}
-                                    </span>
-                                </div>
+                                {renderItemStats(selectedItem.item)}
                             </div>
                             <button
                                 onClick={selectedItem.source === 'vault' ? handleWithdraw : handleDeposit}

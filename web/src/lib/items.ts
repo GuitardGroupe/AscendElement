@@ -41,11 +41,11 @@ export type Item = {
     description: string;
 };
 
-export const items = [
+export const items: Item[] = [
     {
         id: 0,
         name: "Cartouche de soin",
-        rarity: "Rare",
+        rarity: "Uncommon",
         icon: CONST_ASSETS.IMAGES.ITEM_STIMHEALTH,
         type: "Consumable",
         attack: 0,
@@ -62,6 +62,7 @@ export const items = [
     {
         id: 1,
         name: "Épée en bois",
+        rarity: "Common",
         icon: CONST_ASSETS.IMAGES.ITEM_WOODSWORD,
         type: "Weapon",
         attack: 10,
@@ -78,6 +79,7 @@ export const items = [
     {
         id: 2,
         name: "Armure de novice",
+        rarity: "Common",
         icon: CONST_ASSETS.IMAGES.ITEM_ARMOR,
         type: "Armor",
         attack: 0,
@@ -94,6 +96,7 @@ export const items = [
     {
         id: 3,
         name: "Gemme rouge",
+        rarity: "Epic",
         icon: CONST_ASSETS.IMAGES.ITEM_GEM,
         type: "Gem",
         attack: 0,
@@ -110,6 +113,7 @@ export const items = [
     {
         id: 4,
         name: "Grimoire sorcier",
+        rarity: "Rare",
         icon: CONST_ASSETS.IMAGES.ITEM_BOOK,
         type: "Book",
         attack: 0,
@@ -126,6 +130,7 @@ export const items = [
     {
         id: 5,
         name: "Bague de noble",
+        rarity: "Common",
         icon: CONST_ASSETS.IMAGES.ITEM_RING,
         type: "Ring",
         attack: 0,
