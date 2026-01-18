@@ -288,7 +288,7 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                             </motion.button>
 
                             {/* BOTTOM NAV BAR: SAC & COFFRE */}
-                            <div className="absolute bottom-8 left-8 right-8 flex items-center justify-center gap-8 pointer-events-none">
+                            <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-32 pointer-events-none">
                                 {/* SAC */}
                                 <motion.button
                                     initial={{ x: -20, opacity: 0 }}
@@ -296,18 +296,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     transition={{ delay: 0.2 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('inventory'); }}
-                                    className="flex-1 group pointer-events-auto"
+                                    className="group pointer-events-auto"
                                 >
-                                    <div className="relative flex items-center justify-center gap-3 bg-neutral-900/80 backdrop-blur-md border border-cyan-500/20 w-full py-3 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.15)] overflow-hidden">
+                                    <div className="relative flex items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-cyan-500/20 w-16 h-16 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.15)] overflow-hidden transition-all">
                                         {/* Inner Glow */}
-                                        <div className="absolute inset-0 bg-cyan-500/5 group-hover:bg-cyan-500/10 transition-colors duration-300" />
+                                        <div className="absolute inset-0 bg-cyan-500/5 transition-colors duration-300" />
 
                                         {/* Icon */}
-                                        <Backpack size={18} className="text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] relative z-10" />
-
-                                        <span className="relative z-10 text-sm font-black italic text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-cyan-200 transition-colors">
-                                            SAC
-                                        </span>
+                                        <Backpack size={24} className="text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] relative z-10" />
                                     </div>
                                 </motion.button>
 
@@ -318,18 +314,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     transition={{ delay: 0.2 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => { playSound(CONST_SOUND_CLICK); onSwitchScreen('vault'); }}
-                                    className="flex-1 group pointer-events-auto"
+                                    className="group pointer-events-auto"
                                 >
-                                    <div className="relative flex items-center justify-center gap-3 bg-neutral-900/80 backdrop-blur-md border border-amber-500/20 w-full py-3 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.15)] overflow-hidden">
+                                    <div className="relative flex items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-amber-500/20 w-16 h-16 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.15)] overflow-hidden transition-all">
                                         {/* Inner Glow */}
-                                        <div className="absolute inset-0 bg-amber-500/5 group-hover:bg-amber-500/10 transition-colors duration-300" />
-
-                                        <span className="relative z-10 text-sm font-black italic text-white uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-amber-200 transition-colors">
-                                            COFFRE
-                                        </span>
+                                        <div className="absolute inset-0 bg-amber-500/5 transition-colors duration-300" />
 
                                         {/* Icon */}
-                                        <Archive size={18} className="text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)] relative z-10" />
+                                        <Archive size={24} className="text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)] relative z-10" />
                                     </div>
                                 </motion.button>
                             </div>
