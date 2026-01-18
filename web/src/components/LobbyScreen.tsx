@@ -154,8 +154,8 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                                     src={selectedCharacter.img}
                                     className="block h-full w-auto object-contain relative z-10"
                                     style={{
-                                        maskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)',
-                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)',
+                                        maskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 25px, black calc(100% - 25px), transparent)',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 25px, black calc(100% - 25px), transparent)',
                                         maskComposite: 'intersect',
                                         WebkitMaskComposite: 'source-in'
                                     }}
