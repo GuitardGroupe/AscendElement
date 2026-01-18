@@ -147,20 +147,17 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
 
                         {selectedCharacter ? (
                             /* ACTIVE CHARACTER */
-                            <div className="relative h-full w-fit z-10 flex text-center justify-center">
-                                {/* Using standard img tag with CSS MASK for perfect edge fading. */}
-                                {/* The mask fades the opacity to 0 on the outer 15px, guaranteeing no sharp borders are visible. */}
+                            <div className="relative h-full w-fit z-10 flex text-center justify-center rounded-[200px] overflow-hidden border-4 border-[#050505]">
                                 <img
                                     src={selectedCharacter.img}
-                                    className="block h-full w-auto object-contain relative z-10 rounded-[32px]"
-                                    style={{
-                                        maskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 25px, black calc(100% - 25px), transparent)',
-                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15px, black calc(100% - 15px), transparent), linear-gradient(to right, transparent, black 25px, black calc(100% - 25px), transparent)',
-                                        maskComposite: 'intersect',
-                                        WebkitMaskComposite: 'source-in'
-                                    }}
+                                    className="block h-full w-auto object-contain relative z-10"
                                     alt={selectedCharacter.name}
                                     draggable={false}
+                                />
+                                {/* Manual Inner Shadow Overlay - follows rounded corners using box-shadow */}
+                                <div
+                                    className="absolute inset-0 z-20 pointer-events-none rounded-[200px]"
+                                    style={{ boxShadow: 'inset 0 0 25px 15px #050505' }}
                                 />
                             </div>
                         ) : (
