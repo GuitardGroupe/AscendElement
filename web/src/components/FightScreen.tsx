@@ -3,8 +3,8 @@
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { useSoundStore } from "@/store/useSoundStore";
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sword, Shield, Zap, Skull, Crosshair, ArrowLeft } from 'lucide-react';
-import Image from "next/image";
+
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import CombatCrystal from "@/components/CombatCrystal";
@@ -19,9 +19,12 @@ import { Skill, skillSets, ElementKey, defenses, Defense, combos } from "@/lib/s
 import { monstersSkills, monsters, MonsterSkill } from "@/lib/monsters";
 import { stims } from "@/lib/stim";
 
-import { useAdventureStore } from "@/store/useAdventureStore";
+import { useAdventureStore, InventoryItem } from "@/store/useAdventureStore";
 import { CONST_ASSETS } from '@/lib/preloader';
-const CONST_TITLE = "BATTLE";
+import { items as gameItems } from "@/lib/items";
+import type { LootItem } from "@/components/LootAccordion";
+
+
 
 
 
@@ -34,6 +37,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const { playSound, stopSound, stopAllSounds } = useSoundStore();
     const [winner, setWinner] = useState<string | null>(null);
     const [combatResult, setCombatResult] = useState<'victory' | 'defeat' | null>(null);
+    const [generatedLoot, setGeneratedLoot] = useState<LootItem[]>([]);
     const opponent = monsters[0];
 
     // TIMER REMOVED
@@ -135,7 +139,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     }, [opponentEnergy, opponentCooldowns, opponentIsCasting, winner, playerIsCasting, opponentHealth]);
 
 
-    const { mode, solo, coop, markAsDefeated, resetAdventure } = useAdventureStore();
+    const { mode, solo, coop, markAsDefeated, resetAdventure, resetSession, equipment } = useAdventureStore();
     const { currentNodeId } = mode === 'solo' ? solo : coop;
     const { clearSelectedCharacter } = useSelectedCharacter();
 
@@ -148,7 +152,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             markAsDefeated(currentNodeId);
             onSwitchScreen("map");
         } else if (combatResult === 'defeat') {
-            resetAdventure();
+            resetSession(); // Death Penalty: Clear Inventory/Equip/Currencies, Keep Vault
             clearSelectedCharacter();
             onSwitchScreen("lobby");
         } else {
@@ -156,7 +160,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             onSwitchScreen("lobby");
         }
 
-    }, [onSwitchScreen, combatResult, currentNodeId, markAsDefeated, resetAdventure, clearSelectedCharacter]);
+    }, [onSwitchScreen, combatResult, currentNodeId, markAsDefeated, resetAdventure, clearSelectedCharacter, resetSession]);
 
     // DAMAGE
     const handleDamageDone = useCallback((target: "player" | "opponent", id: string) => {
@@ -171,6 +175,75 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
     const endCombat = useCallback((who: string, exceptSound?: string) => {
         console.log("HANDLE END COMBAT", who)
         if (winner) return; // Prevent double trigger
+
+        // LOOT GENERATION (If Player Won)
+        if (who === "Joueur vainqueur") {
+            const loot: LootItem[] = [];
+            let lootId = 0;
+
+            // 1. Fixed Gold/XP/Shards from Loot Table
+            opponent.loot_table.forEach(drop => {
+                const roll = Math.random();
+                if (roll <= drop.chance) {
+                    const qty = Math.floor(Math.random() * (drop.max_qty - drop.min_qty + 1)) + drop.min_qty;
+                    if (qty <= 0) return;
+
+                    if (drop.type === 'currency_gold') {
+                        loot.push({
+                            id: lootId++,
+                            name: "Or",
+                            rarity: "Common",
+                            color: "text-amber-400",
+                            border: "border-amber-500",
+                            icon: CONST_ASSETS.IMAGES.CURRENCY_GOLDCOIN,
+                            payload: { type: 'currency_gold', amount: qty }
+                        });
+                    } else if (drop.type === 'currency_soulshard') {
+                        loot.push({
+                            id: lootId++,
+                            name: "Éclat d'Âme",
+                            rarity: "Rare",
+                            color: "text-purple-400",
+                            border: "border-purple-500",
+                            icon: CONST_ASSETS.IMAGES.CURRENCY_SOULSHARD,
+                            payload: { type: 'currency_soulshard', amount: qty }
+                        });
+                    } else if (drop.type === 'currency_xp') {
+                        loot.push({
+                            id: lootId++,
+                            name: "Expérience",
+                            rarity: "Common",
+                            color: "text-cyan-400",
+                            border: "border-cyan-500",
+                            icon: CONST_ASSETS.IMAGES.CURRENCY_EXPERIENCE,
+                            payload: { type: 'currency_xp', amount: qty }
+                        });
+                    } else if (drop.type === 'item' && drop.item_id !== undefined) {
+                        const itemDef = gameItems.find(i => i.id === drop.item_id);
+                        if (itemDef) {
+                            let rarityColor = "text-gray-400";
+                            let rarityBorder = "border-gray-500";
+                            if (itemDef.rarity === 'Rare') { rarityColor = "text-blue-400"; rarityBorder = "border-blue-500"; }
+                            if (itemDef.rarity === 'Epic') { rarityColor = "text-purple-400"; rarityBorder = "border-purple-500"; }
+                            if (itemDef.rarity === 'Legendary') { rarityColor = "text-orange-400"; rarityBorder = "border-orange-500"; }
+
+                            for (let i = 0; i < qty; i++) {
+                                loot.push({
+                                    id: lootId++,
+                                    name: itemDef.name,
+                                    rarity: itemDef.rarity || "Common",
+                                    color: rarityColor,
+                                    border: rarityBorder,
+                                    icon: itemDef.icon,
+                                    payload: { type: 'item', item: { ...itemDef, instanceId: Math.random().toString(36).slice(2) } as InventoryItem }
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+            setGeneratedLoot(loot);
+        }
 
         setWinner(who);
 
@@ -263,7 +336,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
             });
         }
         return isCrit;
-    }, [endCombat, pushDamageEvent, selectedCharacter?.stat_critical]);
+    }, [endCombat, pushDamageEvent, selectedCharacter?.stat_critical, opponent.loot_table]);
 
     const interruptCast = useCallback(() => {
         if (playerCastRef.current) clearTimeout(playerCastRef.current);
@@ -1076,7 +1149,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                     <SkillGrid
                         skills={skills}
                         defenses={defenses}
-                        stims={stims}
+                        stims={equipment.consumable ? stims.filter(s => s.id === equipment.consumable?.id) : []}
                         stimUsages={stimUsages}
                         cooldowns={playerCooldowns}
                         currentEnergy={playerEnergy}
@@ -1222,7 +1295,7 @@ export default function FightScreen({ onSwitchScreen }: FightScreenProps) {
                         className={`absolute inset-0 z-150 flex items-center justify-center bg-black/90 backdrop-blur-xl ${combatResult === 'defeat' ? 'cursor-pointer' : ''}`}
                     >
                         {combatResult === 'victory' ? (
-                            <ResultVictory playerName={playerName} onBack={handleGameOver} />
+                            <ResultVictory playerName={playerName} onBack={handleGameOver} lootItems={generatedLoot} />
                         ) : (
                             <ResultDefeat playerName={playerName} />
                         )}
@@ -1238,31 +1311,14 @@ function DarkOverlay() {
     return <div className="absolute inset-0 bg-black/50" />;
 }
 
-function Title({ label = "label" }: { label?: string }) {
-    return (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 z-50">
-            <span className="text-xs font-black tracking-[0.3em] uppercase text-white drop-shadow-md">
-                {label}
-            </span>
-        </div>
-    );
-}
+
 
 // Subcomponents for Results to keep main render clean
 // Subcomponents for Results to keep main render clean
-function ResultVictory({ playerName, onBack }: { playerName: string, onBack: () => void }) {
-    // Mock Loot Data
-    const lootItems = [
-        { id: 1, name: "Essence", rarity: "rare", color: "text-blue-400", border: "border-blue-500", icon: CONST_ASSETS.IMAGES.SKILL_02 },
-        { id: 2, name: "Cristal", rarity: "common", color: "text-gray-400", border: "border-gray-600", icon: CONST_ASSETS.IMAGES.ITEM_01 },
-        { id: 3, name: "Ame", rarity: "epic", color: "text-purple-400", border: "border-purple-500", icon: CONST_ASSETS.IMAGES.SKILL_04 },
-        { id: 4, name: "Gemme", rarity: "common", color: "text-white", border: "border-gray-500", icon: CONST_ASSETS.IMAGES.ITEM_01 },
-    ];
-
+// Subcomponents for Results to keep main render clean
+function ResultVictory({ playerName, onBack, lootItems }: { playerName: string, onBack: () => void, lootItems: LootItem[] }) {
     return (
         <div className="w-full h-full flex flex-col items-center relative overflow-hidden bg-[#050505]">
-            {/* AMBIENT GLOW REMOVED */}
-
             {/* CONTENT CONTAINER - 1/3 TOP Positioning */}
             <div className="relative z-10 w-full flex flex-col items-center top-[33%] -translate-y-[33%]">
 

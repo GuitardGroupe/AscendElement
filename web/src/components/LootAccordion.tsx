@@ -3,14 +3,21 @@ import { useSoundStore } from "@/store/useSoundStore";
 import { CONST_ASSETS } from "@/lib/preloader";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useAdventureStore } from "@/store/useAdventureStore";
+import { Item } from "@/lib/items";
 
-interface LootItem {
-    id: number;
+export interface LootItem {
+    id: number; // Unique ID for the list
     name: string;
     rarity: string;
     color: string;
     border: string;
     icon: string;
+    payload: {
+        type: 'item' | 'currency_gold' | 'currency_soulshard' | 'currency_xp';
+        amount?: number;
+        item?: Item;
+    };
 }
 
 interface LootAccordionProps {
@@ -22,6 +29,7 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
     const [isOpen, setIsOpen] = useState(false);
     const [visibleItems, setVisibleItems] = useState(initialItems);
     const { playSound } = useSoundStore();
+    const { addCurrency, addItemToInventory } = useAdventureStore();
 
     const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -30,9 +38,28 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
         setVisibleItems(initialItems);
     }, [initialItems]);
 
-    const handleCollect = (id: number) => {
-        playSound(CONST_ASSETS.SOUNDS.CLICK);
-        setVisibleItems(prev => prev.filter(item => item.id !== id));
+    const handleCollect = (item: LootItem) => {
+        let success = true;
+
+        if (item.payload.type === 'item' && item.payload.item) {
+            success = addItemToInventory(item.payload.item);
+        } else if (item.payload.type === 'currency_gold') {
+            addCurrency('gold', item.payload.amount || 0);
+        } else if (item.payload.type === 'currency_soulshard') {
+            addCurrency('soulShards', item.payload.amount || 0);
+        } else if (item.payload.type === 'currency_xp') {
+            addCurrency('experience', item.payload.amount || 0);
+        } else {
+            console.warn("Unknown loot type or missing data", item);
+        }
+
+        if (success) {
+            playSound(CONST_ASSETS.SOUNDS.CLICK); // Collect sound (maybe a coin sound?)
+            setVisibleItems(prev => prev.filter(i => i.id !== item.id));
+        } else {
+            playSound(CONST_ASSETS.SOUNDS.DESACTIVATION); // Inventory full
+            // Maybe show a toast/hint?
+        }
     };
 
     const handleToggle = () => {
@@ -127,7 +154,7 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
                                     key={item.id}
                                     layout
                                     exit={{ opacity: 0, height: 0 }}
-                                    onClick={() => handleCollect(item.id)}
+                                    onClick={() => handleCollect(item)}
                                     className="cursor-pointer group relative"
                                 >
                                     {/* Item Row Container - Auto height to fit content + 2px padding */}
@@ -144,10 +171,14 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
                                         </div>
 
                                         {/* Right: Name */}
-                                        <div className="flex-1 px-3 flex items-center">
+                                        <div className="flex-1 px-3 flex items-center justify-between">
                                             <span className={`text-xs font-bold capitalize ${item.color}`}>
                                                 {item.name.toLowerCase()}
                                             </span>
+                                            {/* Quantity or Type hint? */}
+                                            {(item.payload.amount || 0) > 1 && (
+                                                <span className="text-[10px] font-mono text-white/50">x{item.payload.amount}</span>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
@@ -173,3 +204,5 @@ export default function LootAccordion({ items: initialItems, onContinue }: LootA
         </div>
     );
 }
+
+

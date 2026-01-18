@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Hexagon, Lock } from 'lucide-react';
-import Image from 'next/image';
+
 import { useSoundStore } from '@/store/useSoundStore';
 import { CONST_ASSETS } from '@/lib/preloader';
 import { useState } from 'react';
@@ -10,35 +10,97 @@ import { useState } from 'react';
 import ItemPic from '@/components/ItemPic';
 import Inventory from '@/components/Inventory';
 
+import { useAdventureStore, InventoryItem } from '@/store/useAdventureStore';
+
 interface VaultScreenProps {
     onSwitchScreen: (screen: string) => void;
 }
 
 export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
     const { playSound } = useSoundStore();
-    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null, source: 'vault' | 'inventory', rarity?: string } | null>(null);
+    const {
+        vault,
+        inventory,
+        inventoryCapacity,
+        addToVault,
+        removeFromVault
+    } = useAdventureStore();
+
+    const [selectedItem, setSelectedItem] = useState<{
+        item: InventoryItem,
+        source: 'vault' | 'inventory'
+    } | null>(null);
 
     const handleBack = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
         onSwitchScreen('lobby');
     };
 
-    // Mock Vault Items (9 slots for 3x3)
-    const vaultItems = Array.from({ length: 9 }, (_, i) => ({
-        id: `vault-${i}`,
-        img: i < 5 ? (i % 2 === 0 ? CONST_ASSETS.IMAGES.SKILL_02 : CONST_ASSETS.IMAGES.ITEM_01) : null,
-        label: i < 5 ? 'PRÉCIEUX' : 'VIDE',
-        rarity: i % 2 === 0 ? 'epic' : 'rare',
-        locked: false // No visible locks for now in the 9 slots to keep it clean, or could lock last row
+    // VAULT ITEMS (Dynamic + Padded to 9 or more?)
+    // Game design: Vault has infinite space? Or fixed? 
+    // Requirement didn't specify vault size.
+    // StuffScreen mock had 9 slots (3x3). Let's stick to 9 for now, or expand if more items.
+    // If vault has > 9 items, we can show scrolling or more rows.
+    // Let's assume 3x3 min, but grows.
+
+    const vaultCapacity = Math.max(9, Math.ceil(vault.length / 3) * 3);
+    const paddedVault = [
+        ...vault,
+        ...Array.from({ length: vaultCapacity - vault.length }).map((_, i) => ({
+            id: -(i + 1),
+            instanceId: `vault-empty-${i}`,
+            name: "Empty",
+
+            rarity: "Common" as const,
+            // Helper fields to satisfy type but won't be used
+            icon: "", type: "Gem" as const, attack: 0, critical: 0, health: 0, energy: 0,
+            sound: "", color: "", heal: 0, cooldown: 0, usages: 0, description: "",
+            locked: false
+        }))
+    ];
+
+    // INVENTORY ITEMS (Dynamic + Padded to capacity)
+    const paddedInventory = [
+        ...inventory,
+        ...Array.from({ length: Math.max(0, inventoryCapacity - inventory.length) }).map((_, i) => ({
+            id: `inv-empty-${i}`,
+            instanceId: `inv-empty-${i}`,
+            name: "Empty",
+            icon: "",
+            rarity: "Common" as const,
+            type: "Gem" as const,
+            attack: 0, critical: 0, health: 0, energy: 0, sound: "", color: "", heal: 0, cooldown: 0, usages: 0, description: "",
+        }))
+    ];
+
+    const inventoryProps = paddedInventory.map(item => ({
+        id: item.instanceId,
+        img: item.icon || null,
+        rarity: item.rarity,
+        label: item.name !== "Empty" ? item.name : undefined,
     }));
 
-    // Mock Inventory Items (20 slots)
-    const inventoryItems = Array.from({ length: 20 }, (_, i) => ({
-        id: `inven-${i}`,
-        img: i === 0 ? CONST_ASSETS.IMAGES.SKILL_04 : null,
-        label: i === 0 ? 'CRISTAL' : 'VIDE',
-        rarity: i === 0 ? 'legendary' : 'common'
-    }));
+
+    const handleDeposit = () => {
+        if (selectedItem && selectedItem.source === 'inventory') {
+            addToVault(selectedItem.item);
+            playSound(CONST_ASSETS.SOUNDS.CLICK); // Deposit sound
+            setSelectedItem(null);
+        }
+    };
+
+    const handleWithdraw = () => {
+        if (selectedItem && selectedItem.source === 'vault') {
+            const success = removeFromVault(selectedItem.item.instanceId);
+            if (success) {
+                playSound(CONST_ASSETS.SOUNDS.CLICK); // Withdraw sound
+                setSelectedItem(null);
+            } else {
+                playSound(CONST_ASSETS.SOUNDS.DESACTIVATION); // Full inventory
+            }
+        }
+    };
+
 
     return (
         <div className="flex flex-col h-full bg-neutral-950 text-white font-sans relative overflow-hidden">
@@ -87,34 +149,27 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
 
                             {/* Grid */}
                             <div className="grid grid-cols-3 gap-2 relative z-10 place-content-center"> {/* 3x3 Grid with perfect spacing */}
-                                {vaultItems.map((item) => (
+                                {paddedVault.map((item: InventoryItem) => (
                                     <motion.button
-                                        key={item.id}
-                                        whileTap={!item.locked ? { scale: 0.95 } : {}}
-                                        onClick={() => !item.locked && item.img && setSelectedItem({ ...item, source: 'vault' })}
+                                        key={item.instanceId}
+                                        whileTap={item.name !== 'Empty' ? { scale: 0.95 } : {}}
+                                        onClick={() => item.name !== 'Empty' && setSelectedItem({ item: item as InventoryItem, source: 'vault' })}
                                         className={`
                                             relative rounded-sm overflow-hidden transition-all flex items-center justify-center group
-                                            ${item.locked ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
+                                            ${item.name === 'Empty' ? 'opacity-30 cursor-default' : 'cursor-pointer'}
                                         `}
                                     >
                                         <ItemPic
-                                            src={item.img}
+                                            src={item.icon}
                                             rarity={item.rarity}
                                             size={56} // Matching standard size
-                                            className={!item.img && !item.locked ? "opacity-30 bg-white/5 border-white/5 shadow-none" : ""}
+                                            className={item.name === "Empty" ? "opacity-30 bg-white/5 border-white/5 shadow-none" : ""}
                                         />
 
-                                        {/* Lock Icon for empty/locked slots in Vault context */}
-                                        {item.label === 'VIDE' && !item.img && (
+                                        {/* Lock Icon for empty/locked slots in Vault context - replaced "locked" logic with "Empty" logic for now */}
+                                        {item.name === 'Empty' && (
                                             <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
                                                 <Lock size={16} className="text-white" />
-                                            </div>
-                                        )}
-
-                                        {/* Explicit Locked State Override */}
-                                        {item.locked && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20">
-                                                <Lock size={16} className="text-gray-400" />
                                             </div>
                                         )}
                                     </motion.button>
@@ -128,8 +183,13 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
 
                 {/* INVENTORY SECTION */}
                 <Inventory
-                    items={inventoryItems}
-                    onItemClick={(item) => setSelectedItem({ ...item, source: 'inventory' })}
+                    items={inventoryProps}
+                    onItemClick={(uiItem) => {
+                        const original = paddedInventory.find(i => i.instanceId === uiItem.id);
+                        if (original && original.name !== "Empty") {
+                            setSelectedItem({ item: original as InventoryItem, source: 'inventory' });
+                        }
+                    }}
                     className="mb-4"
                 />
 
@@ -155,25 +215,28 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
                             <div className="p-6 flex gap-4">
                                 <div className="shrink-0">
                                     <ItemPic
-                                        src={selectedItem.img}
-                                        rarity={selectedItem.rarity}
+                                        src={selectedItem.item.icon}
+                                        rarity={selectedItem.item.rarity}
                                         size={80}
-                                        className={!selectedItem.img ? "opacity-30 border-white/10" : ""}
+                                        className={!selectedItem.item.icon ? "opacity-30 border-white/10" : ""}
                                     />
-                                    {!selectedItem.img && (
+                                    {!selectedItem.item.icon && (
                                         <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
                                             <Hexagon className="text-white/20" size={32} />
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-black italic text-white uppercase tracking-tight">{selectedItem.label}</h3>
+                                    <h3 className="text-lg font-black italic text-white uppercase tracking-tight">{selectedItem.item.name}</h3>
                                     <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 block ${selectedItem.source === 'vault' ? 'text-amber-500' : 'text-cyan-500'}`}>
                                         {selectedItem.source === 'vault' ? 'STOCKÉ' : 'DANS LE SAC'}
                                     </span>
                                 </div>
                             </div>
-                            <button className={`w-full p-4 text-xs font-black uppercase transition-colors border-t border-white/10 ${selectedItem.source === 'vault' ? 'text-cyan-400 active:bg-cyan-900/20' : 'text-amber-400 active:bg-amber-900/20'}`}>
+                            <button
+                                onClick={selectedItem.source === 'vault' ? handleWithdraw : handleDeposit}
+                                className={`w-full p-4 text-xs font-black uppercase transition-colors border-t border-white/10 ${selectedItem.source === 'vault' ? 'text-cyan-400 active:bg-cyan-900/20' : 'text-amber-400 active:bg-amber-900/20'}`}
+                            >
                                 {selectedItem.source === 'vault' ? 'RÉCUPÉRER' : 'DÉPOSER'}
                             </button>
                         </motion.div>
@@ -183,3 +246,5 @@ export default function VaultScreen({ onSwitchScreen }: VaultScreenProps) {
         </div>
     );
 }
+
+

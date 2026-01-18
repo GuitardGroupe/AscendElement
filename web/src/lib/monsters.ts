@@ -15,7 +15,14 @@ export type MONSTER = {
     stat_def: number;
     level: number;
     description: string;
-    skills: number[],
+    skills: number[];
+    loot_table: {
+        item_id?: number; // If undefined, it's a currency or generic
+        chance: number; // 0-1
+        min_qty: number;
+        max_qty: number;
+        type?: "currency_gold" | "currency_soulshard" | "currency_xp" | "item";
+    }[];
 };
 
 export type MonsterSkill = {
@@ -35,7 +42,7 @@ export type MonsterSkill = {
     impactSound?: string;
 };
 
-export const monsters = [
+export const monsters: MONSTER[] = [
     {
         id: 0,
         name: "Gobelin",
@@ -52,6 +59,16 @@ export const monsters = [
         level: 1,
         description: "Un charognard agile qui rôde dans les décombres de l'infra-système. Rapide mais fragile.",
         skills: [0, 1],
+        loot_table: [
+            { type: "currency_gold", chance: 1, min_qty: 10, max_qty: 50 },
+            { type: "currency_xp", chance: 1, min_qty: 20, max_qty: 20 },
+            { item_id: 0, type: "item", chance: 0.2, min_qty: 1, max_qty: 1 }, // Stim
+            { item_id: 1, type: "item", chance: 0.2, min_qty: 1, max_qty: 1 }, // Wood Sword
+            { item_id: 2, type: "item", chance: 0.2, min_qty: 1, max_qty: 1 }, // Novice Armor
+            { item_id: 3, type: "item", chance: 0.2, min_qty: 1, max_qty: 1 }, // Red Gem
+            { item_id: 4, type: "item", chance: 0.2, min_qty: 1, max_qty: 1 }, // Sorcerer Book
+            { item_id: 5, type: "item", chance: 0.2, min_qty: 1, max_qty: 1 }, // Noble Ring
+        ]
     },
 ];
 

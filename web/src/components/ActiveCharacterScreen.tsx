@@ -13,9 +13,16 @@ interface ActiveCharacterScreenProps {
     onSwitchScreen: (screen: string) => void;
 }
 
+import { useAdventureStore } from "@/store/useAdventureStore";
+
+interface ActiveCharacterScreenProps {
+    onSwitchScreen: (screen: string) => void;
+}
+
 export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacterScreenProps) {
     const { playSound } = useSoundStore();
     const { selectedCharacter, clearSelectedCharacter } = useSelectedCharacter();
+    const { currencies } = useAdventureStore();
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleBack = () => {
@@ -52,13 +59,13 @@ export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacte
 
     const stats = selectedCharacter ? getStats(String(selectedCharacter.id)) : { damage: 0, defense: 0, difficulty: 0 };
 
-    // Mock progression data
-    const currentLevel = 12;
-    const currentXP = 1250;
-    const maxXP = 3000;
-    const completeness = 45; // %
+    // Mock progression data - TODO: Real Level/XP logic?
+    // User asked to implement counters for currencies (Gold, Shards, XP).
+    // Let's display the currencies here.
 
-    // Mock active equipment for display row
+    // XP is now a currency? 
+    // "Il faut implémenter un compteur pour chaque currencies... dans la feuille de personnage actif"
+
     const activeEquipment = [
         { id: 'weapon', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02, rarity: 'legendary' },
         { id: 'stim', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01, rarity: 'rare' },
@@ -142,43 +149,27 @@ export default function ActiveCharacterScreen({ onSwitchScreen }: ActiveCharacte
                     <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter">{selectedCharacter.name}</h2>
                     <div className="flex items-center gap-2 mt-1">
                         <span className="bg-cyan-900/40 border border-cyan-500/30 text-cyan-200 text-[9px] font-black px-2 py-0.5 rounded-xs tracking-widest uppercase">INITIÉ</span>
-                        <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">NIVEAU {currentLevel}</span>
+                        {/* <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">NIVEAU {currentLevel}</span> */}
                     </div>
                 </div>
 
-                {/* PROGRESS BARS */}
-                <div className="space-y-4 bg-white/5 p-4 rounded-sm border border-white/5">
-                    {/* XP */}
-                    <div className="space-y-1">
-                        <div className="flex justify-between text-[9px] font-black uppercase tracking-wider text-gray-400">
-                            <span>Expérience</span>
-                            <span>{currentXP} / {maxXP} XP</span>
-                        </div>
-                        <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(currentXP / maxXP) * 100}%` }}
-                                transition={{ duration: 1, ease: "easeOut" }}
-                                className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
-                            />
-                        </div>
+                {/* CURRENCIES GRID */}
+                <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-white/5 p-2 rounded flex flex-col items-center border border-white/5">
+                        <span className="text-[9px] text-amber-500 font-bold uppercase tracking-wider">OR</span>
+                        <span className="text-lg font-black text-white">{currencies.gold}</span>
                     </div>
-                    {/* COMPLETENESS */}
-                    <div className="space-y-1">
-                        <div className="flex justify-between text-[9px] font-black uppercase tracking-wider text-gray-400">
-                            <span>Complétude</span>
-                            <span>{completeness}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${completeness}%` }}
-                                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                                className="h-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                            />
-                        </div>
+                    <div className="bg-white/5 p-2 rounded flex flex-col items-center border border-white/5">
+                        <span className="text-[9px] text-purple-400 font-bold uppercase tracking-wider">ÉCLATS</span>
+                        <span className="text-lg font-black text-white">{currencies.soulShards}</span>
+                    </div>
+                    <div className="bg-white/5 p-2 rounded flex flex-col items-center border border-white/5">
+                        <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-wider">EXP</span>
+                        <span className="text-lg font-black text-white">{currencies.experience}</span>
                     </div>
                 </div>
+
+
 
                 {/* STATS GRID */}
                 <div className="grid grid-cols-2 gap-4">

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sword, Zap, Shield, Gem, Hexagon, Footprints, Hand } from 'lucide-react';
+import { ArrowLeft, Sword, Zap, Shield, Gem, BookOpen, Circle } from 'lucide-react';
 import { useSoundStore } from '@/store/useSoundStore';
 import { useSelectedCharacter } from "@/store/useSelectedCharacter";
 import { CONST_ASSETS } from '@/lib/preloader';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 
 import ItemPic from '@/components/ItemPic';
 import Inventory from '@/components/Inventory';
+import { useAdventureStore, EquipmentSlotId, InventoryItem } from '@/store/useAdventureStore';
 
 interface StuffScreenProps {
     onSwitchScreen: (screen: string) => void;
@@ -18,33 +19,97 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
     const { playSound } = useSoundStore();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { selectedCharacter } = useSelectedCharacter();
-    const [selectedItem, setSelectedItem] = useState<{ id: string | number, label?: string, img: string | null, rarity?: string, source?: string } | null>(null);
+    const {
+        inventory,
+        equipment,
+        inventoryCapacity,
+        equipItem,
+        unequipItem,
+        removeItemFromInventory
+    } = useAdventureStore();
+
+    // Track selected item. We need to know if it comes from inventory or equipment.
+    // Enhanced state to track source
+    const [selectedItem, setSelectedItem] = useState<{
+        item: InventoryItem,
+        source: 'inventory' | 'equipment',
+        slotId?: EquipmentSlotId
+    } | null>(null);
 
     const handleBack = () => {
         playSound(CONST_ASSETS.SOUNDS.CLICK);
         onSwitchScreen('lobby');
     };
 
-    // Mock active equipment
-    const equipmentSlots = [
-        // TOP ROW (2 ITEMS)
-        { id: 'weapon', label: 'ARME', icon: Sword, color: 'text-amber-400', img: CONST_ASSETS.IMAGES.SKILL_02, type: 'OFFENSIVE', rarity: 'legendary' },
-        { id: 'stim', label: 'STIM', icon: Zap, color: 'text-cyan-400', img: CONST_ASSETS.IMAGES.ITEM_01, type: 'UTILITAIRE', rarity: 'epic' },
-
-        // BOTTOM ROW (4 ITEMS)
-        { id: 'outfit', label: 'TENUE', icon: Shield, color: 'text-purple-400', img: null, type: 'DÉFENSIF', rarity: 'common' }, // Empty
-        { id: 'gloves', label: 'GANTS', icon: Hand, color: 'text-blue-400', img: null, type: 'DÉFENSIF', rarity: 'common' },
-        { id: 'boots', label: 'BOTTES', icon: Footprints, color: 'text-orange-400', img: null, type: 'DÉFENSIF', rarity: 'common' },
-        { id: 'relic', label: 'RELIQUE', icon: Gem, color: 'text-emerald-400', img: null, type: 'PASSIF', rarity: 'common' },
+    // ACTIVE EQUIPMENT CONFIG
+    // Use the slot keys to map to UI
+    const equipmentUiConfig: { id: EquipmentSlotId, label: string, icon: any, color: string }[] = [
+        { id: 'weapon', label: 'ARME', icon: Sword, color: 'text-amber-400' },
+        { id: 'armor', label: 'ARMURE', icon: Shield, color: 'text-purple-400' },
+        { id: 'consumable', label: 'SOIN', icon: Zap, color: 'text-cyan-400' },
+        { id: 'ring', label: 'ANNEAU', icon: Circle, color: 'text-blue-400' },
+        { id: 'book', label: 'GRIMOIRE', icon: BookOpen, color: 'text-orange-400' },
+        { id: 'gem', label: 'GEMME', icon: Gem, color: 'text-emerald-400' },
     ];
 
-    // Mock backpack
-    const backpackItems = Array.from({ length: 20 }, (_, i) => ({
-        id: i,
-        img: i === 0 ? CONST_ASSETS.IMAGES.SKILL_04 : null,
-        label: i === 0 ? 'CRISTAL DE PUISSANCE' : 'EMP PLACEMENT',
-        rarity: i === 0 ? 'rare' : 'common'
+    // INVENTORY DISPLAY
+    // We need to fill remaining slots with "empty" placeholders for visual grid consistency if desired,
+    // or just pass the items to Inventory component which handles grid.
+    // Inventory component expects InventoryItem[] but maybe we should map to its interface?
+    // Inventory component interface: { id: string|number, img: string|null, rarity?: string ... }
+    // Let's pass the real items. If we want empty slots we can pad it.
+
+    const paddedInventory = [
+        ...inventory,
+        ...Array.from({ length: Math.max(0, inventoryCapacity - inventory.length) }).map((_, i) => ({
+            id: -(i + 1),
+            instanceId: `empty-${i}`,
+            name: "Empty",
+            icon: "",
+            rarity: "Common" as const,
+            type: "Gem" as const,
+            attack: 0, critical: 0, health: 0, energy: 0, sound: "", color: "", heal: 0, cooldown: 0, usages: 0, description: ""
+        }))
+    ];
+
+    const inventoryProps = paddedInventory.map(item => ({
+        id: item.instanceId,
+        img: item.icon || null, // Empty slots have ""
+        rarity: item.rarity,
+        label: item.name !== "Empty" ? item.name : undefined,
+        original: item // Keep reference
     }));
+
+
+    const handleEquip = () => {
+        if (selectedItem && selectedItem.source === 'inventory') {
+            equipItem(selectedItem.item);
+            playSound(CONST_ASSETS.SOUNDS.CLICK); // Should ideally be an equip sound
+            setSelectedItem(null);
+        }
+    };
+
+    const handleUnequip = () => {
+        if (selectedItem && selectedItem.source === 'equipment' && selectedItem.slotId) {
+            const success = unequipItem(selectedItem.slotId);
+            if (success) {
+                playSound(CONST_ASSETS.SOUNDS.CLICK);
+                setSelectedItem(null);
+            } else {
+                // Inventory full feedback?
+                playSound(CONST_ASSETS.SOUNDS.DESACTIVATION); // Assuming ERROR sound exists or fallback
+            }
+        }
+    };
+
+    const handleDiscard = () => {
+        if (selectedItem && selectedItem.source === 'inventory') {
+            removeItemFromInventory(selectedItem.item.instanceId);
+            playSound(CONST_ASSETS.SOUNDS.CLICK); // Trash sound?
+            setSelectedItem(null);
+        }
+    };
+
 
     return (
         <div className="flex flex-col h-full bg-neutral-950 text-white font-sans relative overflow-hidden">
@@ -84,24 +149,36 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                     {/* Flex Column Layout - No Container */}
                     <div className="flex flex-col gap-2 items-center">
 
-                        {/* TOP ROW: 2 Items */}
+                        {/* TOP ROW: 2 Items (Weapon, Stim) */}
                         <div className="flex gap-2">
-                            {equipmentSlots.slice(0, 2).map((slot) => (
-                                <div key={slot.id} className="flex flex-col gap-2 items-center">
-                                    <span className="text-[9px] font-black text-white/70 uppercase tracking-widest drop-shadow-md z-20">{slot.label}</span>
-                                    <EquipmentSlot slot={slot} onClick={(item) => setSelectedItem({ ...item, source: 'equipment' })} />
-                                </div>
-                            ))}
+                            {equipmentUiConfig.slice(0, 2).map((conf) => {
+                                const item = equipment[conf.id];
+                                return (
+                                    <div key={conf.id} className="flex flex-col gap-2 items-center">
+                                        <span className="text-[9px] font-black text-white/70 uppercase tracking-widest drop-shadow-md z-20">{conf.label}</span>
+                                        <EquipmentSlot
+                                            slot={{ ...conf, img: item?.icon || null, rarity: item?.rarity || 'common' }}
+                                            onClick={() => item && setSelectedItem({ item, source: 'equipment', slotId: conf.id })}
+                                        />
+                                    </div>
+                                )
+                            })}
                         </div>
 
                         {/* BOTTOM ROW: 4 Items */}
                         <div className="flex gap-2">
-                            {equipmentSlots.slice(2, 6).map((slot) => (
-                                <div key={slot.id} className="flex flex-col gap-2 items-center">
-                                    <EquipmentSlot slot={slot} onClick={(item) => setSelectedItem({ ...item, source: 'equipment' })} />
-                                    <span className="text-[9px] font-black text-white/70 uppercase tracking-widest drop-shadow-md z-20">{slot.label}</span>
-                                </div>
-                            ))}
+                            {equipmentUiConfig.slice(2, 6).map((conf) => {
+                                const item = equipment[conf.id];
+                                return (
+                                    <div key={conf.id} className="flex flex-col gap-2 items-center">
+                                        <EquipmentSlot
+                                            slot={{ ...conf, img: item?.icon || null, rarity: item?.rarity || 'common' }}
+                                            onClick={() => item && setSelectedItem({ item, source: 'equipment', slotId: conf.id })}
+                                        />
+                                        <span className="text-[9px] font-black text-white/70 uppercase tracking-widest drop-shadow-md z-20">{conf.label}</span>
+                                    </div>
+                                )
+                            })}
                         </div>
 
                     </div>
@@ -126,8 +203,15 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
 
                 {/* INVENTORY GRID */}
                 <Inventory
-                    items={backpackItems}
-                    onItemClick={(item) => setSelectedItem({ ...item, source: 'inventory' })}
+                    items={inventoryProps}
+                    onItemClick={(uiItem) => {
+                        // Find original item
+                        const original = paddedInventory.find(i => i.instanceId === uiItem.id);
+                        if (original && original.name !== "Empty") {
+                            setSelectedItem({ item: original as InventoryItem, source: 'inventory' });
+                        }
+                    }}
+                    capacity={inventoryCapacity}
                 />
             </main>
 
@@ -152,28 +236,37 @@ export default function StuffScreen({ onSwitchScreen }: StuffScreenProps) {
                             <div className="p-6 flex gap-4">
                                 <div className="shrink-0">
                                     <ItemPic
-                                        src={selectedItem.img}
-                                        rarity={selectedItem.rarity}
+                                        src={selectedItem.item.icon}
+                                        rarity={selectedItem.item.rarity}
                                         size={80}
-                                        className={!selectedItem.img ? "opacity-30 border-white/10" : ""}
+                                        className={!selectedItem.item.icon ? "opacity-30 border-white/10" : ""}
                                     />
-                                    {!selectedItem.img && (
+                                    {!selectedItem.item.icon && (
                                         <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-                                            <Hexagon className="text-white/20" size={32} />
+                                            <Circle className="text-white/20" size={32} />
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-black italic text-white uppercase tracking-tight">{selectedItem.label}</h3>
-                                    <span className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest mb-2 block">RARETÉ : ÉPIQUE</span>
+                                    <h3 className="text-lg font-black italic text-white uppercase tracking-tight">{selectedItem.item.name}</h3>
+                                    <span className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest mb-2 block">{selectedItem.item.type} • {selectedItem.item.rarity}</span>
                                     <p className="text-xs text-gray-400 leading-relaxed italic">
-                                        &quot;Un artefact condensé d&apos;énergie pure. Augmente considérablement la puissance de combat.&quot;
+                                        &quot;{selectedItem.item.description || "Un objet mystérieux."}&quot;
                                     </p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 bg-white/5 border-t border-white/5">
-                                <button className="p-4 text-xs font-black text-red-400 uppercase active:bg-white/5 transition-colors">JETER</button>
-                                <button className="p-4 text-xs font-black text-cyan-400 uppercase border-l border-white/5 active:bg-white/5 transition-colors">ÉQUIPER</button>
+                                {selectedItem.source === 'inventory' ? (
+                                    <>
+                                        <button onClick={handleDiscard} className="p-4 text-xs font-black text-red-400 uppercase active:bg-white/5 transition-colors">JETER</button>
+                                        <button onClick={handleEquip} className="p-4 text-xs font-black text-cyan-400 uppercase border-l border-white/5 active:bg-white/5 transition-colors">ÉQUIPER</button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button className="p-4 text-xs font-black text-gray-600 uppercase cursor-not-allowed">JETER</button>
+                                        <button onClick={handleUnequip} className="p-4 text-xs font-black text-amber-400 uppercase border-l border-white/5 active:bg-white/5 transition-colors">DÉSÉQUIPER</button>
+                                    </>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>

@@ -41,9 +41,9 @@ export const CONST_ASSETS = {
         ITEM_RING: `/${V}/images/webp/ring.webp`,
         ITEM_GEM: `/${V}/images/webp/gemred.webp`,
         ITEM_BOOK: `/${V}/images/webp/book.webp`,
-        ITEM_SOULSHARD: `/${V}/images/webp/soulshard.webp`,
-        ITEM_GOLDCOIN: `/${V}/images/webp/goldcoin.webp`,
-        ITEM_EXPERIENCE: `/${V}/images/webp/experience.webp`,
+        CURRENCY_SOULSHARD: `/${V}/images/webp/soulshard.webp`,
+        CURRENCY_GOLDCOIN: `/${V}/images/webp/goldcoin.webp`,
+        CURRENCY_EXPERIENCE: `/${V}/images/webp/experience.webp`,
         ITEM_STIMHEALTH: `/${V}/images/webp/itemstim.webp`,
     },
     SOUNDS: {

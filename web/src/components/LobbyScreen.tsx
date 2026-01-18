@@ -8,7 +8,8 @@ import { CONST_ASSETS } from '@/lib/preloader';
 import { useSoundStore } from '@/store/useSoundStore';
 import { skillSets, Skill, Defense, defenses } from '@/lib/skills';
 import { stims, Stim } from '@/lib/stim';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAdventureStore } from "@/store/useAdventureStore";
 
 const CONST_SOUND_CLICK = CONST_ASSETS.SOUNDS.CLICK;
 
@@ -25,12 +26,20 @@ type SkillItem = {
 export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
     const { playSound } = useSoundStore();
     const { selectedCharacter } = useSelectedCharacter();
+    const { equipment, checkStarterKit } = useAdventureStore();
     const [selectedInfo, setSelectedInfo] = useState<SkillItem | null>(null);
+
+    // Initial Starter Kit Check
+    useEffect(() => {
+        checkStarterKit();
+    }, [checkStarterKit]);
 
     const isCrystalActive = !!selectedCharacter;
 
     // Gather skills/items
     const interactionItems: SkillItem[] = [];
+
+
     if (selectedCharacter) {
         const charSkills = skillSets[selectedCharacter.symbol as keyof typeof skillSets] || [];
         charSkills.slice(0, 4).forEach((s, i) => {
@@ -41,7 +50,14 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
             });
         });
         if (defenses[0]) interactionItems.push({ type: 'defense', data: defenses[0], side: 'right' });
-        if (stims[0]) interactionItems.push({ type: 'stim', data: stims[0], side: 'right' });
+
+        // Check equipped consumable
+        if (equipment.consumable) {
+            const equippedStim = stims.find(s => s.id === equipment.consumable?.id);
+            if (equippedStim) {
+                interactionItems.push({ type: 'stim', data: equippedStim, side: 'right' });
+            }
+        }
     }
 
 
@@ -140,8 +156,8 @@ export default function LobbyScreen({ onSwitchScreen }: LobbyScreenProps) {
                         <div
                             className="absolute inset-0 z-20 pointer-events-none"
                             style={{
-                                background: 'radial-gradient(ellipse at 50% 30%, transparent 50%, #050505 90%)',
-                                boxShadow: 'inset 0 0 60px 40px #050505'
+                                background: 'radial-gradient(ellipse at 50% 40%, transparent 20%, #050505 85%)',
+                                boxShadow: 'inset 0 0 100px 60px #050505'
                             }}
                         />
 
